@@ -1,0 +1,13 @@
+{
+  "28:37:37:24:A7:F2": {
+    "hostname": "IDLabLaptop",
+    "ip_addr": "192.168.2.53",
+    "metrics": {
+      "latency": 10,
+      "throughput" : null
+    },
+    "tx_policy": {
+      "no_ack": false
+    }
+  }
+}

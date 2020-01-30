@@ -1,0 +1,34 @@
+{
+  "28:37:37:24:A7:F2": {
+    "hostname": "IDLabLaptop",
+    "ip_addr": "192.168.2.53",
+    "processes": {
+      "iperf3": {
+        "process": null,
+        "bandwidth": "50Mbps",
+        "duration": 6000,
+        "protocol": "",
+        "dst_port": "5003",
+        "active": false
+      },
+      "bin_counter": {
+        "last_data": null
+      }
+    }
+  },
+  "1C:36:BB:1D:0F:12": {
+    "hostname": "NelsonLaptop",
+    "ip_addr": "192.168.2.54",
+    "processes": {
+      "icmp": {
+        "process": null,
+        "thread": null,
+        "last_data": null,
+        "active": false
+      },
+      "bin_counter": {
+        "last_data": null
+      }
+    }
+  }
+}

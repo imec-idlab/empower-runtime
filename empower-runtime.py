@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2019 Roberto Riggio
+# Copyright (c) 2016 Roberto Riggio
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,10 +15,35 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Launch the 5G-EmPOWER Runtime."""
+"""Launch the EmPOWER runtime."""
 
-from empower.core.launcher import main
+from empower.main import main
 
 
-if __name__ == '__main__':
-    main(config="/etc/empower/")
+if __name__ == "__main__":
+
+    # Default modules
+    ARGVS = ['restserver.restserver',
+             'lvnfp.lvnfpserver',
+             'lvapp.lvappserver',
+             'vbsp.vbspserver',
+             'ibnp.ibnpserver',
+
+             'lvapp.lvap_stats.lvap_stats',
+             'lvapp.bin_counter.bin_counter',
+             'lvapp.txp_bin_counter.txp_bin_counter',
+             'lvapp.slice_stats.slice_stats',
+             'lvapp.ucqm.ucqm',
+             'lvapp.ncqm.ncqm',
+             'lvapp.wifi_stats.wifi_stats',
+             'lvapp.rssi.rssi',
+             'lvapp.summary.summary',
+
+             'vbsp.ue_measurements.ue_measurements',
+             'vbsp.cell_measurements.cell_measurements',
+
+             'lvnfp.lvnf_get.lvnf_get',
+             'lvnfp.lvnf_set.lvnf_set',
+             'lvnfp.lvnf_stats.lvnf_stats']
+
+    main(ARGVS)

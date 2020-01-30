@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2019 Roberto Riggio
+# Copyright (c) 2016 Roberto Riggio
+#               2019 Pedro Heleno Isolani
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,25 +16,29 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Hello world app."""
+"""A HelloWorld manager."""
 
-from empower.core.app import EVERY
-
+# the manifest
 MANIFEST = {
-    "label": "Hello World",
-    "desc": "Prints Hello World to the log",
+    "name": "empower.apps.helloworld.helloworld",
+    "desc": "A simple helloworld manager.",
     "params": {
-        "message": {
-            "desc": "The message to be printed.",
-            "mandatory": False,
-            "default": "World",
-            "type": "string"
+        "tenant_id": {
+            "desc": "The tenant on which this app must be loaded.",
+            "mandatory": True,
+            "type": "UUID"
         },
         "every": {
             "desc": "The control loop period (in ms).",
             "mandatory": False,
-            "default": EVERY,
+            "default": 5000,
             "type": "int"
+        },
+        "message": {
+            "desc": "Hello World through REST API.",
+            "mandatory": False,
+            "default": "Hello REST API",
+            "type": "string"
         }
     }
 }

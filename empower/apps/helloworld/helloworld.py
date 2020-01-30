@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2019 Roberto Riggio
+# Copyright (c) 2016 Roberto Riggio
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,59 +15,49 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Hello world app"""
+"""Hello Manager App."""
 
-from empower.core.app import EApp
-from empower.core.app import EVERY
+from empower.core.app import EmpowerApp
+from empower.core.app import DEFAULT_PERIOD
 
 
-class HelloWorld(EApp):
-    """Hello world app.
+class HelloWorld(EmpowerApp):
+    """HelloWorld App.
 
-    This app simply prints to screen the message: "Hello! World."
+    Command Line Parameters:
 
-    Parameters:
-        service_id: the service id as an UUID (mandatory)
-        project_id: the project id as an UUID (mandatory)
-        message: the message to be printed (optional, default "World")
-        every: the loop period in ms (optional, default 2000ms)
+        tenant_id: tenant id
+        every: loop period in ms (optional, default 5000ms)
 
     Example:
-        POST /api/v1/projects/52313ecb-9d00-4b7d-b873-b55d3d9ada26/apps
-        {
-            "name": "empower.apps.helloworld.helloworld",
-            "params": {
-                "message": "Bob",
-                "every": 2000
-            }
-        }
+
+        ./empower-runtime.py apps.helloworld.helloworld \
+            --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
     """
 
-    def __eq__(self, other):
-        if isinstance(other, HelloWorld):
-            return self.message == other.message and self.every == other.every
-        return False
+    def __init__(self, **kwargs):
+        self.__message = None
+        super().__init__(**kwargs)
+
+    def loop(self):
+        """Periodic job."""
+
+        print("Message: %s." % self.message)
 
     @property
     def message(self):
         """Return message."""
 
-        return self.params["message"]
+        return self.__message
 
     @message.setter
     def message(self, value):
         """Set message."""
 
-        self.params["message"] = value
-
-    def loop(self):
-        """Periodic job."""
-
-        print("Hello! %s." % self.message)
+        self.__message = value
 
 
-def launch(context, service_id, message="World", every=EVERY):
+def launch(tenant_id, message="Hello World!", every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
-    return HelloWorld(context=context, service_id=service_id,
-                      message=message, every=every)
+    return HelloWorld(tenant_id=tenant_id, message=message, every=every)

@@ -1,0 +1,18 @@
+{
+  "0x10": {
+    "quantum": 12000,
+    "amsdu_aggregation": true,
+    "scheduler": 0,
+    "type": "best_effort",
+    "service": "iperf3",
+    "description": "Best Effort throughput slice"
+  },
+  "0x20": {
+    "quantum": 12000,
+    "amsdu_aggregation": false,
+    "scheduler": 0,
+    "type": "low_latency",
+    "service": "icmp",
+    "description": "Low-latency slice"
+  }
+}

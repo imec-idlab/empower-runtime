@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>5G-EmPOWER</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="/static/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/vendor/bootstrap-switch-master/dist/css/bootstrap-switch.min.css" rel="stylesheet">
+
+    <!-- MetisMenu CSS -->
+    <link href="/static/vendor/metisMenu/metisMenu.min.css" rel="stylesheet">
+
+    <!-- DataTables CSS -->
+    <link href="/static/vendor/datatables-plugins/dataTables.bootstrap.css" rel="stylesheet">
+
+    <!-- DataTables Responsive CSS -->
+    <link href="/static/vendor/datatables-responsive/dataTables.responsive.css" rel="stylesheet">
+
+    <!-- MorrisChart CSS -->
+    <link href="/static/vendor/morrisjs/morris.css" rel="stylesheet" >
+
+    <!-- Custom CSS -->
+    <link href="/static/dist/css/sb-admin-2.css" rel="stylesheet">
+    <link href="/static/empower/css/empower.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="/static/vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+
+
+    <style>
+    .navbar-brand>img {
+        height: 100%;
+        width: auto;
+    }
+
+    .navbar-nav.navbar-center {
+        position: absolute;
+        left: 50%;
+        transform: translatex(-50%);
+    }
+
+    table.dataTable tbody>tr.selected, table.dataTable tbody>tr>.selected {
+        background-color: #d9edf7;
+    }
+
+    /* KUDOS TO:  https://stackoverflow.com/users/27862/user123444555621 */
+    pre {outline: 1px solid #ccc; padding: 5px; margin: 5px; }
+    .string { color: green; }
+    .number { color: darkorange; }
+    .boolean { color: red; }
+    .null { color: magenta; }
+    .key { color: blue; }
+
+
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body>
+
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation" style="margin-bottom: 0px; height: 50px"
+        id="navbar">
+    </nav>
+
+    <div  id="wrapper" position="fixed" style="width:99%; margin:65px 0px 10px 0px">
+        <div id="adminpage">
+        </div>
+        <div id="userpage">
+        </div>
+    </div>
+
+    <div id="footer">
+    </div>
+
+    <!-- jQuery -->
+    <script src="/static/vendor/jquery/jquery.min.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/static/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/static/vendor/bootstrap-switch-master/dist/js/bootstrap-switch.min.js"></script>
+
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="/static/vendor/metisMenu/metisMenu.min.js"></script>
+
+    <!-- DataTables JavaScript -->
+    <script src="/static/vendor/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="/static/vendor/datatables-plugins/dataTables.bootstrap.min.js"></script>
+    <script src="/static/vendor/datatables-responsive/dataTables.responsive.js"></script>
+
+    <!-- Graph JavaScript -->
+    <script src="/static/vendor/raphael/raphael.min.js"></script>
+    <script src="/static/vendor/morrisjs/morris.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="/static/dist/js/sb-admin-2.js"></script>
+
+    <script src="/static/empower/js/empower.config.js"></script>
+    <script src="/static/empower/js/empower.descriptor.js"></script>
+    <script src="/static/empower/js/empower.hbuilder.js"></script>
+    <script src="/static/empower/js/empower.queryengine.js"></script>
+    <script src="/static/empower/js/empower.cache.js"></script>
+    <script src="/static/empower/js/empower.collapsepanel.js"></script>
+    <script src="/static/empower/js/empower.staticscripts.js"></script>
+    <script src="/static/empower/js/empower.formatfunctions.datatable.js"></script>
+    <script src="/static/empower/js/empower.formatfunctions.modal.js"></script>
+    <script src="/static/empower/js/empower.validationfunctions.js"></script>
+    <script src="/static/empower/js/empower.floatingnavmenu.js"></script>
+    <script src="/static/empower/js/empower.adminpage.js"></script>
+    <script src="/static/empower/js/empower.userpage.js"></script>
+    <script src="/static/empower/js/empower.modalbox.js"></script>
+    <script src="/static/empower/js/empower.modalbox.addpanel.js"></script>
+    <script src="/static/empower/js/empower.modalbox.batchpanel.js"></script>
+    <script src="/static/empower/js/empower.modalbox.showallpanel.js"></script>
+    <script src="/static/empower/js/empower.modalbox.updatepanel.js"></script>
+    <script src="/static/empower/js/empower.modalbox.slicepanel.js"></script>
+
+    <script src="/static/empower/js/empower.badgebox.js"></script>
+    <script src="/static/empower/js/empower.badge.js"></script>
+    <script src="/static/empower/js/empower.tenantbadge.js"></script>
+    <script src="/static/empower/js/empower.datatablebox.js"></script>
+    <script src="/static/empower/js/empower.datatable.js"></script>
+    <script src="/static/empower/js/empower.buttonbox.js"></script>
+    <script src="/static/empower/js/empower.button.js"></script>
+    <script src="/static/empower/js/empower.netgraphbox.js"></script>
+    <script src="/static/empower/js/empower.netgraph.js"></script>
+
+
+    <script>
+
+        const __ROLE = "{{role}}";
+        const __USERNAME = "{{username}}";
+
+        document.title = '5G-EmPOWER - ' + __USERNAME + ' ( ' + (__ROLE==='user'? ' U )':' A )' );
+
+		var __HB = new HBuilder(__EMP_CONFIG_JSON);
+		var __QE = new EmpQueryEngine( __USERNAME, "{{password}}", __ROLE );
+        var __DESC = new EmpDescriptor();
+		var __CACHE = new EmpCache(__HB, __QE);
+
+		var __DELAY = 2000;
+
+        var RED = "#AF0000";
+        var GREEN = "#00AF00";
+        var YELLOW = "#DCDC00";
+        var BLUE = "#0000AF"
+        var PRIMARY = "#337ab7"
+        var ADMIN = "#04579E"
+        var USER = "#3884B9"
+
+        if( __ROLE ==='user' ){
+            var ap = new EmpUserPage();
+            ap.initUserPage();
+        }
+        else{
+        var ap = new EmpAdminPage();
+        ap.initAdminPage();
+        }
+
+        window.addEventListener("beforeunload", function(event) {
+          event.returnValue = "You may have unsaved Data";
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,279 +1,75 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2019 Estefania Coronado
+# Copyright (c) 2017, Estefanía Coronado
+# All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#    * Neither the name of the CREATE-NET nor the
+#      names of its contributors may be used to endorse or promote products
+#      derived from this software without specific prior written permission.
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations
-# under the License.
+# THIS SOFTWARE IS PROVIDED BY CREATE-NET ''AS IS'' AND ANY
+# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL CREATE-NET BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""SDN@Play Multicast Manager."""
+"""Simple multicast management app."""
 
+from empower.core.app import EmpowerApp
+from empower.core.resourcepool import BT_HT20
+from empower.core.transmissionpolicy import TX_MCAST
+from empower.core.transmissionpolicy import TX_MCAST_DMS
+from empower.core.transmissionpolicy import TX_MCAST_LEGACY
+from empower.datatypes.etheraddress import EtherAddress
 import sys
 
-import empower.managers.apimanager.apimanager as apimanager
-
-from empower.managers.ranmanager.lvapp.wifiapp import EWApp
-from empower.core.app import EVERY
-from empower.core.etheraddress import EtherAddress
-from empower.managers.ranmanager.lvapp.txpolicy import TxPolicy
-from empower.managers.ranmanager.lvapp.txpolicy import TX_MCAST
-from empower.managers.ranmanager.lvapp.txpolicy import TX_MCAST_DMS
-from empower.managers.ranmanager.lvapp.txpolicy import TX_MCAST_LEGACY
-from empower.managers.ranmanager.lvapp.resourcepool import BT_HT20
-
 TX_MCAST_SDNPLAY = 0x3
-TX_MCAST_SDNPLAY_H = "sdn@play"
+TX_MCAST_SDNPLAY_H = "sdnplay"
 
 
-# pylint: disable=W0223
-class McastServicesHandler(apimanager.EmpowerAPIHandler):
-    """Access applications' attributes."""
+class MCastManager(EmpowerApp):
+    """Multicast app with rate adaptation support.
 
-    URLS = [r"/api/v1/projects/([a-zA-Z0-9-]*)/apps/([a-zA-Z0-9-]*)/"
-            "mcast_services/([a-zA-Z0-9:]*)/?",
-            r"/api/v1/projects/([a-zA-Z0-9-]*)/apps/([a-zA-Z0-9-]*)/"
-            "mcast_services/?"]
+    Command Line Parameters:
 
-    @apimanager.validate(min_args=2, max_args=3)
-    def get(self, *args, **kwargs):
-        """Access the mcast_services .
-
-        Args:
-
-            [0]: the project id (mandatory)
-            [1]: the app id (mandatory)
-            [3]: the mcast service MAC address (optional)
-
-        Example URLs:
-
-            GET /api/v1/projects/52313ecb-9d00-4b7d-b873-b55d3d9ada26/apps/
-                mcast_services/01:00:5E:00:01:C8
-
-            {
-                addr: "01:00:5E:00:01:C8",
-                ipaddress: "224.0.1.200",
-                mcs: 0,
-                schedule: [
-                    1,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0,
-                    0
-                ],
-                receivers: [
-                    "FF:FF:FF:FF:FF:FF"
-                ],
-                status: "true",
-                service_type: "emergency"
-            }
-        """
-
-        if len(args) == 2:
-            return self.service.mcast_services
-
-        return self.service.mcast_services[EtherAddress(args[2])]
-
-    @apimanager.validate(returncode=201, min_args=2, max_args=2)
-    def post(self, *args, **kwargs):
-        """Add/update a new mcast service
-
-        Args:
-
-            [0]: the project id (mandatory)
-            [1]: the app id (mandatory)
-
-        Request:
-
-            version: protocol version (1.0)
-            ipaddress: the mcast IP address
-            receivers: the list of mcast receptors
-            status: the service status
-            service_type: a label describing the service
-
-        Example URLs:
-
-            POST /api/v1/projects/52313ecb-9d00-4b7d-b873-b55d3d9ada26/apps/
-                7069c865-8849-4840-9d96-e028663a5dcf/mcast_service
-
-            {
-                "ipaddress": "224.0.1.200",
-                "receivers": ["ff:ff:ff:ff:ff:ff"],
-                "status": "true",
-                "service_type": "emergency"
-            }
-        """
-
-        addr = self.service.upsert_mcast_service(kwargs['ipaddress'],
-                                                 kwargs['receivers'],
-                                                 kwargs['status'],
-                                                 kwargs['service_type'])
-
-        self.service.save_service_state()
-
-        url = "/api/v1/projects/%s/apps/%s/mcast_service/%s" % \
-            (self.service.context.project_id, self.service.service_id, addr)
-
-        self.set_header("Location", url)
-
-    @apimanager.validate(min_args=3, max_args=3)
-    def delete(self, *args, **kwargs):
-        """Delete the mcast_services .
-
-        Args:
-
-            [0]: the project id (mandatory)
-            [1]: the app id (mandatory)
-            [3]: the mcast service MAC address (mandatory)
-
-        Example URLs:
-
-            DELETE /api/v1/projects/52313ecb-9d00-4b7d-b873-b55d3d9ada26/apps/
-                mcast_services/01:00:5E:00:01:C8
-        """
-
-        self.service.delete_mcast_service(EtherAddress(args[2]))
-        self.service.save_service_state()
-
-
-class Mcast(EWApp):
-    """SDN@Play Multicast Manager.
-
-    This app implements the SDN@Play [1] algorithm.
-
-    [1] Estefania Coronado, Elisenda Temprado Garriga, Jose Villalon, Antonio
-    Garrido, Leonardo Goratti, Roberto Riggio, "SDN@Play: Software-Defined
-    Multicasting in Enterprise WLANs", in IEEE Communications Magazine,
-    vol. 57, no. 7, pp. 85-91, July 2019.
-
-    Parameters:
-        service_id: the application id as an UUID (mandatory)
-        project_id: the project id as an UUID (mandatory)
-        every: the loop period in ms (optional, default 2000ms)
+        period: loop period in ms (optional, default 5000ms)
 
     Example:
-        POST /api/v1/projects/52313ecb-9d00-4b7d-b873-b55d3d9ada26/apps
-        {
-            "name": "empower.apps.mcast.mcast",
-            "params": {
-                "every": 2000
-            }
-        }
+
+        ./empower-runtime.py apps.mcast.mcast \
+            --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada00
+
     """
 
-    HANDLERS = [McastServicesHandler]
+    def __init__(self, **kwargs):
 
-    def __init__(self, context, service_id, every=EVERY):
+        super().__init__(**kwargs)
 
-        super().__init__(context=context, service_id=service_id, every=every)
-
+        # app parameters
         self.receptors = {}
         self.receptors_mcses = {}
         self.receptors_quality = {}
         self.prob_threshold = 90.0
+        self.mcast_addr = EtherAddress("01:00:5e:00:c8:dd")
         self.current = 0
         self.dms = 1
         self.legacy = 9
-        self.schedule = \
-            [TX_MCAST_DMS] * self.dms + \
-            [TX_MCAST_LEGACY] * self.legacy  # --> [DMS, LEGACY, LEGACY...]
+        self.schedule = [TX_MCAST_DMS] * self.dms + \
+            [TX_MCAST_LEGACY] * self.legacy
         self._demo_mode = TX_MCAST_SDNPLAY_H
-        self._services_registered = 0
         self.status = {}
-        self.storage['mcast_services'] = {}
-
-    def upsert_mcast_service(self, ipaddress, receivers, status, service_type):
-        """Update/insert new mcast services.
-
-        Expected input:
-
-        {
-            "ip": "224.0.1.200",
-            "receivers": ["ff:ff:ff:ff:ff:ff"],
-            "status": True,
-            "type": "emergency"
-        }
-        """
-
-        addr = self.mcast_ip_to_ether(ipaddress)
-
-        if addr not in self.mcast_services:
-
-            schedule = self.schedule[-self._services_registered:] + \
-                    self.schedule[:-self._services_registered]
-
-            self.mcast_services[addr] = {
-                "addr": addr,
-                "ipaddress": ipaddress,
-                "mcs": 6,
-                "schedule": schedule,
-                "receivers": [EtherAddress(x) for x in receivers],
-                "status": status,
-                "service_type": service_type
-            }
-
-            self._services_registered += 1
-
-        else:
-
-            self.mcast_services[addr]["receivers"] = \
-                [EtherAddress(x) for x in receivers]
-            self.mcast_services[addr]["status"] = status
-            self.mcast_services[addr]["service_type"] = service_type
-
-        return addr
-
-    def delete_mcast_service(self, addr):
-        """Delete an mcast service."""
-
-        if addr in self.mcast_services:
-            del self.mcast_services[addr]
-
-    @property
-    def mcast_services(self):
-        """Get the list of active mcast services."""
-
-        return self.storage['mcast_services']
-
-    @mcast_services.setter
-    def mcast_services(self, services):
-        """Set the list of mcast services.
-
-        Notice that this setter expects to receive the full list of services
-        which is then parsed and saved locally.
-
-        The following format is expected
-
-        {
-            "ff:ff:ff:ff:ff:ff": {
-                "ip": "224.0.1.200",
-                "receivers": ["ff:ff:ff:ff:ff:ff"],
-                "status": True,
-                "type": "emergency"
-            }
-        }
-        """
-
-        self.storage['mcast_services'] = {}
-
-        for service in services.values():
-            self.upsert_mcast_service(service['ipaddress'],
-                                      service['receivers'],
-                                      service['status'],
-                                      service['service_type'])
 
     @property
     def demo_mode(self):
@@ -282,44 +78,34 @@ class Mcast(EWApp):
         return self._demo_mode
 
     @demo_mode.setter
-    def demo_mode(self, mode):
+    def demo_mode(self, demo_mode):
         """Set the demo mode."""
 
-        self._demo_mode = mode
+        self._demo_mode = demo_mode
 
-        for addr, entry in self.mcast_services.items():
+        # if the demo is not SDN@Play, the tx policy should be ignored
+        for block in self.blocks():
+            # fetch txp
+            txp = block.tx_policies[self.mcast_addr]
+            if demo_mode == TX_MCAST[TX_MCAST_DMS]:
+                txp.mcast = TX_MCAST_DMS
+            elif demo_mode == TX_MCAST[TX_MCAST_LEGACY]:
+                txp.mcast = TX_MCAST_LEGACY
+                mcs_type = BT_HT20
+                if mcs_type == BT_HT20:
+                    txp.ht_mcs = [min(block.ht_supports)]
+                else:
+                    txp.mcs = [min(block.supports)]
 
-            phase = self.get_next_group_phase(addr)
-
-            self.log.info("Mcast phase %s for group %s", TX_MCAST[phase], addr)
-
-            for block in self.blocks():
-
-                # fetch txp
-                txp = block.tx_policies[addr]
-
-                if mode == TX_MCAST[TX_MCAST_DMS]:
-
-                    txp.mcast = TX_MCAST_DMS
-
-                elif mode == TX_MCAST[TX_MCAST_LEGACY]:
-
-                    txp.mcast = TX_MCAST_LEGACY
-
-                    if block.band == BT_HT20:
-                        txp.ht_mcs = [min(block.ht_supports)]
-                    else:
-                        txp.mcs = [min(block.supports)]
-
-            if mode != TX_MCAST_SDNPLAY_H:
-                entry['mcs'] = "None"
+        if demo_mode != TX_MCAST_DMSPLAY_H:
+            self.status['MCS'] = "None"
+            self.status['Phase'] = "None"
 
     def lvap_join(self, lvap):
         """Called when an LVAP joins a tenant."""
 
-        service = "empower.apps.wifircstats.wifircstats"
         self.receptors[lvap.addr] = \
-            self.register_service(service, sta=lvap.addr)
+            self.lvap_stats(lvap=lvap.addr, every=self.every)
 
     def lvap_leave(self, lvap):
         """Called when an LVAP leaves the network."""
@@ -334,98 +120,66 @@ class Mcast(EWApp):
             del self.receptors_quality[lvap.addr]
 
     def compute_receptors_mcs(self):
-        """New stats available."""
+        """ New stats available. """
 
-        for rcstats in self.receptors.values():
-
+        for value in self.receptors.values():
             highest_prob = 0
+            information = value.to_dict()
 
-            sta = rcstats.sta
-            keys = [float(i) for i in rcstats.rates.keys()]
+            if not information["rates"]:
+                continue
+
+            lvap = information["lvap"]
+            keys = [float(i) for i in information["rates"].keys()]
             best_mcs = min(list(map(int, keys)))
 
-            self.receptors_mcses[sta] = []
+            if lvap in self.receptors_mcses:
+                del self.receptors_mcses[lvap]
 
-            for mcs, stats in rcstats.rates.items():
+            self.receptors_mcses[lvap] = []
+
+            for mcs, stats in information["rates"].items():
                 if stats["prob"] >= self.prob_threshold:
-                    self.receptors_mcses[sta].append(int(float(mcs)))
+                    self.receptors_mcses[lvap].append(int(float(mcs)))
                 elif stats["prob"] > highest_prob:
                     best_mcs = int(float(mcs))
                     highest_prob = stats["prob"]
 
-            if not self.receptors_mcses[sta]:
-                self.receptors_quality[sta] = False
-                self.receptors_mcses[sta].append(best_mcs)
+            if not self.receptors_mcses[lvap]:
+                self.receptors_quality[lvap] = False
+                self.receptors_mcses[lvap].append(best_mcs)
             else:
-                self.receptors_quality[sta] = True
+                self.receptors_quality[lvap] = True
 
-    def calculate_group_mcs(self, group_receivers):
-        """Compute group MCS magic."""
+    def calculate_mcs(self):
 
         self.compute_receptors_mcs()
-
         if not self.receptors_mcses:
             return 0
 
         if False not in self.receptors_quality.values():
             mcses = []
-            for lvap, rates in self.receptors_mcses.items():
-                if lvap in group_receivers:
-                    mcses.append(rates)
+            for rates in self.receptors_mcses.values():
+                mcses.append(rates)
 
-            if mcses:
-                mcs_intersection = list(set.intersection(*map(set, mcses)))
-                if mcs_intersection:
-                    mcs = max(mcs_intersection)
-                    return mcs
+            mcs_intersection = list(set.intersection(*map(set, mcses)))
+            if mcs_intersection:
+                mcs = max(mcs_intersection)
+                return mcs
 
         mcs = sys.maxsize
-
-        for lvap, rates in self.receptors_mcses.items():
-            if lvap in group_receivers:
-                mcs = min(max(rates), mcs)
-
-        if mcs == sys.maxsize:
-            mcs = 0
+        for rates in self.receptors_mcses.values():
+            mcs = min(max(rates), mcs)
 
         return mcs
 
-    def get_next_group_phase(self, mcast_addr):
+    def get_next_phase(self):
         """Get next mcast phase to be scheduled."""
 
-        self.mcast_services[mcast_addr]["schedule"] = \
-            self.mcast_services[mcast_addr]["schedule"][1:] + \
-            [self.mcast_services[mcast_addr]["schedule"][0]]
-
-        phase = self.mcast_services[mcast_addr]["schedule"][0]
+        phase = self.schedule[self.current % len(self.schedule)]
+        self.current += 1
 
         return phase
-
-    @classmethod
-    def mcast_ip_to_ether(cls, ip_mcast_addr):
-        """Transform an IP multicast address into an Ethernet one."""
-
-        if ip_mcast_addr is None:
-            return '\x00' * 6
-
-        # The first 24 bits are fixed according to class D IP
-        # and IP multicast address convenctions
-        mcast_base = '01:00:5e'
-
-        # The 23 low order bits are mapped.
-        ip_addr_bytes = str(ip_mcast_addr).split('.')
-
-        # The first IP byte is not use,
-        # and only the last 7 bits of the second byte are used.
-        second_byte = int(ip_addr_bytes[1]) & 127
-        third_byte = int(ip_addr_bytes[2])
-        fourth_byte = int(ip_addr_bytes[3])
-
-        mcast_upper = format(second_byte, '02x') + ':' + \
-            format(third_byte, '02x') + ':' + \
-            format(fourth_byte, '02x')
-
-        return EtherAddress(mcast_base + ':' + mcast_upper)
 
     def loop(self):
         """ Periodic job. """
@@ -433,69 +187,67 @@ class Mcast(EWApp):
         # if the demo is now in DMS it should not calculate anything
         if self.demo_mode == TX_MCAST[TX_MCAST_DMS] or \
            self.demo_mode == TX_MCAST[TX_MCAST_LEGACY]:
-
             return
 
-        for block in self.blocks():
-
-            for addr, entry in self.mcast_services.items():
-
-                phase = self.get_next_group_phase(addr)
-
-                self.log.info("Mcast phase %s for group %s",
-                              TX_MCAST[phase], addr)
-
+        # if there are no clients the mode should be dms
+        if not self.receptors:
+            for block in self.blocks():
                 # fetch txp
-                if addr not in block.tx_policies:
-                    block.tx_policies[addr] = TxPolicy(addr, block)
+                txp = block.tx_policies[self.mcast_addr]
 
-                txp = block.tx_policies[addr]
-
-                # If the service is disabled, DMS must be the multicast mode
-                if entry["status"] is False:
-                    txp.mcast = TX_MCAST_DMS
+                if txp.mcast == TX_MCAST_DMS:
                     continue
 
-                if phase == TX_MCAST_DMS:
+                txp.mcast = TX_MCAST_DMS
 
-                    txp.mcast = TX_MCAST_DMS
 
+        phase = self.get_next_phase()
+        self.log.info("Mcast phase %s", TX_MCAST[phase])
+
+        for block in self.blocks():
+            # fetch txp
+            txp = block.tx_policies[self.mcast_addr]
+
+            if phase == TX_MCAST_DMS:
+                txp.mcast = TX_MCAST_DMS
+            else:
+                # legacy period
+                mcs_type = BT_HT20
+
+                # compute MCS
+                mcs = max(self.calculate_mcs(), min(block.supports))
+                self.status['MCS'] = mcs
+                txp.mcast = TX_MCAST_LEGACY
+
+                if mcs_type == BT_HT20:
+                    txp.ht_mcs = [mcs]
                 else:
+                    txp.mcs = [mcs]
 
-                    # compute MCS
-                    temp_mcs = self.calculate_group_mcs(entry["receivers"])
+                # assign MCS
+                self.log.info("Block %s setting mcast address %s to %s MCS %d",
+                              block, self.mcast_addr, TX_MCAST[TX_MCAST_DMS], mcs)
 
-                    if block.band == BT_HT20:
-                        mcs = max(temp_mcs, min(block.ht_supports))
-                    else:
-                        mcs = max(temp_mcs, min(block.supports))
-
-                    entry['mcs'] = mcs
-                    txp.mcast = TX_MCAST_LEGACY
-
-                    if block.band == BT_HT20:
-                        txp.ht_mcs = [mcs]
-                    else:
-                        txp.mcs = [mcs]
-
-                    # assign MCS
-                    self.log.info("Block %s setting mcast %s to %s MCS %d",
-                                  block, addr, TX_MCAST[TX_MCAST_DMS], mcs)
+            self.status['Phase'] = TX_MCAST[phase]
 
     def to_dict(self):
         """ Return a JSON-serializable."""
 
         out = super().to_dict()
 
-        out['demo_mode'] = self.demo_mode
-        out['status'] = self.status
-        out['schedule'] = [TX_MCAST[x] for x in self.schedule]
-        out['mcast_services'] = self.mcast_services
+        out['Demo_mode'] = self.demo_mode
+        out['SDN@Play parameters'] = \
+            {str(k): v for k, v in self.status.items()}
+        out['Phases_schedule'] = [TX_MCAST[x] for x in self.schedule]
+        out['Receptors'] = \
+            {str(k): v for k, v in self.receptors.items()}
+        out['Status'] = \
+            {str(k): v for k, v in self.status.items()}
 
         return out
 
 
-def launch(context, service_id, every=EVERY):
+def launch(tenant_id, every=1000):
     """ Initialize the module. """
 
-    return Mcast(context=context, service_id=service_id, every=every)
+    return MCastManager(tenant_id=tenant_id, every=every)

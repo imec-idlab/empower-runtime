@@ -1,0 +1,13 @@
+{
+  "1C:36:BB:1D:0F:12": {
+    "hostname": "NelsonLaptop",
+    "ip_addr": "192.168.2.54",
+    "metrics": {
+      "latency": 10,
+      "throughput" : null
+    },
+    "tx_policy": {
+      "no_ack": false
+    }
+  }
+}

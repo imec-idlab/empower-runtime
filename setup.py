@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2019 Roberto Riggio
+# Copyright (c) 2016 Roberto Riggio
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,13 +17,13 @@
 
 """Setup script."""
 
-from setuptools import setup, find_packages
+from distutils.core import setup
 
 setup(name="empower-runtime",
       version="1.0",
-      description="5G-EmPOWER Runtime",
+      description="EmPOWER Runtime",
       author="Roberto Riggio",
-      author_email="rriggio@fbk.eu",
-      url="http://5g-empower.io/",
-      long_description="The 5G-EmPOWER Mobile Network Operating System",
-      packages=find_packages())
+      author_email="roberto.riggio@create-net.org",
+      url="https://github.com/5g-empower/empower-runtime",
+      long_description="EmPOWER is an SDN/NFV framework for Enterprise WLANs",
+      packages=['empower'])
