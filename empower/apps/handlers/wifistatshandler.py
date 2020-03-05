@@ -35,8 +35,7 @@ class WiFiStatsHandler(EmpowerApp):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.__wifi_stats_handler = {'network_channel_quality_map': {},
-                                     'user_channel_quality_map': {}}
+        self.__wifi_stats_handler = {'wtps': {}}
 
     def loop(self):
         """Periodic job."""
@@ -51,11 +50,21 @@ class WiFiStatsHandler(EmpowerApp):
 
     def ncqm_stats_callback(self, ncqm_stats):
         """ New stats available. """
-        self.__wifi_stats_handler['network_channel_quality_map'] = ncqm_stats
+        crr_wtp_addr = str(ncqm_stats.to_dict()['block']['addr'])
+        if crr_wtp_addr is not None:
+            if crr_wtp_addr not in self.__wifi_stats_handler['wtps']:
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr] = {}
+
+            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['network_channel_quality_map'] = ncqm_stats
 
     def ucqm_stats_callback(self, ucqm_stats):
         """ New stats available. """
-        self.__wifi_stats_handler['user_channel_quality_map'] = ucqm_stats
+        crr_wtp_addr = str(ucqm_stats.to_dict()['block']['addr'])
+        if crr_wtp_addr is not None:
+            if crr_wtp_addr not in self.__wifi_stats_handler['wtps']:
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr] = {}
+
+            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['user_channel_quality_map'] = ucqm_stats
 
     @property
     def wifi_stats_handler(self):
