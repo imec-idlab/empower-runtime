@@ -154,7 +154,7 @@ class SliceStatsHandler(EmpowerApp):
                             record_to_insert = (
                                 str(wtp),
                                 str(dscp),
-                                'WTP: ' + str(wtp) + ' Slice: ' + str(dscp),
+                                'WTP: ' + str(wtp) + ' - Slice: ' + str(dscp),
                                 wtps[wtp][dscp]['deficit'],
                                 wtps[wtp][dscp]['deficit_avg'],
                                 wtps[wtp][dscp]['deficit_used'],
