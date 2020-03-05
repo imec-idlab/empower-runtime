@@ -15,21 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Bin Stats Handler App"""
+"""Bin Stats Handler APP"""
 
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
 
 
 class BinStatsHandler(EmpowerApp):
-    """Bin Stats Handler App
+    """Bin Stats Handler APP
 
     Command Line Parameters:
         tenant_id: tenant id
         every: loop period in ms (optional, default 5000ms)
 
     Example:
-        ./empower-runtime.py apps.BinStatsHandler.BinStatsHandler \
+        ./empower-runtime.py apps.binstatshandler.binstatshandler \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
     """
 

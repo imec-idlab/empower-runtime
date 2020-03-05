@@ -15,21 +15,21 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""WiFi Stats Handler App"""
+"""WiFi Stats Handler APP"""
 
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
 
 
 class WiFiStatsHandler(EmpowerApp):
-    """WiFi Stats Handler App
+    """WiFi Stats Handler APP
 
     Command Line Parameters:
         tenant_id: tenant id
         every: loop period in ms (optional, default 5000ms)
 
     Example:
-        ./empower-runtime.py apps.WiFiStatsHandler.WiFiStatsHandler \
+        ./empower-runtime.py apps.wifistatshandler.wifistatshandler \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
     """
 

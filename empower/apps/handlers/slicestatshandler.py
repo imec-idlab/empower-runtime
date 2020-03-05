@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Slice Stats Handler App"""
+"""Slice Stats Handler APP"""
 
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_MONITORING_PERIOD
@@ -26,7 +26,7 @@ import time
 
 
 class SliceStatsHandler(EmpowerApp):
-    """Slice Stats Handler App
+    """Slice Stats Handler APP
 
     Command Line Parameters:
         tenant_id: tenant id
