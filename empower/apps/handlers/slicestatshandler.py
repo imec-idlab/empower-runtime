@@ -150,10 +150,11 @@ class SliceStatsHandler(EmpowerApp):
                                                           database="empower")
                             cursor = connection.cursor()
 
-                            postgres_insert_query = """ INSERT INTO slice_stats (WTP, SLICE_DSCP, DEFICIT, DEFICIT_AVG, DEFICIT_USED, MAX_QUEUE_LENGTH, CURRENT_QUANTUM, QUEUE_DELAY_MSEC, TX_BYTES, TX_PACKETS, TX_MBITS, THROUGHPUT_MBPS, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                            postgres_insert_query = """ INSERT INTO slice_stats (WTP, SLICE_DSCP, WTP_DSCP, DEFICIT, DEFICIT_AVG, DEFICIT_USED, MAX_QUEUE_LENGTH, CURRENT_QUANTUM, QUEUE_DELAY_MSEC, TX_BYTES, TX_PACKETS, TX_MBITS, THROUGHPUT_MBPS, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                             record_to_insert = (
                                 str(wtp),
                                 str(dscp),
+                                'WTP: ' + str(wtp) + ' Slice: ' + str(dscp),
                                 wtps[wtp][dscp]['deficit'],
                                 wtps[wtp][dscp]['deficit_avg'],
                                 wtps[wtp][dscp]['deficit_used'],
