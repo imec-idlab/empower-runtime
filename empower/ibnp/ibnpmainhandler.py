@@ -209,14 +209,14 @@ class IBNPMainHandler(tornado.websocket.WebSocketHandler):
 
             for port in dp.network_ports.values():
 
-                if port.iface == 'eth0':
+                if port.iface == 'eth0' or port.iface == 'eth1':
                     src_port = port
 
                 if port.iface == 'empower0':
                     dst_port = port
 
             if not src_port:
-                raise KeyError('Cannot find the src network port \"eth0\"')
+                raise KeyError('Cannot find the src network port:', port.iface)
             if not dst_port:
                 raise KeyError('Cannot find the dst network port \"empower0\"')
 
