@@ -28,6 +28,8 @@ from construct import UBInt16
 from construct import UBInt32
 from construct import Array
 
+from datetime import datetime
+
 from empower.datatypes.etheraddress import EtherAddress
 from empower.lvapp.lvappserver import ModuleLVAPPWorker
 from empower.core.module import ModulePeriodic
@@ -59,7 +61,6 @@ STATS_RESPONSE = \
            Bytes("sta", 6),
            UBInt16("nb_tx"),
            UBInt16("nb_rx"),
-           UBInt16("latency"),
            Array(lambda ctx: ctx.nb_tx + ctx.nb_rx, STATS))
 
 
@@ -95,7 +96,6 @@ class BinCounter(ModulePeriodic):
         self._bins = [8192]
 
         # data structures
-        self.latency = None
         self.tx_packets = []
         self.rx_packets = []
         self.tx_bytes = []
@@ -106,6 +106,7 @@ class BinCounter(ModulePeriodic):
         self.rx_bytes_per_second = []
 
         self.last = None
+        self.timestamp = None
 
     def __eq__(self, other):
 
@@ -158,7 +159,6 @@ class BinCounter(ModulePeriodic):
 
         out['bins'] = self.bins
         out['lvap'] = self.lvap
-        out['latency'] = self.latency
         out['tx_bytes'] = self.tx_bytes
         out['rx_bytes'] = self.rx_bytes
         out['tx_packets'] = self.tx_packets
@@ -280,9 +280,8 @@ class BinCounter(ModulePeriodic):
             None
         """
 
-        self.latency = response.latency
-
         # update this object
+
         tx_samples = response.stats[0:response.nb_tx]
         rx_samples = response.stats[response.nb_tx:-1]
 
@@ -309,7 +308,44 @@ class BinCounter(ModulePeriodic):
             self.rx_packets_per_second = \
                 self.update_stats(delta, old_rx_packets, self.rx_packets)
 
+        samples = []
+        timestamp = datetime.utcnow()
+        for index in range(0, len(self.bins)):
+
+            data = {
+                'tx_bytes': self.tx_bytes[index],
+                'rx_bytes': self.rx_bytes[index],
+                'tx_packets': self.tx_packets[index],
+                'rx_packets': self.rx_packets[index]
+            }
+            if self.last:
+                data = {**data,
+                        'tx_bytes_per_second':
+                            self.tx_bytes_per_second[index],
+                        'rx_bytes_per_second':
+                            self.rx_bytes_per_second[index],
+                        'tx_packets_per_second':
+                            self.tx_packets_per_second[index],
+                        'rx_packets_per_second':
+                            self.rx_packets_per_second[index],
+                        }
+
+            sample = {
+                "measurement": "counter",
+                "tags": {
+                    "tenant": str(self.tenant_id),
+                    "lvap": str(self.lvap),
+                    "bin": self.bins[index]
+                },
+                "time": timestamp,
+                "fields": data
+            }
+            samples.append(sample)
+
+        # self.update_db(samples)
+
         self.last = time.time()
+        self.timestamp = datetime.utcnow()
 
         # call callback
         self.handle_callback(self)
