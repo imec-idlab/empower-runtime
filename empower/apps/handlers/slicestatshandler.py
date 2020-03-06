@@ -33,7 +33,7 @@ class SliceStatsHandler(EmpowerApp):
         every: loop period in ms (optional, default 5000ms)
 
     Example:
-        ./empower-runtime.py apps.slicestatshandler.slicestatshandler \
+        ./empower-runtime.py apps.handlers.slicestatshandler.slicestatshandler \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
     """
 
