@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2019 Pedro Heleno Isolani
+# Copyright (c) 2020 Pedro Heleno Isolani
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ class SliceStatsHandler(EmpowerApp):
         every: loop period in ms (optional, default 5000ms)
 
     Example:
-        ./empower-runtime.py apps.handlers.slicestatshandler.slicestatshandler \
+        ./empower-runtime.py apps.handlers.slicestatshandler \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
     """
 
