@@ -98,7 +98,7 @@ class UCQMStatsHandler(EmpowerApp):
                                                           database="empower")
                             cursor = connection.cursor()
 
-                            postgres_insert_query = """ INSERT INTO ucqm_stats (ADDRESS, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
+                            postgres_insert_query = """ INSERT INTO ucqm_stats (ADDRESS, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, WTP_STA, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
                             record_to_insert = (
                                 str(sta),
                                 ucqm[sta]['hist_packets'],
@@ -106,6 +106,7 @@ class UCQMStatsHandler(EmpowerApp):
                                 ucqm[sta]['last_rssi_avg'],
                                 ucqm[sta]['last_rssi_std'],
                                 ucqm[sta]['mov_rssi'],
+                                "WTP: " + str(crr_wtp_addr) + " - STA: " + str(sta),
                                 crr_time_in_ms)
                             cursor.execute(postgres_insert_query, record_to_insert)
                             connection.commit()

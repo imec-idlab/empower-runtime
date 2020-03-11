@@ -127,7 +127,8 @@ CREATE TABLE public.ncqm_stats (
     last_rssi_avg integer,
     last_rssi_std integer,
     mov_rssi integer,
-    timestamp_ms bigint
+    timestamp_ms bigint,
+    wtp_ap text
 );
 
 
@@ -214,7 +215,8 @@ CREATE TABLE public.ucqm_stats (
     last_rssi_avg integer,
     last_rssi_std integer,
     mov_rssi integer,
-    timestamp_ms bigint
+    timestamp_ms bigint,
+    wtp_sta text
 );
 
 

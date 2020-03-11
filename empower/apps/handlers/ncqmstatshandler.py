@@ -99,7 +99,7 @@ class NCQMStatsHandler(EmpowerApp):
                                                           database="empower")
                             cursor = connection.cursor()
 
-                            postgres_insert_query = """ INSERT INTO ncqm_stats (ADDRESS, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s)"""
+                            postgres_insert_query = """ INSERT INTO ncqm_stats (ADDRESS, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, WTP_AP, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
                             record_to_insert = (
                                 str(unknown_wtp),
                                 ncqm[unknown_wtp]['hist_packets'],
@@ -107,6 +107,7 @@ class NCQMStatsHandler(EmpowerApp):
                                 ncqm[unknown_wtp]['last_rssi_avg'],
                                 ncqm[unknown_wtp]['last_rssi_std'],
                                 ncqm[unknown_wtp]['mov_rssi'],
+                                "WTP: " + str(crr_wtp_addr) + " - Unknown AP: " + str(unknown_wtp),
                                 crr_time_in_ms)
                             cursor.execute(postgres_insert_query, record_to_insert)
                             connection.commit()
