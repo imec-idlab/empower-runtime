@@ -84,8 +84,8 @@ class NCQMStatsHandler(EmpowerApp):
             if crr_wtp_addr not in self.__ncqm_stats_handler['wtps']:
                 self.__ncqm_stats_handler['wtps'][crr_wtp_addr] = {}
 
+            # TODO: reduce the amount of data in the JSON
             self.__ncqm_stats_handler['wtps'][crr_wtp_addr] = ncqm_stats.to_dict()
-
             if self.__db_monitor is not None:
                 if self.__db_user is not None and self.__db_pass is not None:
                     crr_time_in_ms = int(round(time.time()))
