@@ -45,7 +45,7 @@ class SliceStatsHandler(EmpowerApp):
         self.__slice_stats_handler = {'wtps': {}}
         self.__throughput_metrics = ['tx_bytes', 'tx_packets']
         self.__adwrr_metrics = ['deficit_used', 'deficit_avg', 'deficit']
-        self.__queue_metrics = ['queue_delay', 'max_queue_length']
+        self.__queue_metrics = ['queue_delay', 'max_queue_length', 'crr_queue_length']
         self.__all_metrics = self.__throughput_metrics + self.__adwrr_metrics + self.__queue_metrics
 
     def loop(self):
@@ -150,7 +150,7 @@ class SliceStatsHandler(EmpowerApp):
                                                           database="empower")
                             cursor = connection.cursor()
 
-                            postgres_insert_query = """ INSERT INTO slice_stats (WTP, SLICE_DSCP, WTP_DSCP, DEFICIT, DEFICIT_AVG, DEFICIT_USED, MAX_QUEUE_LENGTH, CURRENT_QUANTUM, QUEUE_DELAY_MSEC, TX_BYTES, TX_PACKETS, TX_MBITS, THROUGHPUT_MBPS, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+                            postgres_insert_query = """ INSERT INTO slice_stats (WTP, SLICE_DSCP, WTP_DSCP, DEFICIT, DEFICIT_AVG, DEFICIT_USED, MAX_QUEUE_LENGTH, CRR_QUEUE_LENGTH, CURRENT_QUANTUM, QUEUE_DELAY_MSEC, TX_BYTES, TX_PACKETS, TX_MBITS, THROUGHPUT_MBPS, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                             record_to_insert = (
                                 str(wtp),
                                 str(dscp),
@@ -159,6 +159,7 @@ class SliceStatsHandler(EmpowerApp):
                                 wtps[wtp][dscp]['deficit_avg'],
                                 wtps[wtp][dscp]['deficit_used'],
                                 wtps[wtp][dscp]['max_queue_length'],
+                                wtps[wtp][dscp]['crr_queue_length'],
                                 crr_default_quantum,
                                 queue_delay,
                                 wtps[wtp][dscp]['tx_bytes'],

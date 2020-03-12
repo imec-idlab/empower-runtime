@@ -59,6 +59,7 @@ SLICE_STATS_RESPONSE = \
            Bytes("wtp", 6),
            UBInt32("deficit_used"),
            UBInt32("max_queue_length"),
+           UBInt32("crr_queue_length"),
            UBInt32("tx_packets"),
            UBInt32("tx_bytes"),
            UBInt32("queue_delay"),
@@ -219,7 +220,8 @@ class SliceStats(ModulePeriodic):
             'queue_delay': response.queue_delay,
             'deficit_avg': response.deficit_avg,
             'deficit': response.deficit,
-            'max_queue_length': response.max_queue_length
+            'max_queue_length': response.max_queue_length,
+            'crr_queue_length': response.crr_queue_length
         }
 
         if self.tenant_id not in self.block.slice_stats:

@@ -78,7 +78,6 @@ class LVAPStatsHandler(EmpowerApp):
     def lvap_stats_callback(self, lvap_stats):
         """ New stats available. """
         crr_lvap_addr = str(lvap_stats.to_dict()['lvap'])
-        print(crr_lvap_addr)
         if crr_lvap_addr is not None:
             if crr_lvap_addr not in self.__lvap_stats_handler['lvaps']:
                 self.__lvap_stats_handler['lvaps'][crr_lvap_addr] = {}
