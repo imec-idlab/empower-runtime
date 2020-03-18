@@ -45,10 +45,8 @@ class HandoverManager(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-
         self.log.debug("Sandbox handover Manager APP loop...")
         # For all blocks in all APs
-
         for block in self.blocks():
             # If there is a static configuration in the map
             if str(block.addr) in self.__WTP_LVAP_map:
@@ -64,13 +62,11 @@ class HandoverManager(EmpowerApp):
     @property
     def every(self):
         """Return loop period."""
-
         return self.__every
 
     @every.setter
     def every(self, value):
         """Set loop period."""
-
         self.log.info("Setting control loop interval to %ums", int(value))
         self.__every = int(value)
         super().restart(self.__every)
