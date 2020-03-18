@@ -40,7 +40,7 @@ class LVAPStatsHandler(EmpowerApp):
         self.__db_monitor = self.db_monitor
         self.__db_user = self.db_user
         self.__db_pass = self.db_pass
-        self.__lvap_stats_handler = {'lvaps': {}}
+        self.__lvap_stats_handler = {'message': 'LVAP stats handler is online!', 'lvaps': {}}
 
     def loop(self):
         """Periodic job."""

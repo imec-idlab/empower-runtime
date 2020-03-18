@@ -110,7 +110,7 @@ class WiFiStatsHandler(EmpowerApp):
             if len(self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values']) > 10:
                 self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values'].pop(0)
 
-            if len(self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values']) > 2:
+            if len(self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values']) >= 2:
                 # Mean
                 self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization'][
                     'mean'] = statistics.mean(

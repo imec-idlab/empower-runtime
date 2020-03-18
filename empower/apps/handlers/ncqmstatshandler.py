@@ -40,7 +40,7 @@ class NCQMStatsHandler(EmpowerApp):
         self.__db_monitor = self.db_monitor
         self.__db_user = self.db_user
         self.__db_pass = self.db_pass
-        self.__ncqm_stats_handler = {"message": "NCQM stats handler is online!"}
+        self.__ncqm_stats_handler = {'message': 'NCQM stats handler is online!'}
 
     def wtp_up(self, wtp):
         for block in wtp.supports:

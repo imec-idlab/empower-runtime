@@ -44,7 +44,7 @@ class BinStatsHandler(EmpowerApp):
                               'rx_packets',
                               'tx_bytes',
                               'tx_packets']
-        self.__bin_stats_handler = {'lvaps': {}}
+        self.__bin_stats_handler = {'message': 'Bin stats handler is online!', 'lvaps': {}}
 
     def loop(self):
         """Periodic job."""

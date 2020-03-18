@@ -118,7 +118,7 @@ class UCQMStatsHandler(EmpowerApp):
                             'mov_rssi']['values'].pop(0)
 
                     if len(self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
-                               'mov_rssi']['values']) > 2:
+                               'mov_rssi']['values']) >= 2:
                         # Mean
                         self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
                             'mov_rssi']['mean'] = statistics.mean(

@@ -169,7 +169,7 @@ class SliceStatsHandler(EmpowerApp):
             if len(self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric]['values']) > 10:
                 self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric]['values'].pop(0)
 
-            if len(self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric]['values']) > 2:
+            if len(self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric]['values']) >= 2:
                 # Mean
                 self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric][
                     'mean'] = statistics.mean(
@@ -256,7 +256,7 @@ class SliceStatsHandler(EmpowerApp):
             if len(self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall'][metric]['values']) > 10:
                 self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall'][metric]['values'].pop(0)
 
-            if len(self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall'][metric]['values']) > 2:
+            if len(self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall'][metric]['values']) >= 2:
                 # Mean
                 self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall'][metric]['mean'] = statistics.mean(
                     self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall'][metric]['values'])
