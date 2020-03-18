@@ -40,17 +40,18 @@ class NCQMStatsHandler(EmpowerApp):
         self.__db_monitor = self.db_monitor
         self.__db_user = self.db_user
         self.__db_pass = self.db_pass
-        self.__ncqm_stats_handler = {'wtps': {}}
+        self.__ncqm_stats_handler = {"message": "NCQM stats handler is online!"}
+
+    def wtp_up(self, wtp):
+        for block in wtp.supports:
+            # Calling NCQM stats
+            self.ncqm(block=block,
+                      every=DEFAULT_PERIOD,
+                      callback=self.ncqm_stats_callback)
 
     def loop(self):
         """Periodic job."""
         self.log.debug('NCQM Stats Handler APP Loop...')
-        for wtp in self.wtps():
-            for block in wtp.supports:
-                # Calling wifi stats
-                self.ncqm(block=block,
-                          callback=self.ncqm_stats_callback)
-
         if self.__db_monitor is not None:
             self.keep_last_measurements_only()
 
@@ -79,18 +80,13 @@ class NCQMStatsHandler(EmpowerApp):
 
     def ncqm_stats_callback(self, ncqm_stats):
         """ New stats available. """
-        crr_wtp_addr = str(ncqm_stats.to_dict()['block']['addr'])
+        crr_wtp_addr = str(ncqm_stats.block.addr)
         if crr_wtp_addr is not None:
-            if crr_wtp_addr not in self.__ncqm_stats_handler['wtps']:
-                self.__ncqm_stats_handler['wtps'][crr_wtp_addr] = {}
-
-            # TODO: reduce the amount of data in the JSON
-            self.__ncqm_stats_handler['wtps'][crr_wtp_addr] = ncqm_stats.to_dict()
             if self.__db_monitor is not None:
                 if self.__db_user is not None and self.__db_pass is not None:
                     crr_time_in_ms = int(round(time.time()))
-                    ncqm = self.__ncqm_stats_handler['wtps'][crr_wtp_addr]['block']['ncqm']
-                    for unknown_wtp in ncqm:
+                    ncqm = ncqm_stats.block.ncqm
+                    for unknown_ap in ncqm:
                         try:
                             connection = psycopg2.connect(user=self.__db_user,
                                                           password=self.__db_pass,
@@ -99,15 +95,16 @@ class NCQMStatsHandler(EmpowerApp):
                                                           database="empower")
                             cursor = connection.cursor()
 
-                            postgres_insert_query = """ INSERT INTO ncqm_stats (ADDRESS, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, WTP_AP, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
+                            postgres_insert_query = """ INSERT INTO ncqm_stats (ADDRESS, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, UNKNOWN_AP, WTP_AP, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                             record_to_insert = (
-                                str(unknown_wtp),
-                                ncqm[unknown_wtp]['hist_packets'],
-                                ncqm[unknown_wtp]['last_packets'],
-                                ncqm[unknown_wtp]['last_rssi_avg'],
-                                ncqm[unknown_wtp]['last_rssi_std'],
-                                ncqm[unknown_wtp]['mov_rssi'],
-                                "WTP: " + str(crr_wtp_addr) + " - Unknown AP: " + str(unknown_wtp),
+                                crr_wtp_addr,
+                                ncqm[unknown_ap]['hist_packets'],
+                                ncqm[unknown_ap]['last_packets'],
+                                ncqm[unknown_ap]['last_rssi_avg'],
+                                ncqm[unknown_ap]['last_rssi_std'],
+                                ncqm[unknown_ap]['mov_rssi'],
+                                str(unknown_ap),
+                                "WTP: " + str(crr_wtp_addr) + " - Unknown AP: " + str(unknown_ap),
                                 crr_time_in_ms)
                             cursor.execute(postgres_insert_query, record_to_insert)
                             connection.commit()
@@ -121,7 +118,6 @@ class NCQMStatsHandler(EmpowerApp):
                             if (connection):
                                 cursor.close()
                                 connection.close()
-
 
     @property
     def ncqm_stats_handler(self):

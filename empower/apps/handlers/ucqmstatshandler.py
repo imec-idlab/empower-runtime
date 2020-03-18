@@ -19,8 +19,10 @@
 
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
+from empower.datatypes.etheraddress import EtherAddress
 import psycopg2
 import time
+import statistics
 
 
 class UCQMStatsHandler(EmpowerApp):
@@ -40,17 +42,18 @@ class UCQMStatsHandler(EmpowerApp):
         self.__db_monitor = self.db_monitor
         self.__db_user = self.db_user
         self.__db_pass = self.db_pass
-        self.__ucqm_stats_handler = {'wtps': {}}
+        self.__ucqm_stats_handler = {"message": "UCQM stats handler is online!", "wtps": {}}
+
+    def wtp_up(self, wtp):
+        for block in wtp.supports:
+            # Calling UCQM stats
+            self.ucqm(block=block,
+                      every=DEFAULT_PERIOD,
+                      callback=self.ucqm_stats_callback)
 
     def loop(self):
         """Periodic job."""
         self.log.debug('UCQM Stats Handler APP Loop...')
-        for wtp in self.wtps():
-            for block in wtp.supports:
-                # Calling wifi stats
-                self.ucqm(block=block,
-                          callback=self.ucqm_stats_callback)
-
         if self.__db_monitor is not None:
             self.keep_last_measurements_only()
 
@@ -79,17 +82,63 @@ class UCQMStatsHandler(EmpowerApp):
 
     def ucqm_stats_callback(self, ucqm_stats):
         """ New stats available. """
-        crr_wtp_addr = str(ucqm_stats.to_dict()['block']['addr'])
+        crr_wtp_addr = str(ucqm_stats.block.addr)
         if crr_wtp_addr is not None:
             if crr_wtp_addr not in self.__ucqm_stats_handler['wtps']:
-                self.__ucqm_stats_handler['wtps'][crr_wtp_addr] = {}
+                self.__ucqm_stats_handler['wtps'][crr_wtp_addr] = {'lvaps': {}}
 
-            # TODO: reduce the amount of data in the JSON
-            self.__ucqm_stats_handler['wtps'][crr_wtp_addr] = ucqm_stats.to_dict()
+            ucqm = ucqm_stats.block.ucqm
+            for sta in ucqm:
+                if self.lvap(EtherAddress(sta)) is not None:
+                    # This is a station of this tenant
+                    if str(sta) not in self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps']:
+                        self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)] = {
+                            'hist_packets': None,
+                            'last_packets': None,
+                            'mov_rssi': {
+                                "values": [],
+                                "mean": None,
+                                "median": None,
+                                "stdev": None
+                            }}
+
+                    # Hist and Last packets
+                    self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                        'hist_packets'] = ucqm[sta]['hist_packets']
+                    self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                        'last_packets'] = ucqm[sta]['last_packets']
+
+                    # RSSI moving window (last_rssi_avg and last_rssi_std not used here)
+                    self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)]['mov_rssi'][
+                        'values'].append(ucqm[sta]['mov_rssi'])
+
+                    if len(self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                               'mov_rssi']['values']) > 10:
+                        self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                            'mov_rssi']['values'].pop(0)
+
+                    if len(self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                               'mov_rssi']['values']) > 2:
+                        # Mean
+                        self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                            'mov_rssi']['mean'] = statistics.mean(
+                            self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                                'mov_rssi']['values'])
+                        # Median
+                        self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                            'mov_rssi']['median'] = statistics.median(
+                            self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                                'mov_rssi']['values'])
+
+                        # STDEV
+                        self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                            'mov_rssi']['stdev'] = statistics.stdev(
+                            self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][str(sta)][
+                                'mov_rssi']['values'])
+
             if self.__db_monitor is not None:
                 if self.__db_user is not None and self.__db_pass is not None:
                     crr_time_in_ms = int(round(time.time()))
-                    ucqm = self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['block']['ucqm']
                     for sta in ucqm:
                         try:
                             connection = psycopg2.connect(user=self.__db_user,
@@ -99,8 +148,9 @@ class UCQMStatsHandler(EmpowerApp):
                                                           database="empower")
                             cursor = connection.cursor()
 
-                            postgres_insert_query = """ INSERT INTO ucqm_stats (ADDRESS, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, WTP_STA, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"""
+                            postgres_insert_query = """ INSERT INTO ucqm_stats (ADDRESS, STATION, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, WTP_STA, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
                             record_to_insert = (
+                                str(crr_wtp_addr),
                                 str(sta),
                                 ucqm[sta]['hist_packets'],
                                 ucqm[sta]['last_packets'],

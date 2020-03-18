@@ -21,6 +21,7 @@ from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
 import psycopg2
 import time
+import statistics
 
 
 class WiFiStatsHandler(EmpowerApp):
@@ -40,17 +41,18 @@ class WiFiStatsHandler(EmpowerApp):
         self.__db_monitor = self.db_monitor
         self.__db_user = self.db_user
         self.__db_pass = self.db_pass
-        self.__wifi_stats_handler = {'wtps': {}}
-        self.aps_counters = {}
+        self.__wifi_stats_handler = {"message": "WiFi stats handler is online!", "wtps": {}}
+
+    def wtp_up(self, wtp):
+        for block in wtp.supports:
+            # Calling WiFi stats
+            self.wifi_stats(block=block,
+                            every=DEFAULT_PERIOD,
+                            callback=self.wifi_stats_callback)
 
     def loop(self):
         """Periodic job."""
         self.log.debug('WiFi Stats Handler APP Loop...')
-        for block in self.blocks():
-            # Calling slice stats for each slice DSCP
-            self.wifi_stats(block=block,
-                            every=DEFAULT_PERIOD,
-                            callback=self.wifi_stats_callback)
         if self.__db_monitor is not None:
             self.keep_last_measurements_only()
 
@@ -82,14 +84,47 @@ class WiFiStatsHandler(EmpowerApp):
         crr_wtp_addr = str(wifi_stats.block.addr)
         if crr_wtp_addr is not None:
             if crr_wtp_addr not in self.__wifi_stats_handler['wtps']:
-                self.__wifi_stats_handler['wtps'][crr_wtp_addr] = {}
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr] = {
+                    "tx_per_second": None,
+                    "rx_per_second": None,
+                    "channel": None,
+                    "channel_utilization": {
+                        "values": [],
+                        "mean": None,
+                        "median": None,
+                        "stdev": None
+                    }
+                }
 
-            self.__wifi_stats_handler['wtps'][crr_wtp_addr] = {
-                "TX": wifi_stats.tx_per_second,
-                "RX": wifi_stats.rx_per_second,
-                "channel": wifi_stats.block.channel,
-                "channel_utilization": (wifi_stats.tx_per_second + wifi_stats.rx_per_second) 
-            }
+            # TX and RX metrics
+            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['tx_per_second'] = wifi_stats.tx_per_second
+            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['rx_per_second'] = wifi_stats.rx_per_second
+
+            # Channel is not going to change at runtime
+            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel'] = wifi_stats.block.channel
+
+            # Channel utilization moving window
+            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values'].append(
+                wifi_stats.tx_per_second + wifi_stats.rx_per_second)
+
+            if len(self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values']) > 10:
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values'].pop(0)
+
+            if len(self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values']) > 2:
+                # Mean
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization'][
+                    'mean'] = statistics.mean(
+                    self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values'])
+
+                # Median
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization'][
+                    'median'] = statistics.median(
+                    self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values'])
+
+                # STDEV
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization'][
+                    'stdev'] = statistics.stdev(
+                    self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['values'])
 
             if self.__db_monitor is not None:
                 if self.__db_user is not None and self.__db_pass is not None:
@@ -122,7 +157,6 @@ class WiFiStatsHandler(EmpowerApp):
                         if (connection):
                             cursor.close()
                         connection.close()
-
 
     @property
     def wifi_stats_handler(self):
