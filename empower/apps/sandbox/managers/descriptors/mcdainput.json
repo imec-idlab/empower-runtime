@@ -1,0 +1,88 @@
+{
+  "criteria": [
+    "wtp_channel_load_rate",
+    "wtp_sta_rssi_dbm",
+    "wtp_load_expected_mbps",
+    "wtp_load_measured_mbps",
+    "wtp_queue_delay_ms",
+    "sta_association_flag"
+  ],
+  "weights": [
+    0.15,
+    0.10,
+    0.15,
+    0.15,
+    0.30,
+    0.15
+  ],
+  "targets": [
+    "MIN",
+    "MAX",
+    "MIN",
+    "MIN",
+    "MIN",
+    "MAX"
+  ],
+  "flows": [
+    {
+      "id": 1,
+      "type": "QoS",
+      "dscp": "0x01",
+      "protocol": "UDP",
+      "req_throughput_mbps": 0.5,
+      "port": 4001,
+      "req_queue_delay_ms": 20,
+      "lvap_addr": "DC:A6:32:65:E7:AA",
+      "status": false,
+      "wtp_addr": null
+    },
+    {
+      "id": 2,
+      "type": "BE",
+      "dscp": "0x02",
+      "protocol": "UDP",
+      "req_throughput_mbps": 2,
+      "port": 4002,
+      "req_queue_delay_ms": null,
+      "lvap_addr": "DC:A6:32:0A:E1:D4",
+      "status": false,
+      "wtp_addr": null
+    },
+    {
+      "id": 3,
+      "type": "BE",
+      "dscp": "0x03",
+      "protocol": "UDP",
+      "req_throughput_mbps": 5,
+      "port": 5002,
+      "req_queue_delay_ms": null,
+      "lvap_addr": "DC:A6:32:0A:E1:D4",
+      "status": false,
+      "wtp_addr": null
+    },
+    {
+      "id": 4,
+      "type": "BE",
+      "dscp": "0x08",
+      "protocol": "UDP",
+      "req_throughput_mbps": 5,
+      "port": 4003,
+      "req_queue_delay_ms": null,
+      "lvap_addr": "DC:A6:32:0A:E0:C9",
+      "status": false,
+      "wtp_addr": null
+    },
+    {
+      "id": 5,
+      "type": "BE",
+      "dscp": "0x20",
+      "protocol": "UDP",
+      "req_throughput_mbps": 5,
+      "port": 4004,
+      "req_queue_delay_ms": null,
+      "lvap_addr": "DC:A6:32:0A:B8:22",
+      "status": false,
+      "wtp_addr": null
+    }
+  ]
+}
