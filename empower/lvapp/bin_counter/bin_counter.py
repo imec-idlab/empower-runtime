@@ -187,24 +187,25 @@ class BinCounter(ModulePeriodic):
 
         lvap = tenant.lvaps[self.lvap]
 
-        if not lvap.wtp.connection or lvap.wtp.connection.stream.closed():
-            self.log.info("WTP %s not connected", lvap.wtp.addr)
-            self.unload()
-            return
+        if lvap.wtp is not None:
+            if not lvap.wtp.connection or lvap.wtp.connection.stream.closed():
+                self.log.info("WTP %s not connected", lvap.wtp.addr)
+                self.unload()
+                return
 
-        stats_req = Container(version=PT_VERSION,
-                              type=PT_STATS_REQUEST,
-                              length=20,
-                              seq=lvap.wtp.seq,
-                              module_id=self.module_id,
-                              sta=lvap.addr.to_raw())
+            stats_req = Container(version=PT_VERSION,
+                                  type=PT_STATS_REQUEST,
+                                  length=20,
+                                  seq=lvap.wtp.seq,
+                                  module_id=self.module_id,
+                                  sta=lvap.addr.to_raw())
 
-        self.log.info("Sending %s request to %s @ %s (id=%u)",
-                      self.MODULE_NAME, lvap.addr, lvap.wtp.addr,
-                      self.module_id)
+            self.log.info("Sending %s request to %s @ %s (id=%u)",
+                          self.MODULE_NAME, lvap.addr, lvap.wtp.addr,
+                          self.module_id)
 
-        msg = STATS_REQUEST.build(stats_req)
-        lvap.wtp.connection.stream.write(msg)
+            msg = STATS_REQUEST.build(stats_req)
+            lvap.wtp.connection.stream.write(msg)
 
     def fill_bytes_samples(self, data):
         """ Compute samples.

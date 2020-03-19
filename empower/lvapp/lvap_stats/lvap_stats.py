@@ -129,23 +129,24 @@ class LVAPStats(ModulePeriodic):
 
         lvap = tenant.lvaps[self.lvap]
 
-        if not lvap.wtp.connection or lvap.wtp.connection.stream.closed():
-            self.log.info("WTP %s not connected", lvap.wtp.addr)
-            self.unload()
-            return
+        if lvap.wtp is not None:
+            if not lvap.wtp.connection or lvap.wtp.connection.stream.closed():
+                self.log.info("WTP %s not connected", lvap.wtp.addr)
+                self.unload()
+                return
 
-        rates_req = Container(version=PT_VERSION,
-                              type=PT_RATES_REQUEST,
-                              length=20,
-                              seq=lvap.wtp.seq,
-                              module_id=self.module_id,
-                              sta=lvap.addr.to_raw())
+            rates_req = Container(version=PT_VERSION,
+                                  type=PT_RATES_REQUEST,
+                                  length=20,
+                                  seq=lvap.wtp.seq,
+                                  module_id=self.module_id,
+                                  sta=lvap.addr.to_raw())
 
-        self.log.info("Sending rates request to %s @ %s (id=%u)",
-                      lvap.addr, lvap.wtp.addr, self.module_id)
+            self.log.info("Sending rates request to %s @ %s (id=%u)",
+                          lvap.addr, lvap.wtp.addr, self.module_id)
 
-        msg = RATES_REQUEST.build(rates_req)
-        lvap.wtp.connection.stream.write(msg)
+            msg = RATES_REQUEST.build(rates_req)
+            lvap.wtp.connection.stream.write(msg)
 
     def handle_response(self, response):
         """Handle an incoming RATES_RESPONSE message.
