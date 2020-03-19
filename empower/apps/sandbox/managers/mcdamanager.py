@@ -24,7 +24,6 @@ from skcriteria import Data, MIN, MAX
 from skcriteria.madm import closeness, simple
 import json
 
-
 class MCDAManager(EmpowerApp):
     """Sandbox MCDA Manager APP.
 
@@ -45,6 +44,7 @@ class MCDAManager(EmpowerApp):
         self.__slice_stats_handler = None
         self.__wifi_stats_handler = None
         self.__ucqm_stats_handler = None
+        self.__mcda_results_file = 'empower/apps/sandbox/managers/results/mcda_run_.txt'
 
         # Load MCDA descriptor from JSON
         try:
@@ -56,6 +56,21 @@ class MCDAManager(EmpowerApp):
                         self.__mcda_targets.append(MAX)
                     else:
                         self.__mcda_targets.append(MIN)
+                # Creating mgen script and execute it
+                for flow in self.__mcda_descriptor['flows']:
+                    try:
+                        multiplier = 1
+                        # For the POISSON distribution 120 pps = 1Mbps
+                        if flow['distribution'] == 'POISSON':
+                            multiplier = 120
+                        f = open('empower/apps/sandbox/managers/scripts/mgen/flow' + str(flow['id']) + '.mgn', 'w')
+                        f.write('0.0 ON 1 ' + flow['protocol'] + ' DST ' + flow['dst_ip_addr'] + '/' + str(
+                            flow['port']) + ' ' + flow['distribution'] + ' [' + str(
+                            int(flow['req_throughput_mbps'] * multiplier)) + ' ' + str(flow['pkt_size']) + ']\n' + str(
+                            flow['duration']) + ' OFF 1')
+                        f.close()
+                    except TypeError:
+                        raise ValueError("Invalid path for mgen script files!")
         except TypeError:
             raise ValueError("Invalid value for input file or file does not exist!")
             self.__mcda_descriptor = None
@@ -63,9 +78,9 @@ class MCDAManager(EmpowerApp):
     def loop(self):
         """Periodic job."""
         self.log.debug("Sandbox MCDA Manager APP loop...")
-        # print(self.__mcda_descriptor)
 
         if self.__mcda_descriptor is not None:
+
             # Step 1: creating structure to handle all metrics
             for wtp in self.wtps():
                 crr_wtp_addr = str(wtp.addr)
@@ -79,9 +94,10 @@ class MCDAManager(EmpowerApp):
                                 'metrics': {
                                     'names': self.__mcda_descriptor['criteria'],
                                     'values': [None] * len(self.__mcda_descriptor['criteria']),
-                                }}
+                                }
+                            }
 
-            # Step 2: For each criteria, get all metrics and populate structure
+            # Step 2: for each criteria, get all metrics and populate structure
             for crr_criteria in self.__mcda_descriptor['criteria']:
                 if crr_criteria == 'wtp_load_measured_mbps':
                     if not self.get_wtp_load_measurements():
@@ -100,34 +116,89 @@ class MCDAManager(EmpowerApp):
                 elif crr_criteria == 'wtp_load_expected_mbps':
                     self.initialize_wtp_expected_load()
 
-            # TODO: Step 3: Only after getting all metrics, for each flow, create data structure, decide and start flow
-            # TODO: Create mgen script and execute it 120 pps POISSON = 1Mbps
-            # Fake data for now 6 criteria
-            # mtx = [
-            #     [10, 20, 30, 40, 50, 60],  # WTP 1
-            #     [1, 2, 3, 4, 5, 6],  # WTP 2
-            # ]
-            # data = Data(mtx,
-            #             self.__mcda_targets,
-            #             weights=self.__mcda_descriptor['weights'],
-            #             anames=["WTP1", "WTP2"],
-            #             cnames=self.__mcda_descriptor['criteria'])
-            #
-            # print(data)
-            # print(self.__mcda_targets)
+            # Step 3: one by one, get the first flow and the other flows towards the same destination
+            if len(self.__mcda_descriptor['flows']) > 0:
+                # Assuming that flows are already sorted (priority flows first)
+                crr_flow = self.__mcda_descriptor['flows'][0]
+                wtp_load_expected_mbps = self.__mcda_descriptor['flows'][0]['req_throughput_mbps']
+                self.__mcda_descriptor['flows'].pop(0)
 
-            # TODO: Step 3: Get a decision using different methods
-            # dm = closeness.TOPSIS()
-            # dec = dm.decide(data)
-            # print(dec)
-            # print(dec.e_)
-            # print("Ideal:", dec.e_.ideal)
-            # print("Anti-Ideal:", dec.e_.anti_ideal)
-            # print("Closeness:", dec.e_.closeness)
-            #
-            # dm = closeness.TOPSIS(mnorm="sum")
-            # print(dm)
-            # print(dm.decide(data))
+                # Step 4: searching for flows towards the same destination
+                for flow in self.__mcda_descriptor['flows']:
+                    if crr_flow['lvap_addr'] == flow['lvap_addr']:
+                        wtp_load_expected_mbps += flow['req_throughput_mbps']
+                        self.__mcda_descriptor['flows'].pop(self.__mcda_descriptor['flows'].index(flow))
+
+                # Step 5: for each flow, or set of flows to allocate, get a decision using the TOPSIS method
+                mtx = []
+                wtp_addresses = []
+                for crr_wtp_addr in self.__mcda_manager['wtps']:
+                    wtp_addresses.append(crr_wtp_addr)
+                    if crr_flow['lvap_addr'] in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                        mtx.append(self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_flow['lvap_addr']]['metrics'][
+                                       'values'])
+
+                # List must have the same length
+                data = Data(mtx,
+                            self.__mcda_targets,
+                            weights=self.__mcda_descriptor['weights'],
+                            anames=wtp_addresses,
+                            cnames=self.__mcda_descriptor['criteria'])
+
+                print(data)
+
+                dm = closeness.TOPSIS()
+                dec = dm.decide(data)
+                print(dec)
+                f = open(self.__mcda_results_file, 'a')
+                f.write(str(dec) + '\n')
+                f.close()
+
+                print(dec.e_)
+                print("Ideal:", dec.e_.ideal)
+                print("Anti-Ideal:", dec.e_.anti_ideal)
+                print("Closeness:", dec.e_.closeness)
+
+                dm = closeness.TOPSIS(mnorm="sum")
+                print(dm)
+                print(dm.decide(data))
+                print("Best alternative", dec.best_alternative_, data.anames[dec.best_alternative_])
+                best_alternative_wtp_addr = data.anames[dec.best_alternative_]
+
+                # Step 6: is handover needed? Do it so and then set the flag to 0 for all the other blocks
+                # (this could be improved, but get block with given address should be implemented)
+                sta_association_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
+                for block in self.blocks():
+                    crr_wtp_addr = str(block.addr)
+                    if crr_wtp_addr == best_alternative_wtp_addr:
+                        # Do handover
+                        for lvap in self.lvaps():
+                            # If there is a static placement for the station
+                            if str(lvap.addr) == crr_flow['lvap_addr']:
+                                # If the station is not connected to it already
+                                if str(lvap.blocks[0].addr) != str(block.addr):
+                                    self.log.info("Sandbox handover triggered!")
+                                    lvap.blocks = block
+                        # and update metrics
+                        self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_flow['lvap_addr']]['metrics']['values'][
+                            sta_association_index] = 1
+                    else:
+                        self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_flow['lvap_addr']]['metrics']['values'][
+                            sta_association_index] = 0
+
+                # Step 7: allocate flow, updating metrics
+                wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
+                for lvap in self.lvaps():
+                    crr_lvap_addr = str(lvap.addr)
+                    self.__mcda_manager['wtps'][best_alternative_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                        'values'][wtp_load_expected_mbps_index] += wtp_load_expected_mbps
+
+                # TODO Step (extra): recalculate expected load for the WTPs (expire inactive flows)
+
+                # TODO Step 8: Run flows with mgen
+
+            # TODO: Step 9: check if QoS slice is performing well, if not, change quantum from neighboring slices,
+            # TODO: increase quantum otherwise
 
     def get_wtp_load_measurements(self):
         # Slice stats handler
@@ -222,8 +293,8 @@ class MCDAManager(EmpowerApp):
                                 self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                     crr_criteria_index] = wtp_sta_median_rssi_dbm
                             else:
-                                raise ValueError("WTP->STA RSSI is not ready yet!")
-                                return False
+                                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                                    crr_criteria_index] = worst_case_rssi
                         else:
                             self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                 crr_criteria_index] = worst_case_rssi
@@ -252,8 +323,8 @@ class MCDAManager(EmpowerApp):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
         for crr_wtp_addr in self.__ucqm_stats_handler['wtps']:
             for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
-                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                    crr_criteria_index] = 0  # WTP expected load initialized with 0
+                if self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][crr_criteria_index] is None:
+                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][crr_criteria_index] = 0  # WTP expected load initialized with 0
 
     @property
     def mcda_descriptor(self):
