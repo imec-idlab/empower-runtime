@@ -45,7 +45,7 @@ class HandoverManager(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        self.log.debug("Sandbox handover Manager APP loop...")
+        # self.log.debug("Sandbox handover Manager APP loop...")
         # For all blocks in all APs
         for block in self.blocks():
             # If there is a static configuration in the map

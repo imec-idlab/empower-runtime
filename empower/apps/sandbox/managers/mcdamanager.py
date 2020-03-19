@@ -23,6 +23,8 @@ from empower.main import RUNTIME
 from skcriteria import Data, MIN, MAX
 from skcriteria.madm import closeness, simple
 import json
+import subprocess
+
 
 class MCDAManager(EmpowerApp):
     """Sandbox MCDA Manager APP.
@@ -77,7 +79,7 @@ class MCDAManager(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        self.log.debug("Sandbox MCDA Manager APP loop...")
+        # self.log.debug("Sandbox MCDA Manager APP loop...")
 
         if self.__mcda_descriptor is not None:
 
@@ -86,7 +88,7 @@ class MCDAManager(EmpowerApp):
                 crr_wtp_addr = str(wtp.addr)
                 if crr_wtp_addr not in self.__mcda_manager['wtps']:
                     # Initializing criteria with None
-                    self.__mcda_manager['wtps'][crr_wtp_addr] = {'lvaps': {}}
+                    self.__mcda_manager['wtps'][crr_wtp_addr] = {'lvaps': {}, 'active_flows': {'QoS': [], 'BE': []}}
                     for lvap in self.lvaps():
                         crr_lvap_addr = str(lvap.addr)
                         if crr_lvap_addr not in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
@@ -120,6 +122,7 @@ class MCDAManager(EmpowerApp):
             if len(self.__mcda_descriptor['flows']) > 0:
                 # Assuming that flows are already sorted (priority flows first)
                 crr_flow = self.__mcda_descriptor['flows'][0]
+                active_flows_list = [crr_flow]
                 wtp_load_expected_mbps = self.__mcda_descriptor['flows'][0]['req_throughput_mbps']
                 self.__mcda_descriptor['flows'].pop(0)
 
@@ -127,6 +130,7 @@ class MCDAManager(EmpowerApp):
                 for flow in self.__mcda_descriptor['flows']:
                     if crr_flow['lvap_addr'] == flow['lvap_addr']:
                         wtp_load_expected_mbps += flow['req_throughput_mbps']
+                        active_flows_list.append(flow)
                         self.__mcda_descriptor['flows'].pop(self.__mcda_descriptor['flows'].index(flow))
 
                 # Step 5: for each flow, or set of flows to allocate, get a decision using the TOPSIS method
@@ -145,24 +149,11 @@ class MCDAManager(EmpowerApp):
                             anames=wtp_addresses,
                             cnames=self.__mcda_descriptor['criteria'])
 
-                print(data)
-
                 dm = closeness.TOPSIS()
                 dec = dm.decide(data)
-                print(dec)
                 f = open(self.__mcda_results_file, 'a')
                 f.write(str(dec) + '\n')
                 f.close()
-
-                print(dec.e_)
-                print("Ideal:", dec.e_.ideal)
-                print("Anti-Ideal:", dec.e_.anti_ideal)
-                print("Closeness:", dec.e_.closeness)
-
-                dm = closeness.TOPSIS(mnorm="sum")
-                print(dm)
-                print(dm.decide(data))
-                print("Best alternative", dec.best_alternative_, data.anames[dec.best_alternative_])
                 best_alternative_wtp_addr = data.anames[dec.best_alternative_]
 
                 # Step 6: is handover needed? Do it so and then set the flag to 0 for all the other blocks
@@ -193,12 +184,16 @@ class MCDAManager(EmpowerApp):
                     self.__mcda_manager['wtps'][best_alternative_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
                         'values'][wtp_load_expected_mbps_index] += wtp_load_expected_mbps
 
-                # TODO Step (extra): recalculate expected load for the WTPs (expire inactive flows)
+                # TODO Step (feature): recalculate expected load for the WTPs (expire inactive flows)
 
-                # TODO Step 8: Run flows with mgen
+                # Step 8: Run flows with mgen
+                mgen_command = ['mgen', 'input',
+                                'empower/apps/sandbox/managers/scripts/mgen/flow' + str(crr_flow['id']) + '.mgn']
+                subprocess.Popen(mgen_command, stdout=subprocess.PIPE)
 
-            # TODO: Step 9: check if QoS slice is performing well, if not, change quantum from neighboring slices,
-            # TODO: increase quantum otherwise
+                # Fill in active flows TODO: check this list on wifislicemanager APP!
+                for flow in active_flows_list:
+                    self.__mcda_manager['wtps'][best_alternative_wtp_addr]['active_flows'][flow['type']].append(flow)
 
     def get_wtp_load_measurements(self):
         # Slice stats handler
