@@ -48,7 +48,7 @@ class BinStatsHandler(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        self.log.debug('Bin Stats Handler APP Loop...')
+        # self.log.debug('Bin Stats Handler APP Loop...')
         for lvap in self.lvaps():
             # Calling bin counter for each LVAP
             self.bin_counter(lvap=lvap.addr,

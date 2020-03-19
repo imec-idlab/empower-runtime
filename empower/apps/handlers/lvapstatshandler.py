@@ -44,7 +44,7 @@ class LVAPStatsHandler(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        self.log.debug('LVAP Stats Handler APP Loop...')
+        # self.log.debug('LVAP Stats Handler APP Loop...')
         for lvap in self.lvaps():
             self.lvap_stats(lvap=lvap.addr,
                             callback=self.lvap_stats_callback)

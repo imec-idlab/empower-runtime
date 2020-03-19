@@ -50,7 +50,7 @@ class SliceStatsHandler(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        self.log.debug('Slice Stats Handler APP Loop...')
+        # self.log.debug('Slice Stats Handler APP Loop...')
         for wtp in self.wtps():
             for block in wtp.supports:
                 for slice_dscp in self.tenant.slices:

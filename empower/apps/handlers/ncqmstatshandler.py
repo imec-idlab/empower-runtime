@@ -51,7 +51,7 @@ class NCQMStatsHandler(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        self.log.debug('NCQM Stats Handler APP Loop...')
+        # self.log.debug('NCQM Stats Handler APP Loop...')
         if self.__db_monitor is not None:
             self.keep_last_measurements_only()
 
