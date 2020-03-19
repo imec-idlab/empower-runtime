@@ -46,7 +46,8 @@ class MCDAManager(EmpowerApp):
         self.__slice_stats_handler = None
         self.__wifi_stats_handler = None
         self.__ucqm_stats_handler = None
-        self.__mcda_results_file = 'empower/apps/sandbox/managers/results/mcda_run_.txt'
+        self.__mcda_results_filename = 'empower/apps/sandbox/managers/results/mcda_run_.txt'
+
 
         # Load MCDA descriptor from JSON
         try:
@@ -151,7 +152,7 @@ class MCDAManager(EmpowerApp):
 
                 dm = closeness.TOPSIS()
                 dec = dm.decide(data)
-                f = open(self.__mcda_results_file, 'a')
+                f = open(self.__mcda_results_filename, 'w+')
                 f.write(str(dec) + '\n')
                 f.close()
                 best_alternative_wtp_addr = data.anames[dec.best_alternative_]
@@ -189,7 +190,7 @@ class MCDAManager(EmpowerApp):
                 # Step 8: Run flows with mgen
                 mgen_command = ['mgen', 'input',
                                 'empower/apps/sandbox/managers/scripts/mgen/flow' + str(crr_flow['id']) + '.mgn']
-                subprocess.Popen(mgen_command, stdout=subprocess.PIPE)
+                subprocess.Popen(mgen_command)
 
                 # Fill in active flows TODO: check this list on wifislicemanager APP!
                 for flow in active_flows_list:
