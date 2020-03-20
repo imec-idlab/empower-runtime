@@ -61,7 +61,6 @@ class FlowManager(EmpowerApp):
     def check_flows_status(self):
         for flow_id in self.__active_flows:
             if self.__process_handler['flows'][flow_id].poll() is not None:
-                print()
                 self.__flow_manager['flows'][flow_id]['active'] = False
                 self.__active_flows.remove(flow_id)
 
