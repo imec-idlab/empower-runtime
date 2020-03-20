@@ -69,6 +69,8 @@ class WiFiSliceManager(EmpowerApp):
                         current_quantum = self.tenant.slices[DSCP(be_flow['dscp'])].wifi['static-properties']['quantum']
                         if decrease_quantum:
                             adapted_quantum = int(current_quantum - (current_quantum * self.__quantum_decrease_rate))
+                            if adapted_quantum < self.__minimum_quantum:
+                                adapted_quantum = self.__minimum_quantum
                         else:
                             adapted_quantum = int(current_quantum - (current_quantum * self.__quantum_increase_rate))
                             if adapted_quantum > self.__default_maximum_quantum:
