@@ -23,7 +23,6 @@ from empower.main import RUNTIME
 from skcriteria import Data, MIN, MAX
 from skcriteria.madm import closeness, simple
 import json
-import subprocess
 
 
 class MCDAManager(EmpowerApp):
@@ -36,7 +35,7 @@ class MCDAManager(EmpowerApp):
 
     Example:
 
-        ./empower-runtime.py apps.sandbox.mcdamanager \
+        ./empower-runtime.py apps.sandbox.managers.mcdamanager.mcdamanager \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
     """
 
@@ -46,12 +45,12 @@ class MCDAManager(EmpowerApp):
         self.__slice_stats_handler = None
         self.__wifi_stats_handler = None
         self.__ucqm_stats_handler = None
-        self.__mcda_results_filename = 'empower/apps/sandbox/managers/results/mcda_run_.txt'
-
+        self.__mcda_results_filename = 'empower/apps/sandbox/managers/mcdamanager/results/mcda_run_.txt'
+        self.__initial_association = True
 
         # Load MCDA descriptor from JSON
         try:
-            with open("empower/apps/sandbox/managers/descriptors/mcdainput.json") as f:
+            with open("empower/apps/sandbox/managers/mcdamanager/descriptors/mcdainput.json") as f:
                 self.__mcda_descriptor = json.load(f)
                 self.__mcda_targets = []
                 for target in self.__mcda_descriptor['targets']:
@@ -59,21 +58,6 @@ class MCDAManager(EmpowerApp):
                         self.__mcda_targets.append(MAX)
                     else:
                         self.__mcda_targets.append(MIN)
-                # Creating mgen script and execute it
-                for flow in self.__mcda_descriptor['flows']:
-                    try:
-                        multiplier = 1
-                        # For the POISSON distribution 120 pps = 1Mbps
-                        if flow['distribution'] == 'POISSON':
-                            multiplier = 120
-                        f = open('empower/apps/sandbox/managers/scripts/mgen/flow' + str(flow['id']) + '.mgn', 'w')
-                        f.write('0.0 ON 1 ' + flow['protocol'] + ' DST ' + flow['dst_ip_addr'] + '/' + str(
-                            flow['port']) + ' ' + flow['distribution'] + ' [' + str(
-                            int(flow['req_throughput_mbps'] * multiplier)) + ' ' + str(flow['pkt_size']) + ']\n' + str(
-                            flow['duration']) + ' OFF 1')
-                        f.close()
-                    except TypeError:
-                        raise ValueError("Invalid path for mgen script files!")
         except TypeError:
             raise ValueError("Invalid value for input file or file does not exist!")
             self.__mcda_descriptor = None
@@ -115,7 +99,8 @@ class MCDAManager(EmpowerApp):
                     if not self.get_lvap_rssi_measurements():
                         return
                 elif crr_criteria == 'sta_association_flag':
-                    self.get_sta_association_flag()
+                    self.get_sta_association_flag(initial_association=self.__initial_association)
+                    self.__initial_association = False
                 elif crr_criteria == 'wtp_load_expected_mbps':
                     self.initialize_wtp_expected_load()
 
@@ -187,12 +172,7 @@ class MCDAManager(EmpowerApp):
 
                 # TODO Step (feature): recalculate expected load for the WTPs (expire inactive flows)
 
-                # Step 8: Run flows with mgen
-                mgen_command = ['mgen', 'input',
-                                'empower/apps/sandbox/managers/scripts/mgen/flow' + str(crr_flow['id']) + '.mgn']
-                subprocess.Popen(mgen_command)
-
-                # Fill in active flows TODO: check this list on wifislicemanager APP!
+                # Fill in active flows
                 for flow in active_flows_list:
                     self.__mcda_manager['wtps'][best_alternative_wtp_addr]['active_flows'][flow['type']].append(flow)
 
@@ -302,13 +282,13 @@ class MCDAManager(EmpowerApp):
             raise ValueError("APP 'empower.apps.handlers.wifistatshandler' is not online!")
             return False
 
-    def get_sta_association_flag(self):
+    def get_sta_association_flag(self, initial_association=False):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
         for lvap in self.lvaps():
             crr_lvap_addr = str(lvap.addr)
             associated_wtp_addr = str(lvap.blocks[0].addr)
             for crr_wtp_addr in self.__ucqm_stats_handler['wtps']:
-                if crr_wtp_addr == associated_wtp_addr:
+                if crr_wtp_addr == associated_wtp_addr and not initial_association:
                     self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                         crr_criteria_index] = 1
                 else:

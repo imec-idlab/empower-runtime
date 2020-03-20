@@ -1,0 +1,26 @@
+{
+  "criteria": [
+    "wtp_channel_load_rate",
+    "wtp_sta_rssi_dbm",
+    "wtp_load_expected_mbps",
+    "wtp_load_measured_mbps",
+    "wtp_queue_delay_ms",
+    "sta_association_flag"
+  ],
+  "weights": [
+    0.10,
+    0.10,
+    0.20,
+    0.20,
+    0.30,
+    0.10
+  ],
+  "targets": [
+    "MIN",
+    "MAX",
+    "MIN",
+    "MIN",
+    "MIN",
+    "MAX"
+  ]
+}

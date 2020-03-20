@@ -22,7 +22,7 @@ from empower.core.app import DEFAULT_PERIOD
 from empower.datatypes.dscp import DSCP
 from empower.main import RUNTIME
 
-from empower.apps.sandbox.managers.parsers.sliceconfigrequest import *
+from empower.apps.sandbox.managers.wifislicemanager.parsers.sliceconfigrequest import *
 
 
 class WiFiSliceManager(EmpowerApp):
@@ -33,7 +33,7 @@ class WiFiSliceManager(EmpowerApp):
         every: loop period in ms (optional, default 5000ms)
 
     Example:
-        ./empower-runtime.py apps.sandbox.managers.wifislicemanager \
+        ./empower-runtime.py apps.sandbox.managers.wifislicemanager.wifislicemanager \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
             /
     """
