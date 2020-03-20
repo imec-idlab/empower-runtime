@@ -131,10 +131,6 @@ class SliceStatsHandler(EmpowerApp):
                 'tx_packets_moving': []
             }
 
-        for metric in self.__raw_metrics:
-            self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric] = \
-                slice_stats.to_dict()['slice_stats'][metric]
-
         # Computing TX metrics...
         for metric in self.__tx_metrics:
             self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][
@@ -165,6 +161,12 @@ class SliceStatsHandler(EmpowerApp):
         self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['throughput_mbps']['values'].append(
             crr_throughput_mbps)
 
+        crr_queue_delay_ms = 0
+        if self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['tx_bytes'] > 0:
+            crr_queue_delay_ms = slice_stats.to_dict()['slice_stats']['queue_delay'] / 1000  # from usec to ms
+        self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['queue_delay_ms']['values'].append(
+            crr_queue_delay_ms)
+
         for metric in self.__moving_window_metrics:
             if len(self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric]['values']) > 10:
                 self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric]['values'].pop(0)
@@ -186,11 +188,12 @@ class SliceStatsHandler(EmpowerApp):
                     self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric]['values'])
 
         # Computing queue delay metric...
-        crr_queue_delay_ms = 0
-        if slice_stats.to_dict()['slice_stats']['queue_delay'] > 0:
-            crr_queue_delay_ms = slice_stats.to_dict()['slice_stats']['queue_delay'] / 1000  # from usec to ms
-        self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['queue_delay_ms']['values'].append(
-            crr_queue_delay_ms)
+        for metric in self.__raw_metrics:
+            if self.slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['tx_bytes'] == 0:
+                self.slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric] = 0
+            else:
+                self.slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp][metric] = \
+                slice_stats.to_dict()['slice_stats'][metric]
 
         # Update wtp counters
         self.update_wtp_overall_counters(crr_wtp_addr=crr_wtp_addr)
