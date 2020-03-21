@@ -38,13 +38,17 @@ class FlowManager(EmpowerApp):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.__flow_manager = {'message': 'Flow Manager is online!'}
+        self.__flow_manager = {'message': 'Flow Manager is online!',
+                               'flows': None,
+                               'active_list': [],
+                               'lvap_flow_map': {},
+                               'lvap_expected_load_map': {}}
         self.__process_handler = {'flows': {}}
-        self.__active_flows = []
 
         try:
             with open("empower/apps/sandbox/managers/flowmanager/descriptors/flows.json") as f:
                 self.__flow_manager['flows'] = json.load(f)['flows']
+                self.create_lvap_flow_and_expected_load_map()
                 self.create_mgen_scripts()
 
                 # Run flows with mgen
@@ -55,14 +59,24 @@ class FlowManager(EmpowerApp):
     def loop(self):
         """Periodic job."""
         self.log.debug("Flow Manager APP loop...")
-        if self.__active_flows:
+        if self.__flow_manager['active_list']:
             self.check_flows_status()
 
+    def create_lvap_flow_and_expected_load_map(self):
+        for flow_id in self.__flow_manager['flows']:
+            crr_lvap_addr = self.__flow_manager['flows'][flow_id]['lvap_addr']
+            if crr_lvap_addr not in self.__flow_manager['lvap_flow_map']:
+                self.__flow_manager['lvap_flow_map'][crr_lvap_addr] = []
+                self.__flow_manager['lvap_expected_load_map'][crr_lvap_addr] = 0
+            self.__flow_manager['lvap_flow_map'][crr_lvap_addr].append(flow_id)
+            self.__flow_manager['lvap_expected_load_map'][crr_lvap_addr] += self.__flow_manager['flows'][flow_id][
+                'req_throughput_mbps']
+
     def check_flows_status(self):
-        for flow_id in self.__active_flows:
+        for flow_id in self.__flow_manager['active_list']:
             if self.__process_handler['flows'][flow_id].poll() is not None:
                 self.__flow_manager['flows'][flow_id]['active'] = False
-                self.__active_flows.remove(flow_id)
+                self.__flow_manager['active_list'].remove(flow_id)
 
     def start_flows(self):
         for flow_id in self.__flow_manager['flows']:
@@ -72,7 +86,7 @@ class FlowManager(EmpowerApp):
                                 'empower/apps/sandbox/managers/flowmanager/scripts/mgen/flow' + str(flow_id) + '.mgn']
                 self.__process_handler['flows'][flow_id] = subprocess.Popen(mgen_command)
                 flow['active'] = True
-                self.__active_flows.append(flow_id)
+                self.__flow_manager['active_list'].append(flow_id)
 
     def create_mgen_scripts(self):
         # Creating mgen script and execute it

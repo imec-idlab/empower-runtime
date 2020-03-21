@@ -11,8 +11,8 @@
       "port": 4001,
       "req_queue_delay_ms": 30,
       "lvap_addr": "DC:A6:32:65:E7:AA",
-      "from": 0.0,
-      "until": 20.0,
+      "from": 30.0,
+      "until": 60.0,
       "active": false
     },
     "2": {
@@ -26,8 +26,8 @@
       "port": 4002,
       "req_queue_delay_ms": null,
       "lvap_addr": "DC:A6:32:0A:E1:D4",
-      "from": 20.0,
-      "until": 40.0,
+      "from": 60.0,
+      "until": 120.0,
       "active": false
     },
     "3": {
@@ -42,8 +42,8 @@
       "port": 5002,
       "req_queue_delay_ms": null,
       "lvap_addr": "DC:A6:32:0A:E1:D4",
-      "from": 40.0,
-      "until": 120.0,
+      "from": 70.0,
+      "until": 200.0,
       "active": false
     },
     "4": {
