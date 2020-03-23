@@ -42,13 +42,15 @@ class FlowManager(EmpowerApp):
                                'flows': None,
                                'active_list': [],
                                'lvap_flow_map': {},
-                               'lvap_expected_load_map': {}}
+                               'lvap_load_expected_map': {}}
         self.__process_handler = {'flows': {}}
+        self.__descriptor_filename = 'empower/apps/sandbox/managers/flowmanager/descriptors/' + str(
+            self.descriptor)
 
         try:
-            with open("empower/apps/sandbox/managers/flowmanager/descriptors/flows.json") as f:
+            with open(self.__descriptor_filename) as f:
                 self.__flow_manager['flows'] = json.load(f)['flows']
-                self.create_lvap_flow_and_expected_load_map()
+                self.create_lvap_flow_and_load_expected_map()
                 self.create_mgen_scripts()
 
                 # Run flows with mgen
@@ -62,14 +64,14 @@ class FlowManager(EmpowerApp):
         if self.__flow_manager['active_list']:
             self.check_flows_status()
 
-    def create_lvap_flow_and_expected_load_map(self):
+    def create_lvap_flow_and_load_expected_map(self):
         for flow_id in self.__flow_manager['flows']:
             crr_lvap_addr = self.__flow_manager['flows'][flow_id]['lvap_addr']
             if crr_lvap_addr not in self.__flow_manager['lvap_flow_map']:
                 self.__flow_manager['lvap_flow_map'][crr_lvap_addr] = []
-                self.__flow_manager['lvap_expected_load_map'][crr_lvap_addr] = 0
+                self.__flow_manager['lvap_load_expected_map'][crr_lvap_addr] = 0
             self.__flow_manager['lvap_flow_map'][crr_lvap_addr].append(flow_id)
-            self.__flow_manager['lvap_expected_load_map'][crr_lvap_addr] += self.__flow_manager['flows'][flow_id][
+            self.__flow_manager['lvap_load_expected_map'][crr_lvap_addr] += self.__flow_manager['flows'][flow_id][
                 'req_throughput_mbps']
 
     def check_flows_status(self):
@@ -93,9 +95,8 @@ class FlowManager(EmpowerApp):
         for flow_id in self.__flow_manager['flows']:
             multiplier = 1
             flow = self.__flow_manager['flows'][flow_id]
-            # For the POISSON distribution 120 pps = 1Mbps
-            if self.__flow_manager['flows'][flow_id]['distribution'] == 'POISSON':
-                multiplier = 120
+            # For the POISSON and PERIODIC distributions, 120 pps = 1Mbps
+            multiplier = 120
             try:
                 with open('empower/apps/sandbox/managers/flowmanager/scripts/mgen/flow' + str(flow_id) + '.mgn',
                           'w+') as mgen_file:
@@ -138,8 +139,9 @@ class FlowManager(EmpowerApp):
         return self.__flow_manager
 
 
-def launch(tenant_id, every=DEFAULT_PERIOD):
+def launch(tenant_id, descriptor, every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
     return FlowManager(tenant_id=tenant_id,
+                       descriptor=descriptor,
                        every=every)
