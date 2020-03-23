@@ -40,7 +40,7 @@ class HandoverManager(EmpowerApp):
         self.__wifi_handover_manager = {"message": "Sandbox handover Manager is online!"}
         self.__WTP_LVAP_map = {"00:0D:B9:42:6A:00": {"LVAPs": ["DC:A6:32:65:E7:AA",
                                                                "DC:A6:32:0A:E1:D4"]},
-                               "00:0D:B9:42:72:09": {"LVAPs": ["DC:A6:32:0A:E0:C9",
+                               "00:0D:B9:42:72:08": {"LVAPs": ["DC:A6:32:0A:E0:C9",
                                                                "DC:A6:32:0A:B8:22"]}}
 
     def loop(self):
