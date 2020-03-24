@@ -116,7 +116,7 @@ class IBNPMainHandler(tornado.websocket.WebSocketHandler):
 
         tenant_rules = self.of_rules[tenant.tenant_id]
 
-        tr_rule_ids = [(match, _) for _match, _ in tenant_rules
+        tr_rule_ids = [(match, _lvap_addr, _of_rule_type) for _match, _lvap_addr, _of_rule_type in tenant_rules
                        if _match == match]
 
         for tr_rule_id in tr_rule_ids:
@@ -160,11 +160,10 @@ class IBNPMainHandler(tornado.websocket.WebSocketHandler):
 
         tenant_rules = self.of_rules[lvap.tenant.tenant_id]
 
-        tr_rule_ids = [(_, _lvap_addr) for _, _lvap_addr in tenant_rules
+        tr_rule_ids = [(_, _lvap_addr, _of_rule_type) for _, _lvap_addr, _of_rule_type in tenant_rules
                        if _lvap_addr == lvap.addr]
 
         for tr_rule_id in tr_rule_ids:
-
             of_rule_id = tenant_rules[tr_rule_id]
             self.send_remove_rule(of_rule_id)
             del tenant_rules[tr_rule_id]
@@ -247,7 +246,8 @@ class IBNPMainHandler(tornado.websocket.WebSocketHandler):
 
         self.send_add_rule(rule)
 
-        tr_id = (match, lvap.addr)
+        of_rule_type = 'downlink'
+        tr_id = (match, lvap.addr, of_rule_type)
 
         if tenant.tenant_id not in self.of_rules:
             self.of_rules[tenant.tenant_id] = {}
@@ -270,7 +270,8 @@ class IBNPMainHandler(tornado.websocket.WebSocketHandler):
 
         self.send_add_rule(rule)
 
-        tr_id = (match, str(lvap.addr) + '_client_to_client')
+        of_rule_type = 'client_to_client'
+        tr_id = (match, lvap.addr, of_rule_type)
 
         if tenant.tenant_id not in self.of_rules:
             self.of_rules[tenant.tenant_id] = {}
