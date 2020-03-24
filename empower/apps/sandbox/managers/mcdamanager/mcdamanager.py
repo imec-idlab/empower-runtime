@@ -126,15 +126,15 @@ class MCDAManager(EmpowerApp):
                                             'values'])
 
                             # Discount LVAP expected load from connected WTP (lvap_load_expected_map from Flow Manager)
-                            # if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
-                            #     if not self.__initial_load_expected:
-                            #         if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
-                            #             crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
-                            #             for crr_wtp_addr in self.__mcda_manager['wtps']:
-                            #                 if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
-                            #                     self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr][
-                            #                         'metrics']['values'][crr_criteria_index] -= \
-                            #                     self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr]
+                            if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
+                                if not self.__initial_load_expected:
+                                    if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
+                                        crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
+                                        for crr_wtp_addr in self.__mcda_manager['wtps']:
+                                            if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
+                                                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr][
+                                                    'metrics']['values'][crr_criteria_index] -= \
+                                                self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr]
 
                             # List must have the same length
                             data = Data(mtx,
