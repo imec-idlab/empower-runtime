@@ -21,6 +21,8 @@ from empower.core.app import EmpowerApp
 from empower.main import RUNTIME
 from skcriteria import Data, MIN, MAX
 from skcriteria.madm import closeness, simple
+import psycopg2
+import time
 import json
 
 DEFAULT_LONG_PERIOD = 30000
@@ -52,6 +54,10 @@ class MCDAManager(EmpowerApp):
             self.descriptor)
         self.__initial_association = True
         self.__initial_load_expected = True
+
+        self.__db_monitor = self.db_monitor
+        self.__db_user = self.db_user
+        self.__db_pass = self.db_pass
 
         # Load MCDA descriptor from JSON
         try:
@@ -194,6 +200,10 @@ class MCDAManager(EmpowerApp):
                 self.__initial_association = False
             if self.__initial_load_expected:
                 self.__initial_load_expected = False
+
+            # Keeping only the last measurements in db
+            if self.__db_monitor is not None:
+                self.keep_last_measurements_only()
 
     def recalculate_wtp_load_expected_mbps(self, old_wtp_addr, best_alternative_wtp_addr, moving_lvap_addr):
         wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
@@ -384,15 +394,37 @@ class MCDAManager(EmpowerApp):
                     self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                         crr_criteria_index] = 0
 
-        for lvap in self.lvaps():
-            crr_lvap_addr = str(lvap.addr)
-            if lvap.blocks[0] is not None:
-                associated_wtp_addr = str(lvap.blocks[0].addr)
+                # Saving into db
+                if all(param is not None for param in [self.__db_monitor, self.__db_user, self.__db_pass]):
+                    crr_time_in_ms = int(round(time.time()))
 
-            else:
-                for crr_wtp_addr in self.__mcda_manager['wtps']:
-                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                        crr_criteria_index] = 0
+                    try:
+                        connection = psycopg2.connect(user=self.__db_user,
+                                                      password=self.__db_pass,
+                                                      host="127.0.0.1",
+                                                      port="5432",
+                                                      database="empower")
+                        cursor = connection.cursor()
+                        postgres_insert_query = """ INSERT INTO mcda_association_stats (LVAP_ADDR, WTP_ADDR, ASSOCIATION_FLAG, TIMESTAMP_MS) VALUES (%s,%s,%s,%s)"""
+                        record_to_insert = (
+                            crr_lvap_addr,
+                            crr_wtp_addr,
+                            self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                                crr_criteria_index],
+                            crr_time_in_ms)
+                        cursor.execute(postgres_insert_query, record_to_insert)
+                        connection.commit()
+                        count = cursor.rowcount
+
+                    except (Exception, psycopg2.Error) as error:
+                        if (connection):
+                            self.log.debug(
+                                'MCDA association stats failed to insert record into mcda_association_stats table!')
+                    finally:
+                        # closing database connection.
+                        if (connection):
+                            cursor.close()
+                            connection.close()
 
     def update_wtp_association_map(self):
         for lvap in self.lvaps():
@@ -413,6 +445,29 @@ class MCDAManager(EmpowerApp):
             for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
                 self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                     crr_criteria_index] = 0  # WTP expected load initialized with 0
+
+    def keep_last_measurements_only(self):
+        if self.__db_user is not None and self.__db_pass is not None:
+            try:
+                connection = psycopg2.connect(user=self.__db_user,
+                                              password=self.__db_pass,
+                                              host="127.0.0.1",
+                                              port="5432",
+                                              database="empower")
+                cursor = connection.cursor()
+                sql_delete_query = """DELETE FROM mcda_association_stats WHERE TIMESTAMP_MS < %s"""
+                cursor.execute(sql_delete_query, (int(round(
+                    time.time() - 5 * 60)),))  # Keeping only the last measurements (i.e., only the last 5 minutes)
+                connection.commit()
+
+            except (Exception, psycopg2.Error) as error:
+                if (connection):
+                    self.log.debug('MCDA association stats failed to delete records from mcda_association_stats table!')
+            finally:
+                # closing database connection.
+                if (connection):
+                    cursor.close()
+                    connection.close()
 
     @property
     def mcda_descriptor(self):
@@ -476,6 +531,39 @@ class MCDAManager(EmpowerApp):
         self.__every = int(value)
         super().restart(self.__every)
 
+    @property
+    def db_monitor(self):
+        """Return db_monitor"""
+        return self.__db_monitor
+
+    @db_monitor.setter
+    def db_monitor(self, value):
+        """Set db_monitor"""
+        if value is not None:
+            self.__db_monitor = value
+
+    @property
+    def db_user(self):
+        """Return db_user"""
+        return self.__db_user
+
+    @db_user.setter
+    def db_user(self, value):
+        """Set db_user"""
+        if value is not None:
+            self.__db_user = value
+
+    @property
+    def db_pass(self):
+        """Return db_pass"""
+        return self.__db_pass
+
+    @db_pass.setter
+    def db_pass(self, value):
+        """Set db_pass"""
+        if value is not None:
+            self.__db_pass = value
+
     def to_dict(self):
         """ Return a JSON-serializable."""
         return self.__mcda_manager
@@ -483,9 +571,15 @@ class MCDAManager(EmpowerApp):
 
 def launch(tenant_id,
            descriptor,
+           db_monitor,
+           db_user,
+           db_pass,
            every=DEFAULT_LONG_PERIOD):
     """ Initialize the module. """
 
     return MCDAManager(tenant_id=tenant_id,
                        descriptor=descriptor,
+                       db_monitor=db_monitor,
+                       db_user=db_user,
+                       db_pass=db_pass,
                        every=every)
