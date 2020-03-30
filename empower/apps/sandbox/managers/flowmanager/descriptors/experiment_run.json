@@ -27,7 +27,7 @@
       "req_queue_delay_ms": null,
       "lvap_addr": "DC:A6:32:0A:E1:D4",
       "from": 60.0,
-      "until": 300.0,
+      "until": 200.0,
       "active": false
     },
     "3": {
@@ -42,8 +42,8 @@
       "port": 5002,
       "req_queue_delay_ms": null,
       "lvap_addr": "DC:A6:32:0A:E1:D4",
-      "from": 90.0,
-      "until": 300.0,
+      "from": 60.0,
+      "until": 200.0,
       "active": false
     },
     "4": {
@@ -57,7 +57,7 @@
       "port": 4003,
       "req_queue_delay_ms": null,
       "lvap_addr": "DC:A6:32:0A:E0:C9",
-      "from": 120.0,
+      "from": 90.0,
       "until": 300.0,
       "active": false
     },
@@ -70,9 +70,9 @@
       "req_throughput_mbps": 1,
       "dst_ip_addr": "192.168.2.24",
       "port": 4004,
-      "req_queue_delay_ms": 30,
+      "req_queue_delay_ms": 50,
       "lvap_addr": "DC:A6:32:0A:B8:22",
-      "from": 150.0,
+      "from": 120.0,
       "until": 300.0,
       "active": false
     }
