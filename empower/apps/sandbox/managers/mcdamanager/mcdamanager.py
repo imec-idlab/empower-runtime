@@ -237,7 +237,6 @@ class MCDAManager(EmpowerApp):
 
                 # Initializing criteria with None
                 self.__mcda_manager['wtps'][crr_wtp_addr] = {'lvaps': {},
-                                                             'active_flows': {'QoS': [], 'BE': []},
                                                              'connected_lvaps': [],
                                                              'expected_load': 0}
                 for lvap in self.lvaps():

@@ -41,6 +41,8 @@ class FlowManager(EmpowerApp):
         self.__flow_manager = {'message': 'Flow Manager is online!',
                                'flows': None,
                                'active_list': [],
+                               'BE': [],
+                               'QoS': [],
                                'lvap_flow_map': {},
                                'lvap_load_expected_map': {}}
         self.__process_handler = {'flows': {}}
@@ -79,6 +81,10 @@ class FlowManager(EmpowerApp):
             if self.__process_handler['flows'][flow_id].poll() is not None:
                 self.__flow_manager['flows'][flow_id]['active'] = False
                 self.__flow_manager['active_list'].remove(flow_id)
+                if flow_id in self.__flow_manager['BE']:
+                    self.__flow_manager['BE'].remove(flow_id)
+                elif flow_id in self.__flow_manager['QoS']:
+                    self.__flow_manager['QoS'].remove(flow_id)
 
     def start_flows(self):
         for flow_id in self.__flow_manager['flows']:
@@ -89,6 +95,7 @@ class FlowManager(EmpowerApp):
                 self.__process_handler['flows'][flow_id] = subprocess.Popen(mgen_command)
                 flow['active'] = True
                 self.__flow_manager['active_list'].append(flow_id)
+                self.__flow_manager[flow['type']].append(flow_id)
 
     def create_mgen_scripts(self):
         # Creating mgen script and execute it
