@@ -131,17 +131,6 @@ class MCDAManager(EmpowerApp):
                                         self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
                                             'values'])
 
-                            # Discount LVAP expected load from connected WTP (lvap_load_expected_map from Flow Manager)
-                            if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
-                                if not self.__initial_load_expected:
-                                    if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
-                                        crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
-                                        for crr_wtp_addr in self.__mcda_manager['wtps']:
-                                            if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
-                                                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr][
-                                                    'metrics']['values'][crr_criteria_index] -= \
-                                                self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr]
-
                             # List must have the same length
                             data = Data(mtx,
                                         self.__mcda_targets,
@@ -201,9 +190,9 @@ class MCDAManager(EmpowerApp):
             if self.__initial_load_expected:
                 self.__initial_load_expected = False
 
-            # Keeping only the last measurements in db
-            if self.__db_monitor is not None:
-                self.keep_last_measurements_only()
+        # Keeping only the last measurements in db
+        if self.__db_monitor is not None:
+            self.keep_last_measurements_only()
 
     def recalculate_wtp_load_expected_mbps(self, old_wtp_addr, best_alternative_wtp_addr, moving_lvap_addr):
         wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
@@ -223,25 +212,23 @@ class MCDAManager(EmpowerApp):
 
     def compute_wtp_load_expected_mbps(self):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
+        for crr_wtp_addr in self.__mcda_manager['wtps']:
+            self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] = 0
+            for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
+                if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
+                    self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] += \
+                    self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr]
 
-        # For each active flow, aggregate expected load per wtp
-        for active_flow in self.__flow_handler['active_list']:
-            flow_load_expected_mbps = self.__flow_handler['flows'][active_flow]['req_throughput_mbps']
-            which_wtp = None
-            for lvap in self.lvaps():
-                crr_lvap_addr = str(lvap.addr)
-                if crr_lvap_addr == self.__flow_handler['flows'][active_flow]['lvap_addr']:
-                    which_wtp = lvap.blocks[0]
+            for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                if crr_lvap_addr in crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
+                    # Discounting each lvap expected load
+                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                        crr_criteria_index] = self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] - \
+                                              self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr]
+                else:
+                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                        crr_criteria_index] = self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load']
 
-            if which_wtp is not None:
-                which_wtp_addr = str(which_wtp.addr)
-                for crr_lvap_addr in self.__mcda_manager['wtps'][which_wtp_addr]['lvaps']:
-                    self.__mcda_manager['wtps'][which_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                        crr_criteria_index] += flow_load_expected_mbps
-            else:
-                raise ValueError(
-                    "WTP expected load not computed, WTP not found!")
-                return False
 
     def create_mcda_structure(self):
         for wtp in self.wtps():
@@ -251,7 +238,8 @@ class MCDAManager(EmpowerApp):
                 # Initializing criteria with None
                 self.__mcda_manager['wtps'][crr_wtp_addr] = {'lvaps': {},
                                                              'active_flows': {'QoS': [], 'BE': []},
-                                                             'connected_lvaps': []}
+                                                             'connected_lvaps': [],
+                                                             'expected_load': 0}
                 for lvap in self.lvaps():
                     crr_lvap_addr = str(lvap.addr)
                     if crr_lvap_addr not in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
@@ -381,6 +369,7 @@ class MCDAManager(EmpowerApp):
 
     def get_sta_association_flag(self):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
+        crr_time_in_ms = int(round(time.time()))
         for crr_wtp_addr in self.__mcda_manager['wtps']:
             for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
                 if not self.__initial_association:
@@ -396,7 +385,7 @@ class MCDAManager(EmpowerApp):
 
                 # Saving into db
                 if all(param is not None for param in [self.__db_monitor, self.__db_user, self.__db_pass]):
-                    crr_time_in_ms = int(round(time.time()))
+
 
                     try:
                         connection = psycopg2.connect(user=self.__db_user,
