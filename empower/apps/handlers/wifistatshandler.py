@@ -67,7 +67,7 @@ class WiFiStatsHandler(EmpowerApp):
                 cursor = connection.cursor()
                 sql_delete_query = """DELETE FROM wifi_stats WHERE TIMESTAMP_MS < %s"""
                 cursor.execute(sql_delete_query, (int(round(
-                    time.time() - 5 * 60)),))  # Keeping only the last measurements (i.e., only the last 5 minutes)
+                    time.time() - 10 * 60)),))  # Keeping only the last measurements (i.e., only the last 10 minutes)
                 connection.commit()
 
             except (Exception, psycopg2.Error) as error:
@@ -97,8 +97,15 @@ class WiFiStatsHandler(EmpowerApp):
                 }
 
             # TX and RX metrics
-            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['tx_per_second'] = wifi_stats.tx_per_second
-            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['rx_per_second'] = wifi_stats.rx_per_second
+            if wifi_stats.tx_per_second > 0:
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['tx_per_second'] = wifi_stats.tx_per_second / 125000  # to Mbps
+            else:
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['tx_per_second'] = wifi_stats.tx_per_second
+
+            if wifi_stats.rx_per_second > 0:
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['rx_per_second'] = wifi_stats.rx_per_second / 125000  # to Mbps
+            else:
+                self.__wifi_stats_handler['wtps'][crr_wtp_addr]['rx_per_second'] = wifi_stats.rx_per_second
 
             # Channel is not going to change at runtime
             self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel'] = wifi_stats.block.channel
@@ -140,10 +147,10 @@ class WiFiStatsHandler(EmpowerApp):
                         postgres_insert_query = """ INSERT INTO wifi_stats (ADDRESS, TX, RX, CHANNEL, CHANNEL_UTILIZATION, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s)"""
                         record_to_insert = (
                             str(crr_wtp_addr),
-                            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['TX'],
-                            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['RX'],
+                            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['tx_per_second'],
+                            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['rx_per_second'],
                             self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel'],
-                            self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization'],
+                            (self.__wifi_stats_handler['wtps'][crr_wtp_addr]['tx_per_second'] + self.__wifi_stats_handler['wtps'][crr_wtp_addr]['rx_per_second']),
                             crr_time_in_ms)
                         cursor.execute(postgres_insert_query, record_to_insert)
                         connection.commit()

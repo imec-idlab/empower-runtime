@@ -66,7 +66,7 @@ class NCQMStatsHandler(EmpowerApp):
                 cursor = connection.cursor()
                 sql_delete_query = """DELETE FROM ncqm_stats WHERE TIMESTAMP_MS < %s"""
                 cursor.execute(sql_delete_query, (int(round(
-                    time.time() - 5 * 60)),))  # Keeping only the last measurements (i.e., only the last 5 minutes)
+                    time.time() - 10 * 60)),))  # Keeping only the last measurements (i.e., only the last 10 minutes)
                 connection.commit()
 
             except (Exception, psycopg2.Error) as error:

@@ -229,7 +229,6 @@ class MCDAManager(EmpowerApp):
                     self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                         crr_criteria_index] = self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load']
 
-
     def create_mcda_structure(self):
         for wtp in self.wtps():
             crr_wtp_addr = str(wtp.addr)
@@ -445,7 +444,7 @@ class MCDAManager(EmpowerApp):
                 cursor = connection.cursor()
                 sql_delete_query = """DELETE FROM mcda_association_stats WHERE TIMESTAMP_MS < %s"""
                 cursor.execute(sql_delete_query, (int(round(
-                    time.time() - 5 * 60)),))  # Keeping only the last measurements (i.e., only the last 5 minutes)
+                    time.time() - 10 * 60)),))  # Keeping only the last measurements (i.e., only the last 5 minutes)
                 connection.commit()
 
             except (Exception, psycopg2.Error) as error:
