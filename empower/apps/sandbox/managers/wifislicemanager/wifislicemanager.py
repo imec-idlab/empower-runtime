@@ -69,9 +69,7 @@ class WiFiSliceManager(EmpowerApp):
                                         for flow in self.__active_flows_handler['lvap_flow_map'][crr_lvap_addr]:
                                             wtp_flows.append(flow)
 
-                                print('WTP_FLOWS', wtp_flows)
                                 be_flows = self.__active_flows_handler['BE']
-                                print('BE_FLOWS', be_flows)
 
                                 if wtp_flows and be_flows:
 
@@ -79,11 +77,8 @@ class WiFiSliceManager(EmpowerApp):
                                     for be_flow in [value for value in wtp_flows if value in be_flows]:
                                         be_dscp_list.append(self.__active_flows_handler['flows'][be_flow]['dscp'])
 
-                                    print(be_dscp_list)
-
                                     # If requirements are met
                                     if self.requirements_met(wtp=crr_wtp_addr):
-                                        print('YES')
                                         for crr_dscp in be_dscp_list:
                                             current_quantum = \
                                                 self.tenant.slices[DSCP(crr_dscp)].wifi['static-properties']['quantum']
@@ -96,11 +91,9 @@ class WiFiSliceManager(EmpowerApp):
                                                     dscp=crr_dscp,
                                                     new_quantum=adapted_quantum)
                                     else:
-                                        print('NO')
                                         for crr_dscp in be_dscp_list:
                                             current_quantum = self.tenant.slices[DSCP(crr_dscp)].wifi['static-properties']['quantum']
                                             adapted_quantum = int(current_quantum - (current_quantum * self.__quantum_decrease_rate))
-                                            print(adapted_quantum, self.__minimum_quantum)
                                             if adapted_quantum < self.__minimum_quantum:
                                                 adapted_quantum = self.__minimum_quantum
                                             if adapted_quantum != current_quantum:
@@ -114,9 +107,6 @@ class WiFiSliceManager(EmpowerApp):
             if qos_flow['dscp'] in self.__slice_stats_handler['wtps'][wtp]['slices']:
                 queue_delay_median = self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['dscp']]['queue_delay_ms'][
                     'median']
-                print(queue_delay_median)
-                print(qos_flow['req_queue_delay_ms'])
-                print('ooooooaoaoaoa')
                 if queue_delay_median is not None:
                     if qos_flow['req_queue_delay_ms'] < queue_delay_median:
                         return False
