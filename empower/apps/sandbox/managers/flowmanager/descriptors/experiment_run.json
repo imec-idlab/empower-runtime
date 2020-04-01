@@ -26,7 +26,7 @@
       "port": 4002,
       "req_queue_delay_ms": null,
       "lvap_addr": "DC:A6:32:0A:E1:D4",
-      "from": 60.0,
+      "from": 30.0,
       "until": 200.0,
       "active": false
     },
@@ -42,7 +42,7 @@
       "port": 5002,
       "req_queue_delay_ms": null,
       "lvap_addr": "DC:A6:32:0A:E1:D4",
-      "from": 60.0,
+      "from": 30.0,
       "until": 200.0,
       "active": false
     },
