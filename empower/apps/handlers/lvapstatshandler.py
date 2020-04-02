@@ -18,6 +18,7 @@
 """LVAP Stats Handler APP"""
 
 from empower.core.app import EmpowerApp
+from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
 import psycopg2
 import time
@@ -47,6 +48,7 @@ class LVAPStatsHandler(EmpowerApp):
         # self.log.debug('LVAP Stats Handler APP Loop...')
         for lvap in self.lvaps():
             self.lvap_stats(lvap=lvap.addr,
+                            every=DEFAULT_MONITORING_PERIOD,
                             callback=self.lvap_stats_callback)
 
         if self.__db_monitor is not None:

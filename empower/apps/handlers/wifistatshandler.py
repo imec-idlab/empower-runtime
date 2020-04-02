@@ -18,6 +18,7 @@
 """Slice Stats Handler APP"""
 
 from empower.core.app import EmpowerApp
+from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
 import psycopg2
 import time
@@ -47,7 +48,7 @@ class WiFiStatsHandler(EmpowerApp):
         for block in wtp.supports:
             # Calling WiFi stats
             self.wifi_stats(block=block,
-                            every=DEFAULT_PERIOD,
+                            every=DEFAULT_MONITORING_PERIOD,
                             callback=self.wifi_stats_callback)
 
     def loop(self):

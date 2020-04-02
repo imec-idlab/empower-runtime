@@ -25,7 +25,7 @@ import psycopg2
 import time
 import json
 
-DEFAULT_LONG_PERIOD = 30000
+DEFAULT_LONG_PERIOD = 20000
 
 
 class MCDAManager(EmpowerApp):

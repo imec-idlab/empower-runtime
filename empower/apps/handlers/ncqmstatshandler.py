@@ -18,6 +18,7 @@
 """NCQM Stats Handler APP"""
 
 from empower.core.app import EmpowerApp
+from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
 import psycopg2
 import time
@@ -46,7 +47,7 @@ class NCQMStatsHandler(EmpowerApp):
         for block in wtp.supports:
             # Calling NCQM stats
             self.ncqm(block=block,
-                      every=DEFAULT_PERIOD,
+                      every=DEFAULT_MONITORING_PERIOD,
                       callback=self.ncqm_stats_callback)
 
     def loop(self):

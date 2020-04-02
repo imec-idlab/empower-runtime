@@ -18,6 +18,7 @@
 """UCQM Stats Handler APP"""
 
 from empower.core.app import EmpowerApp
+from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
 from empower.datatypes.etheraddress import EtherAddress
 import psycopg2
@@ -48,7 +49,7 @@ class UCQMStatsHandler(EmpowerApp):
         for block in wtp.supports:
             # Calling UCQM stats
             self.ucqm(block=block,
-                      every=DEFAULT_PERIOD,
+                      every=DEFAULT_MONITORING_PERIOD,
                       callback=self.ucqm_stats_callback)
 
     def loop(self):
