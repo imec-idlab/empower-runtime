@@ -131,10 +131,18 @@ class MCDAManager(EmpowerApp):
                                         self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
                                             'values'])
 
+                            # if any of the (active) flows in this LVAP is QoS, use QoS weights
+                            # otherwise, stick with the BE weights
+                            if any(i in self.__flow_handler['lvap_flow_map'][crr_lvap_addr] for i in self.__flow_handler['QoS']):
+                                mcda_weights = self.__mcda_descriptor['weights_QoS']
+                            else:
+                                mcda_weights = self.__mcda_descriptor['weights_BE']
+
+
                             # List must have the same length
                             data = Data(mtx,
                                         self.__mcda_targets,
-                                        weights=self.__mcda_descriptor['weights'],
+                                        weights=mcda_weights,
                                         anames=wtp_addresses,
                                         cnames=self.__mcda_descriptor['criteria'])
 
