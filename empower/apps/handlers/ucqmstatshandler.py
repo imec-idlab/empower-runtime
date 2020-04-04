@@ -21,8 +21,6 @@ from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
 from empower.datatypes.etheraddress import EtherAddress
-import psycopg2
-import time
 import statistics
 
 
@@ -41,8 +39,6 @@ class UCQMStatsHandler(EmpowerApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.__db_monitor = self.db_monitor
-        self.__db_user = self.db_user
-        self.__db_pass = self.db_pass
         self.__ucqm_stats_handler = {"message": "UCQM stats handler is online!", "wtps": {}}
 
     def wtp_up(self, wtp):
@@ -56,30 +52,7 @@ class UCQMStatsHandler(EmpowerApp):
         """Periodic job."""
         # self.log.debug('UCQM Stats Handler APP Loop...')
         if self.__db_monitor is not None:
-            self.keep_last_measurements_only()
-
-    def keep_last_measurements_only(self):
-        if self.__db_user is not None and self.__db_pass is not None:
-            try:
-                connection = psycopg2.connect(user=self.__db_user,
-                                              password=self.__db_pass,
-                                              host="127.0.0.1",
-                                              port="5432",
-                                              database="empower")
-                cursor = connection.cursor()
-                sql_delete_query = """DELETE FROM ucqm_stats WHERE TIMESTAMP_MS < %s"""
-                cursor.execute(sql_delete_query, (int(round(
-                    time.time() - 10 * 60)),))  # Keeping only the last measurements (i.e., only the last 10 minutes)
-                connection.commit()
-
-            except (Exception, psycopg2.Error) as error:
-                if (connection):
-                    self.log.debug('UCQM stats failed to delete records from ucqm_stats table!')
-            finally:
-                # closing database connection.
-                if (connection):
-                    cursor.close()
-                    connection.close()
+            self.monitor.keep_last_measurements_only('ucqm_stats')
 
     def ucqm_stats_callback(self, ucqm_stats):
         """ New stats available. """
@@ -138,40 +111,18 @@ class UCQMStatsHandler(EmpowerApp):
                                 'mov_rssi']['values'])
 
             if self.__db_monitor is not None:
-                if self.__db_user is not None and self.__db_pass is not None:
-                    crr_time_in_ms = int(round(time.time()))
-                    for sta in ucqm:
-                        try:
-                            connection = psycopg2.connect(user=self.__db_user,
-                                                          password=self.__db_pass,
-                                                          host="127.0.0.1",
-                                                          port="5432",
-                                                          database="empower")
-                            cursor = connection.cursor()
+                for sta in ucqm:
+                    fields = ['WTP_ADDR', 'STA_ADDR',
+                              'HIST_PACKETS', 'LAST_PACKETS',
+                              'LAST_RSSI_AVG', 'LAST_RSSI_STD', 'MOV_RSSI',
+                              'WTP_STA']
+                    values = [str(crr_wtp_addr), str(sta),
+                              ucqm[sta]['hist_packets'], ucqm[sta]['last_packets'],
+                              ucqm[sta]['last_rssi_avg'], ucqm[sta]['last_rssi_std'], ucqm[sta]['mov_rssi'],
+                              "WTP: " + str(crr_wtp_addr) + " - STA: " + str(sta)]
 
-                            postgres_insert_query = """ INSERT INTO ucqm_stats (ADDRESS, STATION, HIST_PACKETS, LAST_PACKETS, LAST_RSSI_AVG, LAST_RSSI_STD, MOV_RSSI, WTP_STA, TIMESTAMP_MS) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
-                            record_to_insert = (
-                                str(crr_wtp_addr),
-                                str(sta),
-                                ucqm[sta]['hist_packets'],
-                                ucqm[sta]['last_packets'],
-                                ucqm[sta]['last_rssi_avg'],
-                                ucqm[sta]['last_rssi_std'],
-                                ucqm[sta]['mov_rssi'],
-                                "WTP: " + str(crr_wtp_addr) + " - STA: " + str(sta),
-                                crr_time_in_ms)
-                            cursor.execute(postgres_insert_query, record_to_insert)
-                            connection.commit()
-                            count = cursor.rowcount
-
-                        except (Exception, psycopg2.Error) as error:
-                            if (connection):
-                                self.log.debug('UCQM stats failed to insert record into ucqm_stats table!')
-                        finally:
-                            # closing database connection.
-                            if (connection):
-                                cursor.close()
-                                connection.close()
+                    # Saving into db
+                    self.monitor.insert_into_db(table='ucqm_stats', fields=fields, values=values)
 
     @property
     def ucqm_stats_handler(self):
@@ -193,28 +144,6 @@ class UCQMStatsHandler(EmpowerApp):
         """Set db_monitor"""
         if value is not None:
             self.__db_monitor = value
-
-    @property
-    def db_user(self):
-        """Return db_user"""
-        return self.__db_user
-
-    @db_user.setter
-    def db_user(self, value):
-        """Set db_user"""
-        if value is not None:
-            self.__db_user = value
-
-    @property
-    def db_pass(self):
-        """Return db_pass"""
-        return self.__db_pass
-
-    @db_pass.setter
-    def db_pass(self, value):
-        """Set db_pass"""
-        if value is not None:
-            self.__db_pass = value
 
     def to_dict(self):
         """ Return a JSON-serializable."""

@@ -24,6 +24,7 @@ from empower.core.resourcepool import ResourcePool
 from empower.core.cellpool import CellPool
 from empower.lvapp.lvappserver import LVAPPServer
 from empower.lvapp import PT_LVAP_JOIN
+from empower.grafana.postgresql.common import EmpowerMon
 
 from empower.main import RUNTIME
 
@@ -40,6 +41,7 @@ class EmpowerApp:
         self.__every = DEFAULT_PERIOD
         self.log = empower.logger.get_logger()
         self.worker = None
+        self.monitor = EmpowerMon()
 
         for param in kwargs:
             setattr(self, param, kwargs[param])
