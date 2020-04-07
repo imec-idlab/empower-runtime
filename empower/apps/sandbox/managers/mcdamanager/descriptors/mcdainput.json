@@ -7,15 +7,15 @@
     "wtp_queue_delay_ms",
     "sta_association_flag"
   ],
-  "weights_QoS": [
-    0.05,
+  "weights_qos": [
     0.1,
-    0.2,
-    0.15,
-    0.3,
-    0.2
+    0.1,
+    0.1,
+    0.1,
+    0.1,
+    0.5
   ],
-  "weights_BE": [
+  "weights_be": [
     0.1,
     0.15,
     0.40,

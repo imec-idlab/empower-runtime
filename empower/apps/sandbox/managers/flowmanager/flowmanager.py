@@ -19,7 +19,7 @@
 
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
-import json
+
 import subprocess
 
 
@@ -39,86 +39,299 @@ class FlowManager(EmpowerApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.__flow_manager = {'message': 'Flow Manager is online!',
-                               'flows': None,
-                               'active_list': [],
-                               'BE': [],
-                               'QoS': [],
+                               'flows': {},
+                               'be_flows': [],
+                               'be_slices': [],
+                               'qos_flows': [],
+                               'qos_slices': [],
                                'lvap_flow_map': {},
                                'lvap_load_expected_map': {}}
         self.__process_handler = {'flows': {}}
-        self.__descriptor_filename = 'empower/apps/sandbox/managers/flowmanager/descriptors/' + str(
-            self.descriptor)
 
-        try:
-            with open(self.__descriptor_filename) as f:
-                self.__flow_manager['flows'] = json.load(f)['flows']
-                self.create_lvap_flow_and_load_expected_map()
-                self.create_mgen_scripts()
+        # Flow params
+        self.__flow_id = None
+        self.__flow_type = None
+        self.__flow_dscp = None
+        self.__flow_protocol = None
+        self.__flow_distribution = None
+        self.__flow_frame_size = None
+        self.__flow_bw_req_mbps = None
+        self.__flow_delay_req_ms = None
+        self.__flow_dst_ip_addr = None
+        self.__flow_dst_port = None
+        self.__flow_dst_mac_addr = None
+        self.__flow_duration = None
 
-                # Run flows with mgen
-                self.start_flows()
-        except TypeError:
-            raise ValueError("Invalid value for input file or file does not exist!")
+    def reset_flow_parameters(self):
+        self.__flow_id = None
+        self.__flow_type = None
+        self.__flow_dscp = None
+        self.__flow_protocol = None
+        self.__flow_distribution = None
+        self.__flow_frame_size = None
+        self.__flow_bw_req_mbps = None
+        self.__flow_delay_req_ms = None
+        self.__flow_dst_ip_addr = None
+        self.__flow_dst_port = None
+        self.__flow_dst_mac_addr = None
+        self.__flow_duration = None
 
     def loop(self):
         """Periodic job."""
-        self.log.debug("Flow Manager APP loop...")
-        if self.__flow_manager['active_list']:
-            self.check_flows_status()
+        self.check_flow_status()
 
-    def create_lvap_flow_and_load_expected_map(self):
-        for flow_id in self.__flow_manager['flows']:
-            crr_lvap_addr = self.__flow_manager['flows'][flow_id]['lvap_addr']
-            if crr_lvap_addr not in self.__flow_manager['lvap_flow_map']:
-                self.__flow_manager['lvap_flow_map'][crr_lvap_addr] = []
-                self.__flow_manager['lvap_load_expected_map'][crr_lvap_addr] = 0
-            self.__flow_manager['lvap_flow_map'][crr_lvap_addr].append(flow_id)
-            self.__flow_manager['lvap_load_expected_map'][crr_lvap_addr] += self.__flow_manager['flows'][flow_id][
-                'req_throughput_mbps']
-
-    def check_flows_status(self):
-        for flow_id in self.__flow_manager['active_list']:
+    def check_flow_status(self):
+        flow_processes_to_expire = []
+        for flow_id in self.__process_handler['flows']:
             if self.__process_handler['flows'][flow_id].poll() is not None:
-                self.__flow_manager['flows'][flow_id]['active'] = False
-                self.__flow_manager['active_list'].remove(flow_id)
-                if flow_id in self.__flow_manager['BE']:
-                    self.__flow_manager['BE'].remove(flow_id)
-                elif flow_id in self.__flow_manager['QoS']:
-                    self.__flow_manager['QoS'].remove(flow_id)
+                # expire flow
+                self.remove_flow(flow_id)
+                flow_processes_to_expire.append(flow_id)
 
-    def start_flows(self):
-        for flow_id in self.__flow_manager['flows']:
-            flow = self.__flow_manager['flows'][flow_id]
-            if not flow['active']:
-                mgen_command = ['mgen', 'input',
-                                'empower/apps/sandbox/managers/flowmanager/scripts/mgen/flow' + str(flow_id) + '.mgn']
-                self.__process_handler['flows'][flow_id] = subprocess.Popen(mgen_command)
-                flow['active'] = True
-                self.__flow_manager['active_list'].append(flow_id)
-                self.__flow_manager[flow['type']].append(flow_id)
+        for flow_proc in flow_processes_to_expire:
+            del self.__process_handler['flows'][flow_proc]
 
-    def create_mgen_scripts(self):
-        # Creating mgen script and execute it
-        for flow_id in self.__flow_manager['flows']:
-            multiplier = 1
-            flow = self.__flow_manager['flows'][flow_id]
-            # For the POISSON and PERIODIC distributions, 120 pps = 1Mbps
-            multiplier = 120
-            try:
-                with open('empower/apps/sandbox/managers/flowmanager/scripts/mgen/flow' + str(flow_id) + '.mgn',
-                          'w+') as mgen_file:
-                    mgen_file.write(
-                        str(flow['from']) + ' ' + 'ON ' + str(flow_id) + ' ' + str(
-                            flow['protocol']) + ' ' + 'DST ' + str(
-                            flow['dst_ip_addr']) + '/' + str(flow['port']) + ' ' + str(
-                            flow['distribution']) + ' [' + str(
-                            int(flow['req_throughput_mbps'] * multiplier)) + ' ' + str(flow['pkt_size']) + ']\n' + str(
-                            flow['until']) + ' OFF ' + str(flow_id) + '\n')
+    def create_mgen_script(self):
+        # For the POISSON and PERIODIC distributions, 120 pps = 1Mbps
+        multiplier = 120
+        try:
+            with open('empower/apps/sandbox/managers/flowmanager/scripts/mgen/flow' + str(self.__flow_id) + '.mgn',
+                      'w+') as mgen_file:
+                mgen_file.write(
+                    str('0.0 ' + 'ON ' + str(self.__flow_id) + ' ' + str(self.__flow_protocol) + ' ' + 'DST ' + str(
+                        self.__flow_dst_ip_addr) + '/' + str(self.__flow_dst_port) + ' ' + str(
+                        self.__flow_distribution) + ' [' + str(int(self.__flow_bw_req_mbps * multiplier)) + ' ' + str(
+                        self.__flow_frame_size) + ']\n' + str(self.__flow_duration) + ' OFF ' + str(
+                        self.__flow_id) + '\n'))
                 mgen_file.close()
+                return True
+        except TypeError:
+            raise ValueError("Invalid path for mgen script files!")
+        return False
 
-            except TypeError:
-                raise ValueError("Invalid path for mgen script files!")
+    def add_flow(self):
+        flow = {
+            'flow_type': self.__flow_type,
+            'flow_dscp': self.__flow_dscp,
+            'flow_protocol': self.__flow_protocol,
+            'flow_distribution': self.__flow_distribution,
+            'flow_frame_size': self.__flow_frame_size,
+            'flow_bw_req_mbps': self.__flow_bw_req_mbps,
+            'flow_delay_req_ms': self.__flow_delay_req_ms,
+            'flow_dst_ip_addr': self.__flow_dst_ip_addr,
+            'flow_dst_mac_addr': self.__flow_dst_mac_addr,
+            'flow_dst_port': self.__flow_dst_port,
+            'flow_duration': self.__flow_duration
+        }
 
+        # If modifying a flow
+        if self.__flow_id in self.__flow_manager['flows']:
+            self.remove_flow(self.__flow_id)
+
+        # fill in QoS and BE flow list
+        if self.__flow_type == 'QoS':
+            self.__flow_manager['qos_flows'].append(self.__flow_id)
+            self.__flow_manager['qos_slices'].append(self.__flow_dscp)
+        else:
+            self.__flow_manager['be_flows'].append(self.__flow_id)
+            self.__flow_manager['be_slices'].append(self.__flow_dscp)
+
+        # fill in LVAP's flow list
+        if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_flow_map']:
+            self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr] = []
+        self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr].append(self.__flow_id)
+
+        # fill in LVAP's flow load list
+        if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_load_expected_map']:
+            self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr] = []
+        self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
+
+        # add flow structure
+        self.__flow_manager['flows'][self.__flow_id] = flow
+
+        # mgen command
+        mgen_command = ['mgen', 'input',
+                        'empower/apps/sandbox/managers/flowmanager/scripts/mgen/flow' + str(self.__flow_id) + '.mgn']
+
+        self.__process_handler['flows'][self.__flow_id] = subprocess.Popen(mgen_command)
+
+    def remove_flow(self, flow_id):
+        flow = self.__flow_manager['flows'][flow_id]
+
+        del self.__flow_manager['flows'][flow_id]
+        if flow['flow_type'] == 'QoS':
+            self.__flow_manager['qos_flows'].remove(flow_id)
+            self.__flow_manager['qos_slices'].remove(flow['flow_dscp'])
+        else:
+            self.__flow_manager['be_flows'].remove(flow_id)
+            self.__flow_manager['be_slices'].remove(flow['flow_dscp'])
+
+        self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
+        self.__flow_manager['lvap_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
+
+        if self.__process_handler['flows'][flow_id].poll() is None:
+            self.__process_handler['flows'][flow_id].kill()
+
+
+    @property
+    def start_flow(self):
+        """Return start_flow."""
+
+        return self.__start_flow
+
+    @start_flow.setter
+    def start_flow(self, value):
+        """Set start_flow."""
+
+        if value is not None:
+            if self.create_mgen_script():
+                self.add_flow()
+                self.reset_flow_parameters()
+
+    @property
+    def flow_id(self):
+        """Return flow_id."""
+
+        return self.__flow_id
+
+    @flow_id.setter
+    def flow_id(self, value):
+        """Set flow_id."""
+
+        self.__flow_id = value
+
+    @property
+    def flow_type(self):
+        """Return flow_type."""
+
+        return self.__flow_type
+
+    @flow_type.setter
+    def flow_type(self, value):
+        """Set flow_type."""
+
+        self.__flow_type = value
+
+    @property
+    def flow_dscp(self):
+        """Return flow_dscp."""
+
+        return self.__flow_dscp
+
+    @flow_dscp.setter
+    def flow_dscp(self, value):
+        """Set flow_dscp."""
+
+        self.__flow_dscp = value
+
+    @property
+    def flow_protocol(self):
+        """Return flow_protocol."""
+
+        return self.__flow_protocol
+
+    @flow_protocol.setter
+    def flow_protocol(self, value):
+        """Set flow_protocol."""
+
+        self.__flow_protocol = value
+
+    @property
+    def flow_distribution(self):
+        """Return flow_distribution."""
+
+        return self.__flow_distribution
+
+    @flow_distribution.setter
+    def flow_distribution(self, value):
+        """Set flow_distribution."""
+
+        self.__flow_distribution = value
+
+    @property
+    def flow_frame_size(self):
+        """Return flow_frame_size."""
+
+        return self.__flow_frame_size
+
+    @flow_frame_size.setter
+    def flow_frame_size(self, value):
+        """Set flow_frame_size."""
+
+        self.__flow_frame_size = value
+
+    @property
+    def flow_bw_req_mbps(self):
+        """Return flow_bw_req_mbps."""
+
+        return self.__flow_bw_req_mbps
+
+    @flow_bw_req_mbps.setter
+    def flow_bw_req_mbps(self, value):
+        """Set flow_bw_req_mbps."""
+
+        self.__flow_bw_req_mbps = value
+
+    @property
+    def flow_delay_req_ms(self):
+        """Return flow_delay_req_ms."""
+
+        return self.__flow_delay_req_ms
+
+    @flow_delay_req_ms.setter
+    def flow_delay_req_ms(self, value):
+        """Set flow_delay_req_ms."""
+
+        self.__flow_delay_req_ms = value
+
+    @property
+    def flow_dst_ip_addr(self):
+        """Return flow_dst_ip_addr."""
+
+        return self.__flow_dst_ip_addr
+
+    @flow_dst_ip_addr.setter
+    def flow_dst_ip_addr(self, value):
+        """Set flow_dst_ip_addr."""
+
+        self.__flow_dst_ip_addr = value
+
+    @property
+    def flow_dst_port(self):
+        """Return flow_dst_port."""
+
+        return self.__flow_dst_port
+
+    @flow_dst_port.setter
+    def flow_dst_port(self, value):
+        """Set flow_dst_port."""
+
+        self.__flow_dst_port = value
+
+    @property
+    def flow_dst_mac_addr(self):
+        """Return flow_dst_mac_addr."""
+
+        return self.__flow_dst_mac_addr
+
+    @flow_dst_mac_addr.setter
+    def flow_dst_mac_addr(self, value):
+        """Set flow_dst_mac_addr."""
+
+        self.__flow_dst_mac_addr = value
+
+    @property
+    def flow_duration(self):
+        """Return flow_duration."""
+
+        return self.__flow_duration
+
+    @flow_duration.setter
+    def flow_duration(self, value):
+        """Set flow_duration."""
+
+        self.__flow_duration = value
+    
     @property
     def every(self):
         """Return loop period."""
@@ -146,9 +359,8 @@ class FlowManager(EmpowerApp):
         return self.__flow_manager
 
 
-def launch(tenant_id, descriptor, every=DEFAULT_PERIOD):
+def launch(tenant_id, every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
     return FlowManager(tenant_id=tenant_id,
-                       descriptor=descriptor,
                        every=every)

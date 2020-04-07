@@ -51,64 +51,42 @@ class WiFiSliceManager(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        self.log.debug("WiFi Slice Manager APP loop...")
-        if self.get_slice_stats() and self.get_active_flows() and self.get_lvaps_connected():
-            self.log.debug("WiFi Slice Manager is ready!")
-
-            # Is there QoS flows active?
-            if self.__active_flows_handler['QoS']:
+        if self.get_slice_stats() and self.get_active_flows():
+            # Is there are QoS flows active?
+            if self.__active_flows_handler['qos_flows']:
                 for crr_wtp_addr in self.__slice_stats_handler['wtps']:
-                    if self.__mcda_handler['wtps'] is not None:
-                        if crr_wtp_addr in self.__mcda_handler['wtps']:
-                            # If there is a STA connected to this WTP
-                            if self.__mcda_handler['wtps'][crr_wtp_addr]['connected_lvaps']:
+                    if self.requirements_met(wtp=crr_wtp_addr):
+                        factor = self.__quantum_increase_rate + 1
+                    else:
+                        factor = self.__quantum_decrease_rate
 
-                                wtp_flows = []
-                                for crr_lvap_addr in self.__mcda_handler['wtps'][crr_wtp_addr]['connected_lvaps']:
-                                    if crr_lvap_addr in self.__active_flows_handler['lvap_flow_map']:
-                                        for flow in self.__active_flows_handler['lvap_flow_map'][crr_lvap_addr]:
-                                            wtp_flows.append(flow)
+                    # Reconfigure all slices in the WTP
+                    self.reconfigure(factor, crr_wtp_addr)
 
-                                be_flows = self.__active_flows_handler['BE']
-
-                                if wtp_flows and be_flows:
-
-                                    be_dscp_list = []
-                                    for be_flow in [value for value in wtp_flows if value in be_flows]:
-                                        be_dscp_list.append(self.__active_flows_handler['flows'][be_flow]['dscp'])
-
-                                    # If requirements are met
-                                    if self.requirements_met(wtp=crr_wtp_addr):
-                                        for crr_dscp in be_dscp_list:
-                                            current_quantum = \
-                                                self.tenant.slices[DSCP(crr_dscp)].wifi['static-properties']['quantum']
-                                            adapted_quantum = int(
-                                                current_quantum + (current_quantum * self.__quantum_increase_rate))
-                                            if adapted_quantum > self.__default_maximum_quantum:
-                                                adapted_quantum = self.__default_maximum_quantum
-                                            if adapted_quantum != current_quantum:
-                                                self.send_slice_config_to_wtp(
-                                                    dscp=crr_dscp,
-                                                    new_quantum=adapted_quantum)
-                                    else:
-                                        for crr_dscp in be_dscp_list:
-                                            current_quantum = self.tenant.slices[DSCP(crr_dscp)].wifi['static-properties']['quantum']
-                                            adapted_quantum = int(current_quantum - (current_quantum * self.__quantum_decrease_rate))
-                                            if adapted_quantum < self.__minimum_quantum:
-                                                adapted_quantum = self.__minimum_quantum
-                                            if adapted_quantum != current_quantum:
-                                                self.send_slice_config_to_wtp(
-                                                    dscp=crr_dscp,
-                                                    new_quantum=adapted_quantum)
+    def reconfigure(self, factor, crr_wtp_addr):
+        for be_dscp in self.__active_flows_handler['be_slices']:
+            if be_dscp in self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices']:
+                slice = self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][be_dscp]
+                # only if the slice active...
+                if slice['tx_bytes'] > 0:
+                    current_quantum = self.tenant.slices[DSCP(be_dscp)].wifi['static-properties']['quantum']
+                    adapted_quantum = int(current_quantum * factor)
+                    if adapted_quantum > self.__default_maximum_quantum:
+                        adapted_quantum = self.__default_maximum_quantum
+                    if adapted_quantum < self.__minimum_quantum:
+                        adapted_quantum = self.__minimum_quantum
+                    if adapted_quantum != current_quantum:
+                        self.send_slice_config_to_wtp(dscp=be_dscp,
+                                                      new_quantum=adapted_quantum)
 
     def requirements_met(self, wtp):
-        for qos_flow_id in self.__active_flows_handler['QoS']:
+        for qos_flow_id in self.__active_flows_handler['qos_flows']:
             qos_flow = self.__active_flows_handler['flows'][qos_flow_id]
-            if qos_flow['dscp'] in self.__slice_stats_handler['wtps'][wtp]['slices']:
-                queue_delay_median = self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['dscp']]['queue_delay_ms'][
-                    'median']
+            if qos_flow['flow_dscp'] in self.__slice_stats_handler['wtps'][wtp]['slices']:
+                queue_delay_median = \
+                self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['flow_dscp']]['queue_delay_ms']['median']
                 if queue_delay_median is not None:
-                    if qos_flow['req_queue_delay_ms'] < queue_delay_median:
+                    if qos_flow['flow_delay_req_ms'] < queue_delay_median:
                         return False
         return True
 
@@ -123,15 +101,6 @@ class WiFiSliceManager(EmpowerApp):
         if 'empower.apps.sandbox.managers.flowmanager.flowmanager' in RUNTIME.tenants[self.tenant_id].components:
             self.__active_flows_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.sandbox.managers.flowmanager.flowmanager'].to_dict()
-            return True
-        else:
-            raise ValueError("APP 'empower.apps.sandbox.managers.flowmanager.flowmanager' is not online!")
-            return False
-
-    def get_lvaps_connected(self):
-        if 'empower.apps.sandbox.managers.mcdamanager.mcdamanager' in RUNTIME.tenants[self.tenant_id].components:
-            self.__mcda_handler = RUNTIME.tenants[self.tenant_id].components[
-                'empower.apps.sandbox.managers.mcdamanager.mcdamanager'].to_dict()
             return True
         else:
             raise ValueError("APP 'empower.apps.sandbox.managers.flowmanager.flowmanager' is not online!")

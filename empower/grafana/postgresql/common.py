@@ -74,10 +74,11 @@ class EmpowerMon:
                 cursor.close()
                 connection.close()
 
-    def insert_into_db(self, table, fields, values):
+    def insert_into_db(self, table, fields, values, crr_time_in_ms=None):
         if isinstance(fields, list) and isinstance(values, list):
-            if fields and values and len(fields) == len(values):
+            if crr_time_in_ms is None:
                 crr_time_in_ms = int(round(time.time()))
+            if fields and values and len(fields) == len(values):
                 fields.append('TIMESTAMP_MS')
                 values.append(crr_time_in_ms)
                 fields_str = ','.join(map(str, fields))

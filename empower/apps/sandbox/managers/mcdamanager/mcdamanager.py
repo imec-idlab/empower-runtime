@@ -21,11 +21,11 @@ from empower.core.app import EmpowerApp
 from empower.main import RUNTIME
 from skcriteria import Data, MIN, MAX
 from skcriteria.madm import closeness, simple
-import psycopg2
+import math
 import time
 import json
 
-DEFAULT_LONG_PERIOD = 30000
+DEFAULT_LONG_PERIOD = 20000
 
 
 class MCDAManager(EmpowerApp):
@@ -53,11 +53,7 @@ class MCDAManager(EmpowerApp):
         self.__mcda_descriptor_filename = "empower/apps/sandbox/managers/mcdamanager/descriptors/" + str(
             self.descriptor)
         self.__initial_association = True
-        self.__initial_load_expected = True
-
         self.__db_monitor = self.db_monitor
-        self.__db_user = self.db_user
-        self.__db_pass = self.db_pass
 
         # Load MCDA descriptor from JSON
         try:
@@ -75,7 +71,6 @@ class MCDAManager(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        # self.log.debug("Sandbox MCDA Manager APP loop...")
 
         if self.__mcda_descriptor is not None:
 
@@ -85,7 +80,7 @@ class MCDAManager(EmpowerApp):
             # Step 2: Update WTP/LVAP association map
             self.update_wtp_association_map()
 
-            # Step 2: for each criteria, get all metrics and populate structure
+            # Step 3: for each criteria, get all metrics and populate structure
             for crr_criteria in self.__mcda_descriptor['criteria']:
                 if crr_criteria == 'wtp_load_measured_mbps':
                     if not self.get_wtp_load_measurements():
@@ -104,119 +99,125 @@ class MCDAManager(EmpowerApp):
                 elif crr_criteria == 'sta_association_flag':
                     self.get_sta_association_flag()
 
-            # Step 3: get all flows from flow manager APP
+            # Step 4: get all flows from flow manager APP
             if self.get_flow_handler():
                 if self.__flow_handler['flows'] is not None:
 
-                    # Step 4: Compute WTP expected load if present in the criteria
+                    # Step 5: Compute WTP expected load if present in the criteria
                     if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
-                        if not self.__initial_load_expected:
-                            self.compute_wtp_load_expected_mbps()
+                        self.compute_wtp_load_expected_mbps()
 
-                    # Step 5: for each lvap in the lvap_flow_map in which at least one flow is active,
-                    # get a decision using the TOPSIS method
-                    for crr_lvap_addr in self.__flow_handler['lvap_flow_map']:
+                    # Step 6: for each lvap in the network, get a decision using the TOPSIS method
+                    for lvap in self.lvaps():
+                        crr_lvap_addr = str(lvap.addr)
 
-                        # If there is at least one active flow towards this lvap
-                        if any(i in self.__flow_handler['lvap_flow_map'][crr_lvap_addr] for i in
-                               self.__flow_handler['active_list']):
+                        # Create MCDA structure
+                        mtx = []
+                        wtp_addresses = []
+                        for crr_wtp_addr in self.__mcda_manager['wtps']:
+                            wtp_addresses.append(crr_wtp_addr)
+                            if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                                mtx.append(
+                                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                        'values'])
 
-                            # Create MCDA structure
-                            mtx = []
-                            wtp_addresses = []
-                            for crr_wtp_addr in self.__mcda_manager['wtps']:
-                                wtp_addresses.append(crr_wtp_addr)
-                                if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
-                                    mtx.append(
-                                        self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                            'values'])
-
-                            # if any of the (active) flows in this LVAP is QoS, use QoS weights
-                            # otherwise, stick with the BE weights
-                            if any(i in self.__flow_handler['lvap_flow_map'][crr_lvap_addr] for i in self.__flow_handler['QoS']):
-                                mcda_weights = self.__mcda_descriptor['weights_QoS']
-                            else:
-                                mcda_weights = self.__mcda_descriptor['weights_BE']
+                        # if any of the (active) flows in this LVAP is QoS, use QoS weights
+                        # otherwise, stick with the BE weights
+                        mcda_weights = self.__mcda_descriptor['weights_be']
+                        if crr_lvap_addr in self.__flow_handler['lvap_flow_map']:
+                            if any(i in self.__flow_handler['lvap_flow_map'][crr_lvap_addr] for i in self.__flow_handler['qos_flows']):
+                                mcda_weights = self.__mcda_descriptor['weights_qos']
 
 
-                            # List must have the same length
-                            data = Data(mtx,
-                                        self.__mcda_targets,
-                                        weights=mcda_weights,
-                                        anames=wtp_addresses,
-                                        cnames=self.__mcda_descriptor['criteria'])
+                        # Lists must have the same length
+                        data = Data(mtx,
+                                    self.__mcda_targets,
+                                    weights=mcda_weights,
+                                    anames=wtp_addresses,
+                                    cnames=self.__mcda_descriptor['criteria'])
 
-                            dm = closeness.TOPSIS()
-                            dec = dm.decide(data)
-                            best_alternative_wtp_addr = data.anames[dec.best_alternative_]
+                        dm = closeness.TOPSIS()
+                        dec = dm.decide(data)
+                        best_alternative_wtp_addr = data.anames[dec.best_alternative_]
+
+                        if self.__db_monitor:
+                            for i in range(0, len(mtx)):
+                                closeness_list = dec.e_.closeness.tolist()
+                                ranks = dec.rank_.tolist()
+                                closeness_res = closeness_list[i]
+                                if math.isnan(closeness_res):
+                                    closeness_res = None
+
+                                fields = ['LVAP_ADDR', 'WTP_ADDR'] + \
+                                         self.__mcda_descriptor['criteria'] + \
+                                         ['RANK', 'CLOSENESS']
+
+                                values = [crr_lvap_addr, wtp_addresses[i]] + mtx[i] + [ranks[i], closeness_res]
+                                # Saving into db
+                                self.monitor.insert_into_db(table='mcda_results', fields=fields, values=values)
 
                             # TODO: Improve writing info...
                             f = open(self.__mcda_results_filename, 'w+')
                             f.write('Decision for LVAP: ' + crr_lvap_addr + '\n' + str(
-                                dec) + '\nMove to WTP: ' + best_alternative_wtp_addr)
+                                dec) + '\nMove to WTP: ' + best_alternative_wtp_addr + '\n')
                             f.close()
 
-                            # Step 6: is handover needed? Do it and set the flag to 0 for all other blocks
-                            # (this could be improved, but get block with given address should be implemented)
-                            # Compute WTP expected load if present in the criteria
-                            if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
-                                sta_association_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
-                            old_wtp_addr = None
-                            for block in self.blocks():
-                                crr_wtp_addr = str(block.addr)
-                                if crr_wtp_addr == best_alternative_wtp_addr:
-                                    # Do handover to this block...
-                                    for lvap in self.lvaps():
-                                        lvap_addr = str(lvap.addr)
-                                        if crr_lvap_addr == lvap_addr:
-                                            # If the station is not connected to it already
-                                            sta_crr_wtp_addr = str(lvap.blocks[0].addr)
-                                            if sta_crr_wtp_addr != best_alternative_wtp_addr:
-                                                self.log.info("Sandbox handover triggered!")
-                                                old_wtp_addr = sta_crr_wtp_addr
-                                                # Handover now..
-                                                lvap.blocks = block
-                                    # and update metrics
-                                    if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
-                                        self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                            'values'][sta_association_index] = 1
-                                elif 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                        # Step 7: is handover needed? Do it and set the flag to 0 for all other blocks
+                        # (this could be improved, but get block with given address should be implemented)
+                        # Compute WTP expected load if present in the criteria
+                        if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                            sta_association_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
+                        old_wtp_addr = None
+                        for block in self.blocks():
+                            crr_wtp_addr = str(block.addr)
+                            if crr_wtp_addr == best_alternative_wtp_addr:
+                                # Do handover to this block only if the station is not connected to it
+                                sta_crr_wtp_addr = str(lvap.blocks[0].addr)
+                                if sta_crr_wtp_addr != best_alternative_wtp_addr:
+                                    self.log.info("Sandbox handover triggered!")
+                                    old_wtp_addr = sta_crr_wtp_addr
+                                    # Handover now..
+                                    lvap.blocks = block
+                                # and update metrics
+                                if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
                                     self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                        'values'][sta_association_index] = 0
+                                        'values'][sta_association_index] = 1
+                            elif 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                    'values'][sta_association_index] = 0
 
-                            # Recalculate WTP expected load on handover, if any...
-                            # OBS: not possible to access lvap.blocks[0] while performing handover
-                            if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
-                                if old_wtp_addr is not None:
-                                    self.recalculate_wtp_load_expected_mbps(old_wtp_addr=old_wtp_addr,
-                                                                            best_alternative_wtp_addr=best_alternative_wtp_addr,
-                                                                            moving_lvap_addr=crr_lvap_addr)
+                        # Recalculate WTP expected load on handover, if any...
+                        # OBS: not possible to access lvap.blocks[0] while performing handover
+                        if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
+                            if old_wtp_addr is not None:
+                                self.recalculate_wtp_load_expected_mbps(old_wtp_addr=old_wtp_addr,
+                                                                        best_alternative_wtp_addr=best_alternative_wtp_addr,
+                                                                        moving_lvap_addr=crr_lvap_addr)
 
             # Start considering association and expected load from now on...
             if self.__initial_association:
                 self.__initial_association = False
-            if self.__initial_load_expected:
-                self.__initial_load_expected = False
 
         # Keeping only the last measurements in db
         if self.__db_monitor is not None:
-            self.keep_last_measurements_only()
+            self.monitor.keep_last_measurements_only('mcda_association_stats')
 
     def recalculate_wtp_load_expected_mbps(self, old_wtp_addr, best_alternative_wtp_addr, moving_lvap_addr):
         wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
 
         # Reduce expected load from old wtp (for each lvap structure)
-        if not self.__initial_association:
-            for crr_lvap_addr in self.__mcda_manager['wtps'][old_wtp_addr]['lvaps']:
-                # Meaning that the moving_lvap_addr is moving out...
+        for crr_lvap_addr in self.__mcda_manager['wtps'][old_wtp_addr]['lvaps']:
+            # Meaning that the moving_lvap_addr is moving out...
+            if moving_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
                 self.__mcda_manager['wtps'][old_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                    wtp_load_expected_mbps_index] -= self.__flow_handler['lvap_load_expected_map'][moving_lvap_addr]
+                    wtp_load_expected_mbps_index] -= sum(self.__flow_handler['lvap_load_expected_map'][moving_lvap_addr])
 
         # Increase expected load from new wtp
         for crr_lvap_addr in self.__mcda_manager['wtps'][best_alternative_wtp_addr]['lvaps']:
             # Meaning that the moving_lvap_addr is moving in...
-            self.__mcda_manager['wtps'][best_alternative_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                wtp_load_expected_mbps_index] += self.__flow_handler['lvap_load_expected_map'][moving_lvap_addr]
+            if moving_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
+                self.__mcda_manager['wtps'][best_alternative_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                    wtp_load_expected_mbps_index] += sum(self.__flow_handler['lvap_load_expected_map'][moving_lvap_addr])
 
     def compute_wtp_load_expected_mbps(self):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
@@ -225,17 +226,18 @@ class MCDAManager(EmpowerApp):
             for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
                 if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
                     self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] += \
-                    self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr]
+                    sum(self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr])
 
+        for crr_wtp_addr in self.__mcda_manager['wtps']:
             for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
-                if crr_lvap_addr in crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
-                    # Discounting each lvap expected load
-                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                        crr_criteria_index] = self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] - \
-                                              self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr]
-                else:
-                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                        crr_criteria_index] = self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load']
+                discount_factor = 0
+                if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
+                    # Discounting this lvap expected load
+                    if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
+                        discount_factor = sum(self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr])
+
+                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                    crr_criteria_index] = self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] - discount_factor
 
     def create_mcda_structure(self):
         for wtp in self.wtps():
@@ -246,15 +248,15 @@ class MCDAManager(EmpowerApp):
                 self.__mcda_manager['wtps'][crr_wtp_addr] = {'lvaps': {},
                                                              'connected_lvaps': [],
                                                              'expected_load': 0}
-                for lvap in self.lvaps():
-                    crr_lvap_addr = str(lvap.addr)
-                    if crr_lvap_addr not in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
-                        self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr] = {
-                            'metrics': {
-                                'names': self.__mcda_descriptor['criteria'],
-                                'values': [None] * len(self.__mcda_descriptor['criteria']),
-                            }
+            for lvap in self.lvaps():
+                crr_lvap_addr = str(lvap.addr)
+                if crr_lvap_addr not in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr] = {
+                        'metrics': {
+                            'names': self.__mcda_descriptor['criteria'],
+                            'values': [None] * len(self.__mcda_descriptor['criteria']),
                         }
+                    }
 
     def get_flow_handler(self):
         # Flow Manager
@@ -344,7 +346,6 @@ class MCDAManager(EmpowerApp):
 
     def get_lvap_rssi_measurements(self):
         # UCQM stats handler
-        worst_case_rssi = -100  # add this in case no LVAP yet
         if 'empower.apps.handlers.ucqmstatshandler' in RUNTIME.tenants[self.tenant_id].components:
             self.__ucqm_stats_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.handlers.ucqmstatshandler'].to_dict()
@@ -353,24 +354,24 @@ class MCDAManager(EmpowerApp):
                 if crr_wtp_addr in self.__ucqm_stats_handler['wtps']:
                     for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
                         if crr_lvap_addr in self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps']:
-                            wtp_sta_median_rssi_dbm = \
+                            wtp_sta_mean_rssi_dbm = \
                                 self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['mov_rssi'][
-                                    'median']
-                            if wtp_sta_median_rssi_dbm is not None:
+                                    'mean']
+                            if wtp_sta_mean_rssi_dbm is not None:
                                 self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                                    crr_criteria_index] = wtp_sta_median_rssi_dbm
+                                    crr_criteria_index] = wtp_sta_mean_rssi_dbm
                             else:
                                 self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                                    crr_criteria_index] = worst_case_rssi
+                                    crr_criteria_index] = None
                         else:
                             self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                                crr_criteria_index] = worst_case_rssi
+                                crr_criteria_index] = None
                 else:
-                    raise ValueError("WTP is not yet present in wifistatshandler dictionary!")
+                    raise ValueError("WTP is not yet present in ucqmstatshandler dictionary!")
                     return False
             return True
         else:
-            raise ValueError("APP 'empower.apps.handlers.wifistatshandler' is not online!")
+            raise ValueError("APP 'empower.apps.handlers.ucqmstatshandler' is not online!")
             return False
 
     def get_sta_association_flag(self):
@@ -389,37 +390,19 @@ class MCDAManager(EmpowerApp):
                     self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                         crr_criteria_index] = 0
 
-                # Saving into db
-                if all(param is not None for param in [self.__db_monitor, self.__db_user, self.__db_pass]):
+                if self.__db_monitor:
 
+                    fields = ['LVAP_ADDR', 'WTP_ADDR', 'ASSOCIATION_FLAG']
+                    values = [crr_lvap_addr,
+                              crr_wtp_addr,
+                              self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                                  crr_criteria_index]]
 
-                    try:
-                        connection = psycopg2.connect(user=self.__db_user,
-                                                      password=self.__db_pass,
-                                                      host="127.0.0.1",
-                                                      port="5432",
-                                                      database="empower")
-                        cursor = connection.cursor()
-                        postgres_insert_query = """ INSERT INTO mcda_association_stats (LVAP_ADDR, WTP_ADDR, ASSOCIATION_FLAG, TIMESTAMP_MS) VALUES (%s,%s,%s,%s)"""
-                        record_to_insert = (
-                            crr_lvap_addr,
-                            crr_wtp_addr,
-                            self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                                crr_criteria_index],
-                            crr_time_in_ms)
-                        cursor.execute(postgres_insert_query, record_to_insert)
-                        connection.commit()
-                        count = cursor.rowcount
-
-                    except (Exception, psycopg2.Error) as error:
-                        if (connection):
-                            self.log.debug(
-                                'MCDA association stats failed to insert record into mcda_association_stats table!')
-                    finally:
-                        # closing database connection.
-                        if (connection):
-                            cursor.close()
-                            connection.close()
+                    # Saving into db
+                    self.monitor.insert_into_db(table='mcda_association_stats',
+                                                fields=fields,
+                                                values=values,
+                                                crr_time_in_ms=crr_time_in_ms)
 
     def update_wtp_association_map(self):
         for lvap in self.lvaps():
@@ -440,29 +423,6 @@ class MCDAManager(EmpowerApp):
             for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
                 self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                     crr_criteria_index] = 0  # WTP expected load initialized with 0
-
-    def keep_last_measurements_only(self):
-        if self.__db_user is not None and self.__db_pass is not None:
-            try:
-                connection = psycopg2.connect(user=self.__db_user,
-                                              password=self.__db_pass,
-                                              host="127.0.0.1",
-                                              port="5432",
-                                              database="empower")
-                cursor = connection.cursor()
-                sql_delete_query = """DELETE FROM mcda_association_stats WHERE TIMESTAMP_MS < %s"""
-                cursor.execute(sql_delete_query, (int(round(
-                    time.time() - 10 * 60)),))  # Keeping only the last measurements (i.e., only the last 5 minutes)
-                connection.commit()
-
-            except (Exception, psycopg2.Error) as error:
-                if (connection):
-                    self.log.debug('MCDA association stats failed to delete records from mcda_association_stats table!')
-            finally:
-                # closing database connection.
-                if (connection):
-                    cursor.close()
-                    connection.close()
 
     @property
     def mcda_descriptor(self):
@@ -537,28 +497,6 @@ class MCDAManager(EmpowerApp):
         if value is not None:
             self.__db_monitor = value
 
-    @property
-    def db_user(self):
-        """Return db_user"""
-        return self.__db_user
-
-    @db_user.setter
-    def db_user(self, value):
-        """Set db_user"""
-        if value is not None:
-            self.__db_user = value
-
-    @property
-    def db_pass(self):
-        """Return db_pass"""
-        return self.__db_pass
-
-    @db_pass.setter
-    def db_pass(self, value):
-        """Set db_pass"""
-        if value is not None:
-            self.__db_pass = value
-
     def to_dict(self):
         """ Return a JSON-serializable."""
         return self.__mcda_manager
@@ -567,14 +505,10 @@ class MCDAManager(EmpowerApp):
 def launch(tenant_id,
            descriptor,
            db_monitor,
-           db_user,
-           db_pass,
            every=DEFAULT_LONG_PERIOD):
     """ Initialize the module. """
 
     return MCDAManager(tenant_id=tenant_id,
                        descriptor=descriptor,
                        db_monitor=db_monitor,
-                       db_user=db_user,
-                       db_pass=db_pass,
                        every=every)
