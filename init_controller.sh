@@ -7,8 +7,8 @@ QUANTUM_INCREASE_RATE=0.1
 
 # MCDA manager filename,
 # the file must be placed in empower/apps/sandbox/managers/mcdamanager/descriptors/
-MCDA_DESCRIPTOR="mcdainput.json"  # RSSI, Channel load, AP load, AP expected load, and Queue delay with different weights
-#MCDA_DESCRIPTOR="ref_equal.json"  # RSSI, Channel load, and AP load with equal weights
+# RSSI, Channel load, AP load, AP expected load, and Queue delay with different weights (QoS and BE)
+MCDA_DESCRIPTOR="mcdainput.json"
 
 # Running the APPs...
 # MAC manager APP

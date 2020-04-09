@@ -1,34 +1,39 @@
 {
-  "criteria": [
-    "wtp_channel_load_rate",
-    "wtp_sta_rssi_dbm",
-    "wtp_load_expected_mbps",
-    "wtp_load_measured_mbps",
-    "wtp_queue_delay_ms",
-    "sta_association_flag"
-  ],
-  "weights_qos": [
-    0.1,
-    0.1,
-    0.1,
-    0.1,
-    0.1,
-    0.5
-  ],
-  "weights_be": [
-    0.1,
-    0.15,
-    0.40,
-    0.15,
-    0.1,
-    0.1
-  ],
-  "targets": [
-    "MIN",
-    "MAX",
-    "MIN",
-    "MIN",
-    "MIN",
-    "MAX"
-  ]
+  "version": "1.0",
+  "params": {
+    "mcda_descriptor": {
+      "criteria": [
+        "wtp_channel_load_rate",
+        "wtp_sta_rssi_dbm",
+        "wtp_load_expected_mbps",
+        "wtp_load_measured_mbps",
+        "wtp_queue_delay_ms",
+        "sta_association_flag"
+      ],
+      "weights_qos": [
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.1,
+        0.5
+      ],
+      "weights_be": [
+        0.1,
+        0.15,
+        0.40,
+        0.15,
+        0.1,
+        0.1
+      ],
+      "targets": [
+        "MIN",
+        "MAX",
+        "MIN",
+        "MIN",
+        "MIN",
+        "MAX"
+      ]
+    }
+  }
 }

@@ -45,33 +45,44 @@ class MCDAManager(EmpowerApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.__mcda_manager = {"message": "Sandbox MCDA Manager is online!", "wtps": {}}
+
+        # Stats handlers
         self.__slice_stats_handler = None
         self.__wifi_stats_handler = None
         self.__ucqm_stats_handler = None
         self.__flow_handler = None
+
+        # MCDA file handlers
         self.__mcda_results_filename = 'empower/apps/sandbox/managers/mcdamanager/results/mcda_run_.txt'
         self.__mcda_descriptor_filename = "empower/apps/sandbox/managers/mcdamanager/descriptors/" + str(
             self.descriptor)
+
+        # Other parameters
         self.__initial_association = True
         self.__db_monitor = self.db_monitor
+
+        self.__mcda_descriptor = None
+        self.__mcda_targets = None
 
         # Load MCDA descriptor from JSON
         try:
             with open(self.__mcda_descriptor_filename) as f:
-                self.__mcda_descriptor = json.load(f)
-                self.__mcda_targets = []
-                for target in self.__mcda_descriptor['targets']:
-                    if target == "MAX":
-                        self.__mcda_targets.append(MAX)
-                    else:
-                        self.__mcda_targets.append(MIN)
+                self.__mcda_descriptor = json.load(f)['params']['mcda_descriptor']
+                self.load_targets()
         except TypeError:
             raise ValueError("Invalid value for input file or file does not exist!")
-            self.__mcda_descriptor = None
+
+    def load_targets(self):
+        self.__mcda_targets = []
+        for target in self.__mcda_descriptor['targets']:
+            if target == "MAX":
+                self.__mcda_targets.append(MAX)
+            else:
+                self.__mcda_targets.append(MIN)
 
     def loop(self):
         """Periodic job."""
-
+        print(self.__mcda_descriptor)
         if self.__mcda_descriptor is not None:
 
             # Step 1: creating structure to handle all metrics
@@ -201,6 +212,7 @@ class MCDAManager(EmpowerApp):
         # Keeping only the last measurements in db
         if self.__db_monitor is not None:
             self.monitor.keep_last_measurements_only('mcda_association_stats')
+            self.monitor.keep_last_measurements_only('mcda_results')
 
     def recalculate_wtp_load_expected_mbps(self, old_wtp_addr, best_alternative_wtp_addr, moving_lvap_addr):
         wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
@@ -433,6 +445,7 @@ class MCDAManager(EmpowerApp):
     def mcda_descriptor(self, value):
         """Set mcda_descriptor"""
         self.__mcda_descriptor = value
+        self.load_targets()
 
     @property
     def mcda_targets(self):
