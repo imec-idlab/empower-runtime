@@ -167,11 +167,11 @@ class MCDAManager(EmpowerApp):
                                 # Saving into db
                                 self.monitor.insert_into_db(table='mcda_results', fields=fields, values=values)
 
-                            # TODO: Improve writing info...
-                            f = open(self.__mcda_results_filename, 'w+')
-                            f.write('Decision for LVAP: ' + crr_lvap_addr + '\n' + str(
-                                dec) + '\nMove to WTP: ' + best_alternative_wtp_addr + '\n')
-                            f.close()
+                            # # TODO: Improve writing info...
+                            # f = open(self.__mcda_results_filename, 'w+')
+                            # f.write('Decision for LVAP: ' + crr_lvap_addr + '\n' + str(
+                            #     dec) + '\nMove to WTP: ' + best_alternative_wtp_addr + '\n')
+                            # f.close()
 
                         # Step 7: is handover needed? Do it and set the flag to 0 for all other blocks
                         # (this could be improved, but get block with given address should be implemented)
