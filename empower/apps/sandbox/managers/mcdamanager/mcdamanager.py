@@ -225,6 +225,7 @@ class MCDAManager(EmpowerApp):
         if self.__db_monitor is not None:
             self.monitor.keep_last_measurements_only('mcda_association_stats')
             self.monitor.keep_last_measurements_only('mcda_results')
+            self.monitor.keep_last_measurements_only('mcda_weights')
 
     def recalculate_wtp_load_expected_mbps(self, old_wtp_addr, best_alternative_wtp_addr, moving_lvap_addr):
         wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
