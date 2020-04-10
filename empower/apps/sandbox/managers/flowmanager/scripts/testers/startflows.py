@@ -20,7 +20,7 @@ parser.add_option("", "--password", type="string", default="root")  # e.g., root
 (options, args) = parser.parse_args()
 
 # Start all 5 flows together
-for i in range(1, 3):
+for i in range(1, 6):
     # Curl terminal command for latency measurements
     curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/flow' + str(i) + '.json',
                              'http://' + str(options.user) + ':' + str(options.password) + '@' +
