@@ -82,7 +82,6 @@ class MCDAManager(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        print(self.__mcda_descriptor)
         if self.__mcda_descriptor is not None:
 
             # Step 1: creating structure to handle all metrics
@@ -208,6 +207,19 @@ class MCDAManager(EmpowerApp):
             # Start considering association and expected load from now on...
             if self.__initial_association:
                 self.__initial_association = False
+
+        if self.__db_monitor:
+            fields = self.__mcda_descriptor['criteria'] + ['TYPE']
+            values = self.__mcda_descriptor['weights_qos'] + ['QoS']
+
+            # Saving into db
+            self.monitor.insert_into_db(table='mcda_weights', fields=fields, values=values)
+
+            fields = self.__mcda_descriptor['criteria'] + ['TYPE']
+            values = self.__mcda_descriptor['weights_be'] + ['BE']
+
+            # Saving into db
+            self.monitor.insert_into_db(table='mcda_weights', fields=fields, values=values)
 
         # Keeping only the last measurements in db
         if self.__db_monitor is not None:

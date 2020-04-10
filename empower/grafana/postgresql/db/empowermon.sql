@@ -153,6 +153,91 @@ ALTER SEQUENCE public.mcda_association_id_seq OWNED BY public.mcda_association_s
 
 
 --
+-- Name: mcda_results; Type: TABLE; Schema: public; Owner: empower
+--
+
+CREATE TABLE public.mcda_results (
+    id integer NOT NULL,
+    lvap_addr text,
+    wtp_addr text,
+    wtp_channel_load_rate double precision,
+    wtp_sta_rssi_dbm double precision,
+    wtp_load_expected_mbps double precision,
+    wtp_load_measured_mbps double precision,
+    wtp_queue_delay_ms double precision,
+    sta_association_flag integer,
+    rank integer,
+    closeness double precision,
+    timestamp_ms bigint
+);
+
+
+ALTER TABLE public.mcda_results OWNER TO empower;
+
+--
+-- Name: mcda_results_id_seq; Type: SEQUENCE; Schema: public; Owner: empower
+--
+
+CREATE SEQUENCE public.mcda_results_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.mcda_results_id_seq OWNER TO empower;
+
+--
+-- Name: mcda_results_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: empower
+--
+
+ALTER SEQUENCE public.mcda_results_id_seq OWNED BY public.mcda_results.id;
+
+
+--
+-- Name: mcda_weights; Type: TABLE; Schema: public; Owner: empower
+--
+
+CREATE TABLE public.mcda_weights (
+    id integer NOT NULL,
+    wtp_channel_load_rate double precision,
+    wtp_sta_rssi_dbm double precision,
+    wtp_load_expected_mbps double precision,
+    wtp_load_measured_mbps double precision,
+    wtp_queue_delay_ms double precision,
+    sta_association_flag double precision,
+    timestamp_ms bigint,
+    type text
+);
+
+
+ALTER TABLE public.mcda_weights OWNER TO empower;
+
+--
+-- Name: mcda_weights_id_seq; Type: SEQUENCE; Schema: public; Owner: empower
+--
+
+CREATE SEQUENCE public.mcda_weights_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.mcda_weights_id_seq OWNER TO empower;
+
+--
+-- Name: mcda_weights_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: empower
+--
+
+ALTER SEQUENCE public.mcda_weights_id_seq OWNED BY public.mcda_weights.id;
+
+
+--
 -- Name: ncqm_stats; Type: TABLE; Schema: public; Owner: empower
 --
 
@@ -344,6 +429,20 @@ ALTER TABLE ONLY public.mcda_association_stats ALTER COLUMN id SET DEFAULT nextv
 
 
 --
+-- Name: mcda_results id; Type: DEFAULT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.mcda_results ALTER COLUMN id SET DEFAULT nextval('public.mcda_results_id_seq'::regclass);
+
+
+--
+-- Name: mcda_weights id; Type: DEFAULT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.mcda_weights ALTER COLUMN id SET DEFAULT nextval('public.mcda_weights_id_seq'::regclass);
+
+
+--
 -- Name: ncqm_stats id; Type: DEFAULT; Schema: public; Owner: empower
 --
 
@@ -393,6 +492,22 @@ ALTER TABLE ONLY public.lvap_stats
 
 ALTER TABLE ONLY public.mcda_association_stats
     ADD CONSTRAINT mcda_association_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mcda_results mcda_results_pkey; Type: CONSTRAINT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.mcda_results
+    ADD CONSTRAINT mcda_results_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: mcda_weights mcda_weights_pkey; Type: CONSTRAINT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.mcda_weights
+    ADD CONSTRAINT mcda_weights_pkey PRIMARY KEY (id);
 
 
 --
