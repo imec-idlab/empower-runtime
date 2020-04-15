@@ -70,18 +70,22 @@ class MACManager(EmpowerApp):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.__mac_address = self.mac_address
-        self.__mcs = self.mcs
-        self.__ht_mcs = self.ht_mcs
-        self.__no_ack = self.no_ack
-        self.__rts_cts = self.rts_cts
-        self.__ur_count = self.ur_count
+        self.__mac_address = None
+        self.__mcs = None
+        self.__ht_mcs = None
+        self.__no_ack = None
+        self.__rts_cts = None
+        self.__ur_count = None
 
-    def loop(self):
-        """Periodic job."""
+    def reset_mac_parameters(self):
+        self.__mac_address = None
+        self.__mcs = None
+        self.__ht_mcs = None
+        self.__no_ack = None
+        self.__rts_cts = None
+        self.__ur_count = None
 
-        self.log.debug("MAC Manager APP loop...")
-
+    def apply_tx_policy(self):
         # Check if a MAC address is set
         if self.mac_address is not None:
             for block in self.blocks():
@@ -117,8 +121,8 @@ class MACManager(EmpowerApp):
                         self.log.debug("Not enough or invalid arguments, applying best-effort configuration!")
                 else:
                     self.log.debug("WTP Block does not support ht_mcs, applying best-effort configuration!")
-            # Leaving the loop
-            self.mac_address = None
+            # Resetting all params
+            self.reset_mac_parameters()
 
     @property
     def every(self):
@@ -133,6 +137,19 @@ class MACManager(EmpowerApp):
         self.log.info("Setting control loop interval to %ums", int(value))
         self.__every = int(value)
         super().restart(self.__every)
+
+    @property
+    def config_tx_policy(self):
+        """Return config_tx_policy."""
+
+        return self.__config_tx_policy
+
+    @config_tx_policy.setter
+    def config_tx_policy(self, value):
+        """Set config_tx_policy."""
+
+        if value is not None:
+            self.apply_tx_policy()
 
     @property
     def mac_address(self):
@@ -251,15 +268,8 @@ class MACManager(EmpowerApp):
             self.__ur_count = None
 
 
-def launch(tenant_id, mac_address=None, mcs=None, ht_mcs=None, no_ack=None, rts_cts=None, ur_count=None,
-           every=DEFAULT_PERIOD):
+def launch(tenant_id, every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
     return MACManager(tenant_id=tenant_id,
-                      mac_address=mac_address,
-                      mcs=mcs,
-                      ht_mcs=ht_mcs,
-                      no_ack=no_ack,
-                      rts_cts=rts_cts,
-                      ur_count=ur_count,
                       every=every)

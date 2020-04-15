@@ -62,6 +62,12 @@ MANIFEST = {
             "mandatory": False,
             "default": None,
             "type": "int"
+        },
+        "config_tx_policy": {
+            "desc": "The flag used to start a flow, needs to be last argument.",
+            "mandatory": True,
+            "default": True,
+            "type": "bool"
         }
     }
 }
