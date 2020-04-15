@@ -85,7 +85,7 @@ class WiFiSliceManager(EmpowerApp):
             if qos_flow['flow_dscp'] in self.__slice_stats_handler['wtps'][wtp]['slices']:
                 queue_delay_median = \
                 self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['flow_dscp']]['queue_delay_ms']['median']
-                if queue_delay_median is not None:
+                if queue_delay_median is not None and qos_flow['flow_delay_req_ms'] is not None:
                     if qos_flow['flow_delay_req_ms'] < queue_delay_median:
                         return False
         return True
