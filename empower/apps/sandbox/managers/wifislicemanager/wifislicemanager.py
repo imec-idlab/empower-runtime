@@ -62,6 +62,17 @@ class WiFiSliceManager(EmpowerApp):
 
                     # Reconfigure all slices in the WTP
                     self.reconfigure(factor, crr_wtp_addr)
+            else:
+                for crr_wtp_addr in self.__slice_stats_handler['wtps']:
+                    # Reconfigure all slices in the WTP
+                    self.reset_all(crr_wtp_addr)
+
+    def reset_all(self, crr_wtp_addr):
+        for dscp in self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices']:
+            current_quantum = self.tenant.slices[DSCP(dscp)].wifi['static-properties']['quantum']
+            if self.__default_maximum_quantum != current_quantum:
+                self.send_slice_config_to_wtp(dscp=dscp,
+                                              new_quantum=self.__default_maximum_quantum)
 
     def reconfigure(self, factor, crr_wtp_addr):
         for be_dscp in self.__active_flows_handler['be_slices']:
