@@ -45,7 +45,7 @@ class SliceManager(EmpowerApp):
         if self.__dscp is not None and self.__quantum is not None:
             new_slice = format_slice_config_request(tenant_id=self.tenant_id,
                                                     dscp=self.__dscp,
-                                                    default_quantum=self.__new_quantum)
+                                                    default_quantum=self.__quantum)
             self.log.debug("Sending new slice configurations to APs")
             self.tenant.set_slice(self.__dscp, new_slice)
         else:
