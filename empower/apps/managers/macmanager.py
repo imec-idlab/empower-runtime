@@ -36,7 +36,7 @@ class MACManager(EmpowerApp):
 
     Example:
 
-        ./empower-runtime.py apps.helloworld.helloworld \
+        ./empower-runtime.py apps.managers.macmanager \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
             --mac_address="98:01:A7:BE:D0:5D"
             --mcs=[6.0,

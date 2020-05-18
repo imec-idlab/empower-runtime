@@ -19,7 +19,7 @@
 
 # the manifest
 MANIFEST = {
-    "name": "empower.apps.macmanager.macmanager",
+    "name": "empower.apps.managers.macmanager",
     "desc": "A MAC layer manager REST API.",
     "params": {
         "tenant_id": {
@@ -68,6 +68,34 @@ MANIFEST = {
             "mandatory": True,
             "default": True,
             "type": "bool"
+        }
+    }
+}
+
+
+"""A Slice manager."""
+
+# the manifest
+MANIFEST = {
+    "name": "empower.apps.managers.slicemanager",
+    "desc": "A slice manager REST API.",
+    "params": {
+        "tenant_id": {
+            "desc": "The tenant on which this app must be loaded.",
+            "mandatory": True,
+            "type": "UUID"
+        },
+        "dscp": {
+            "desc": "The DSCP from the slice in which a configuration will be applied.",
+            "mandatory": True,
+            "default": None,
+            "type": "string"
+        },
+        "quantum": {
+            "desc": "The quantum that the slice will apply.",
+            "mandatory": True,
+            "default": None,
+            "type": "int"
         }
     }
 }

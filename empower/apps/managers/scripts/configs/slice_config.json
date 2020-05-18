@@ -1,0 +1,7 @@
+{"version":
+	"1.0",
+	"params": {
+		"dscp": "0x20",
+		"quantum": 3000
+	}
+}
