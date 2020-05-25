@@ -16,7 +16,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 4,
+  "id": 8,
   "links": [],
   "panels": [
     {
@@ -831,6 +831,244 @@
         "x": 0,
         "y": 26
       },
+      "id": 41,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  flag\nFROM lvap_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr = '00:0D:B9:42:6A:00'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "flag"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "lvap_association_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "=",
+                "'00:0D:B9:42:6A:00'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP1 - STA's association",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Number of associated STAs",
+          "logBase": 1,
+          "max": "4",
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 7,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 26
+      },
+      "id": 40,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  flag\nFROM lvap_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr = '00:0D:B9:42:72:08'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "flag"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "lvap_association_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "=",
+                "'00:0D:B9:42:72:08'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP4 - STA's association",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Number of associated STAs",
+          "logBase": 1,
+          "max": "4",
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 7,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 34
+      },
       "id": 28,
       "legend": {
         "avg": false,
@@ -899,7 +1137,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP1 - STA's association",
+      "title": "WTP1 - MCDA STA's association",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -948,7 +1186,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 26
+        "y": 34
       },
       "id": 29,
       "legend": {
@@ -1018,7 +1256,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP4 - STA's association",
+      "title": "WTP4 - MCDA STA's association",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1067,7 +1305,7 @@
         "h": 12,
         "w": 12,
         "x": 0,
-        "y": 34
+        "y": 42
       },
       "id": 8,
       "legend": {
@@ -1189,7 +1427,7 @@
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 34
+        "y": 42
       },
       "id": 20,
       "legend": {
@@ -1312,7 +1550,7 @@
         "h": 11,
         "w": 12,
         "x": 0,
-        "y": 46
+        "y": 54
       },
       "id": 6,
       "legend": {
@@ -1436,7 +1674,7 @@
         "h": 11,
         "w": 12,
         "x": 12,
-        "y": 46
+        "y": 54
       },
       "id": 19,
       "legend": {
@@ -1559,7 +1797,7 @@
         "h": 15,
         "w": 12,
         "x": 0,
-        "y": 57
+        "y": 65
       },
       "id": 14,
       "legend": {
@@ -1679,7 +1917,7 @@
         "h": 15,
         "w": 12,
         "x": 12,
-        "y": 57
+        "y": 65
       },
       "id": 23,
       "legend": {
@@ -1799,7 +2037,7 @@
         "h": 12,
         "w": 12,
         "x": 0,
-        "y": 72
+        "y": 80
       },
       "id": 30,
       "legend": {
@@ -1911,7 +2149,7 @@
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 72
+        "y": 80
       },
       "id": 26,
       "legend": {
@@ -2023,7 +2261,7 @@
         "h": 15,
         "w": 12,
         "x": 0,
-        "y": 84
+        "y": 92
       },
       "id": 10,
       "legend": {
@@ -2145,7 +2383,7 @@
         "h": 15,
         "w": 12,
         "x": 12,
-        "y": 84
+        "y": 92
       },
       "id": 21,
       "legend": {
@@ -2267,7 +2505,7 @@
         "h": 12,
         "w": 12,
         "x": 0,
-        "y": 99
+        "y": 107
       },
       "id": 12,
       "legend": {
@@ -2387,7 +2625,7 @@
         "h": 12,
         "w": 12,
         "x": 12,
-        "y": 99
+        "y": 107
       },
       "id": 25,
       "legend": {
@@ -2507,7 +2745,7 @@
         "h": 13,
         "w": 6,
         "x": 0,
-        "y": 111
+        "y": 119
       },
       "id": 16,
       "legend": {
@@ -2627,7 +2865,7 @@
         "h": 13,
         "w": 6,
         "x": 6,
-        "y": 111
+        "y": 119
       },
       "id": 22,
       "legend": {
@@ -2747,7 +2985,7 @@
         "h": 13,
         "w": 6,
         "x": 12,
-        "y": 111
+        "y": 119
       },
       "id": 18,
       "legend": {
@@ -2867,7 +3105,7 @@
         "h": 13,
         "w": 6,
         "x": 18,
-        "y": 111
+        "y": 119
       },
       "id": 24,
       "legend": {
@@ -3005,5 +3243,5 @@
   "timezone": "",
   "title": "Slice Stats",
   "uid": "spUCIjhWz",
-  "version": 86
+  "version": 2
 }
