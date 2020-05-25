@@ -16,20 +16,6 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -77,6 +63,43 @@ ALTER TABLE public.bin_stats_id_seq OWNER TO empower;
 --
 
 ALTER SEQUENCE public.bin_stats_id_seq OWNED BY public.bin_stats.id;
+
+
+--
+-- Name: lvap_association_stats; Type: TABLE; Schema: public; Owner: empower
+--
+
+CREATE TABLE public.lvap_association_stats (
+    id integer NOT NULL,
+    lvap_addr text,
+    wtp_addr text,
+    flag integer,
+    timestamp_ms bigint
+);
+
+
+ALTER TABLE public.lvap_association_stats OWNER TO empower;
+
+--
+-- Name: lvap_association_stats_id_seq; Type: SEQUENCE; Schema: public; Owner: empower
+--
+
+CREATE SEQUENCE public.lvap_association_stats_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.lvap_association_stats_id_seq OWNER TO empower;
+
+--
+-- Name: lvap_association_stats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: empower
+--
+
+ALTER SEQUENCE public.lvap_association_stats_id_seq OWNED BY public.lvap_association_stats.id;
 
 
 --
@@ -415,6 +438,13 @@ ALTER TABLE ONLY public.bin_stats ALTER COLUMN id SET DEFAULT nextval('public.bi
 
 
 --
+-- Name: lvap_association_stats id; Type: DEFAULT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.lvap_association_stats ALTER COLUMN id SET DEFAULT nextval('public.lvap_association_stats_id_seq'::regclass);
+
+
+--
 -- Name: lvap_stats id; Type: DEFAULT; Schema: public; Owner: empower
 --
 
@@ -476,6 +506,14 @@ ALTER TABLE ONLY public.wifi_stats ALTER COLUMN id SET DEFAULT nextval('public.w
 
 ALTER TABLE ONLY public.bin_stats
     ADD CONSTRAINT bin_stats_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: lvap_association_stats lvap_association_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.lvap_association_stats
+    ADD CONSTRAINT lvap_association_stats_pkey PRIMARY KEY (id);
 
 
 --

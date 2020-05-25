@@ -2989,6 +2989,7 @@
   },
   "timepicker": {
     "refresh_intervals": [
+      "1s",
       "5s",
       "10s",
       "30s",
@@ -3004,5 +3005,5 @@
   "timezone": "",
   "title": "Slice Stats",
   "uid": "spUCIjhWz",
-  "version": 80
+  "version": 86
 }
