@@ -82,28 +82,6 @@ class MCDAManager(EmpowerApp):
             else:
                 self.__mcda_targets.append(MIN)
 
-    def config_tx_policy(self, lvap, blocks):
-        for block in blocks:
-            # Check block band to apply the MCS
-            if block.band == BT_HT20:
-                # Creating transmission policy
-                tx_policy = block.tx_policies[lvap.addr]
-                tx_policy.ht_mcs = [0, 1, 2, 3, 4, 5, 6, 7]  # Raspberry pis only have 1 spatial stream
-                self.log.debug("Block %s setting mac_address %s, ht_mcs %s",
-                               block,
-                               str(lvap.addr),
-                               str(tx_policy.ht_mcs))
-            else:
-                self.log.debug("WTP Block does not support ht_mcs, applying best-effort configuration!")
-
-    def lvap_join(self, lvap):
-        """Called when an LVAP joins a tenant."""
-        self.config_tx_policy(lvap, self.blocks())
-
-    def lvap_handover(self, lvap, source_blocks):
-        """Called when an LVAP completes a handover."""
-        self.config_tx_policy(lvap, source_blocks)
-
     def loop(self):
         """Periodic job."""
         if self.__mcda_descriptor is not None:
