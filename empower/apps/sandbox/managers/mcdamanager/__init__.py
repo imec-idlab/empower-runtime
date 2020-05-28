@@ -35,9 +35,15 @@ MANIFEST = {
         },
         "mcda_descriptor": {
             "desc": "The MCDA parameters in JSON.",
-            "mandatory": True,
+            "mandatory": False,
             "default": None,
             "type": "str"
+        },
+        "active": {
+            "desc": "The flag used to activate/deactivate MCDA",
+            "mandatory": True,
+            "default": True,
+            "type": "bool"
         }
     }
 }

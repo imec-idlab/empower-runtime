@@ -53,6 +53,9 @@ class MCDAManager(EmpowerApp):
         self.__wifi_stats_handler = None
         self.__ucqm_stats_handler = None
         self.__flow_handler = None
+        self.__active = True
+        self.__mcda_manager['active'] = self.__active
+
 
         # MCDA file handlers
         self.__mcda_results_filename = 'empower/apps/sandbox/managers/mcdamanager/results/mcda_run_.txt'
@@ -84,7 +87,7 @@ class MCDAManager(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        if self.__mcda_descriptor is not None:
+        if self.__mcda_descriptor is not None and self.__active:
 
             # Step 1: creating structure to handle all metrics
             self.create_mcda_structure()
@@ -210,24 +213,24 @@ class MCDAManager(EmpowerApp):
             if self.__initial_association:
                 self.__initial_association = False
 
-        if self.__db_monitor:
-            fields = self.__mcda_descriptor['criteria'] + ['TYPE']
-            values = self.__mcda_descriptor['weights_qos'] + ['QoS']
+            if self.__db_monitor:
+                fields = self.__mcda_descriptor['criteria'] + ['TYPE']
+                values = self.__mcda_descriptor['weights_qos'] + ['QoS']
 
-            # Saving into db
-            self.monitor.insert_into_db(table='mcda_weights', fields=fields, values=values)
+                # Saving into db
+                self.monitor.insert_into_db(table='mcda_weights', fields=fields, values=values)
 
-            fields = self.__mcda_descriptor['criteria'] + ['TYPE']
-            values = self.__mcda_descriptor['weights_be'] + ['BE']
+                fields = self.__mcda_descriptor['criteria'] + ['TYPE']
+                values = self.__mcda_descriptor['weights_be'] + ['BE']
 
-            # Saving into db
-            self.monitor.insert_into_db(table='mcda_weights', fields=fields, values=values)
+                # Saving into db
+                self.monitor.insert_into_db(table='mcda_weights', fields=fields, values=values)
 
-        # Keeping only the last measurements in db
-        if self.__db_monitor is not None:
-            self.monitor.keep_last_measurements_only('mcda_association_stats')
-            self.monitor.keep_last_measurements_only('mcda_results')
-            self.monitor.keep_last_measurements_only('mcda_weights')
+            # Keeping only the last measurements in db
+            if self.__db_monitor is not None:
+                self.monitor.keep_last_measurements_only('mcda_association_stats')
+                self.monitor.keep_last_measurements_only('mcda_results')
+                self.monitor.keep_last_measurements_only('mcda_weights')
 
     def recalculate_wtp_load_expected_mbps(self, old_wtp_addr, best_alternative_wtp_addr, moving_lvap_addr):
         wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
@@ -503,6 +506,22 @@ class MCDAManager(EmpowerApp):
         self.__ucqm_stats_handler = value
 
     @property
+    def active(self):
+        """Return active."""
+
+        return self.__active
+
+    @active.setter
+    def active(self, value):
+        """Set active."""
+        for i in range(0, 15):
+            print(value)
+
+        self.__active = value
+
+
+
+    @property
     def every(self):
         """Return loop period."""
         return self.__every
@@ -527,6 +546,7 @@ class MCDAManager(EmpowerApp):
 
     def to_dict(self):
         """ Return a JSON-serializable."""
+        self.__mcda_manager['active'] = self.__active
         return self.__mcda_manager
 
 
