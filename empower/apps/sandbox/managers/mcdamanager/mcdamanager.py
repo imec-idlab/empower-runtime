@@ -514,8 +514,6 @@ class MCDAManager(EmpowerApp):
     @active.setter
     def active(self, value):
         """Set active."""
-        for i in range(0, 15):
-            print(value)
 
         self.__active = value
 
