@@ -40,14 +40,40 @@ class SliceManager(EmpowerApp):
         self.__slice_manager = {"message": "Slice Manager is online!"}
         self.__dscp = None
         self.__quantum = None
+        self.__amsdu = None
+        self.__scheduler = 0
+
+    def reset_slice_parameters(self):
+        self.__dscp = None
+        self.__quantum = None
+        self.__amsdu = None
+        self.__scheduler = 0
 
     def send_slice_config_to_wtp(self):
-        if self.__dscp is not None and self.__quantum is not None:
+        if self.__dscp is not None:
+
+            slice_dscp = DSCP(self.__dscp)
+            print(slice_dscp)
+            erro = DSCP("aaa")
+            print(erro)
+            if self.__quantum is None:
+                # get current quantum
+                self.__quantum = self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['quantum']
+            if self.__amsdu is None:
+                self.__amsdu = self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['amsdu_aggregation']
+            for i in range(0, 10):
+                print(self.__dscp)
+                print(self.__quantum)
+                print(self.__amsdu)
+                print(self.__scheduler)
             new_slice = format_slice_config_request(tenant_id=self.tenant_id,
                                                     dscp=self.__dscp,
-                                                    default_quantum=self.__quantum)
+                                                    default_quantum=self.__quantum,
+                                                    default_amsdu=self.__amsdu,
+                                                    default_scheduler=self.__scheduler)
             self.log.debug("Sending new slice configurations to APs")
             self.tenant.set_slice(self.__dscp, new_slice)
+            self.reset_slice_parameters()
         else:
             self.log.debug("DSCP or quantum is not set, aborting configuration!")
 
@@ -76,13 +102,55 @@ class SliceManager(EmpowerApp):
         if isinstance(value, int):
             if value > 0:
                 self.__quantum = value
-                self.send_slice_config_to_wtp()
             else:
+                self.reset_slice_parameters()
                 raise ValueError("Invalid value for quantum, quantum needs to be greater than 0!")
-                self.__dscp = None
         else:
+            self.reset_slice_parameters()
             raise ValueError("Invalid value type for quantum, integer required!")
-            self.__dscp = None
+
+    @property
+    def scheduler(self):
+        """Return scheduler"""
+        return self.__scheduler
+
+    @scheduler.setter
+    def scheduler(self, value):
+        """Set scheduler"""
+        if value is None:
+            self.__scheduler = 0
+        elif isinstance(value, int):
+            for i in range(0, 20):
+                print(value)
+            if value == 0 or value == 1:  # The only two schedulers supported
+                self.__scheduler = value
+            else:
+                self.reset_slice_parameters()
+                raise ValueError("Invalid value for scheduler, scheduler needs to be greater than 0!")
+        else:
+            self.reset_slice_parameters()
+            raise ValueError("Invalid value type for scheduler, integer required!")
+
+    @property
+    def amsdu(self):
+        """Return amsdu."""
+        return self.__amsdu
+
+    @amsdu.setter
+    def amsdu(self, value):
+        """Set amsdu."""
+        self.__amsdu = value
+
+    @property
+    def config_slice(self):
+        """Return config_slice."""
+        return self.__config_slice
+
+    @config_slice.setter
+    def config_slice(self, value):
+        """Set config_slice."""
+        if value is not None:
+            self.send_slice_config_to_wtp()
 
     @property
     def slice_manager(self):

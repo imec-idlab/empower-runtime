@@ -2,6 +2,9 @@
 	"1.0",
 	"params": {
 		"dscp": "0x20",
-		"quantum": 3000
+		"quantum": 3200,
+		"amsdu": false,
+		"scheduler": 0,
+		"config_slice": true
 	}
 }

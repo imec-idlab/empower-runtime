@@ -91,11 +91,29 @@ MANIFEST = {
             "default": None,
             "type": "string"
         },
+        "amsdu": {
+            "desc": "The amsdu aggregation the slice will apply.",
+            "mandatory": False,
+            "default": False,
+            "type": "bool"
+        },
         "quantum": {
             "desc": "The quantum that the slice will apply.",
-            "mandatory": True,
+            "mandatory": False,
             "default": None,
             "type": "int"
+        },
+        "scheduler": {
+            "desc": "The scheduler that the slice will apply.",
+            "mandatory": False,
+            "default": None,
+            "type": "int"
+        },
+        "config_slice": {
+            "desc": "The flag used to config a slice, needs to be last argument.",
+            "mandatory": True,
+            "default": True,
+            "type": "bool"
         }
     }
 }
