@@ -109,6 +109,12 @@ MANIFEST = {
             "default": None,
             "type": "int"
         },
+        "wtp_addr": {
+            "desc": "The specific WTP address from which the slice configuration will be applied.",
+            "mandatory": False,
+            "default": None,
+            "type": "string"
+        },
         "config_slice": {
             "desc": "The flag used to config a slice, needs to be last argument.",
             "mandatory": True,

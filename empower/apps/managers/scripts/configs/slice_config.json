@@ -2,9 +2,10 @@
 	"1.0",
 	"params": {
 		"dscp": "0x20",
-		"quantum": 3200,
+		"quantum": 12000,
 		"amsdu": false,
 		"scheduler": 0,
+		"wtp_addr": "00:0D:B9:42:6A:00",
 		"config_slice": true
 	}
 }

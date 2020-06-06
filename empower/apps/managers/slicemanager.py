@@ -19,7 +19,7 @@
 
 from empower.core.app import EmpowerApp
 from empower.datatypes.dscp import DSCP
-
+from empower.datatypes.etheraddress import EtherAddress
 from empower.apps.managers.parsers.sliceconfigrequest import *
 
 
@@ -42,35 +42,43 @@ class SliceManager(EmpowerApp):
         self.__quantum = None
         self.__amsdu = None
         self.__scheduler = 0
+        self.__wtp_addr = None
 
     def reset_slice_parameters(self):
         self.__dscp = None
         self.__quantum = None
         self.__amsdu = None
         self.__scheduler = 0
+        self.__wtp_addr = None
 
     def send_slice_config_to_wtp(self):
         if self.__dscp is not None:
-
-            slice_dscp = DSCP(self.__dscp)
-            print(slice_dscp)
-            erro = DSCP("aaa")
-            print(erro)
             if self.__quantum is None:
                 # get current quantum
                 self.__quantum = self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['quantum']
             if self.__amsdu is None:
                 self.__amsdu = self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['amsdu_aggregation']
-            for i in range(0, 10):
-                print(self.__dscp)
-                print(self.__quantum)
-                print(self.__amsdu)
-                print(self.__scheduler)
-            new_slice = format_slice_config_request(tenant_id=self.tenant_id,
-                                                    dscp=self.__dscp,
-                                                    default_quantum=self.__quantum,
-                                                    default_amsdu=self.__amsdu,
-                                                    default_scheduler=self.__scheduler)
+            if self.__wtp_addr is None:
+                new_slice = format_slice_config_request(tenant_id=self.tenant_id,
+                                                        dscp=self.__dscp,
+                                                        default_quantum=self.__quantum,
+                                                        default_amsdu=self.__amsdu,
+                                                        default_scheduler=self.__scheduler)
+            else:
+                wtp = [
+                    {
+                        'addr': self.__wtp_addr,
+                        'quantum': self.__quantum,
+                        'amsdu_aggregation': self.__amsdu,
+                        'scheduler': self.__scheduler,
+                    }
+                ]
+                new_slice = format_slice_config_request(tenant_id=self.tenant_id,
+                                                        dscp=self.__dscp,
+                                                        default_quantum=self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['quantum'],
+                                                        default_amsdu=self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['amsdu_aggregation'],
+                                                        default_scheduler=self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['scheduler'],
+                                                        wtps=wtp)
             self.log.debug("Sending new slice configurations to APs")
             self.tenant.set_slice(self.__dscp, new_slice)
             self.reset_slice_parameters()
@@ -120,8 +128,6 @@ class SliceManager(EmpowerApp):
         if value is None:
             self.__scheduler = 0
         elif isinstance(value, int):
-            for i in range(0, 20):
-                print(value)
             if value == 0 or value == 1:  # The only two schedulers supported
                 self.__scheduler = value
             else:
@@ -140,6 +146,20 @@ class SliceManager(EmpowerApp):
     def amsdu(self, value):
         """Set amsdu."""
         self.__amsdu = value
+
+    @property
+    def wtp_addr(self):
+        """Return wtp addr"""
+        return self.__wtp_addr
+
+    @wtp_addr.setter
+    def wtp_addr(self, value):
+        """Set WTP addr"""
+        try:
+            self.__wtp_addr = EtherAddress(value)
+        except:
+            raise ValueError("Invalid value for WTP address!")
+            self.__wtp_addr = None
 
     @property
     def config_slice(self):

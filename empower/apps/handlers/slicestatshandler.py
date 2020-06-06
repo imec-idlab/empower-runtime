@@ -21,6 +21,7 @@ from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
 from empower.datatypes.dscp import DSCP
+from empower.datatypes.etheraddress import EtherAddress
 import statistics
 
 
@@ -172,7 +173,12 @@ class SliceStatsHandler(EmpowerApp):
 
         # Saving slice stats into db
         if self.__db_monitor is not None:
-            crr_default_quantum = self.tenant.slices[DSCP(crr_dscp)].wifi['static-properties']['quantum']
+
+            # If there is a specific slice configuration for this WTP
+            if EtherAddress(crr_wtp_addr) in self.tenant.slices[DSCP(crr_dscp)].wifi['wtps']:
+                crr_quantum = self.tenant.slices[DSCP(crr_dscp)].wifi['wtps'][EtherAddress(crr_wtp_addr)]['static-properties']['quantum']
+            else:
+                crr_quantum = self.tenant.slices[DSCP(crr_dscp)].wifi['static-properties']['quantum']
 
             fields = ['WTP_ADDR', 'DSCP', 'WTP_DSCP',
                       'DEFICIT', 'DEFICIT_AVG', 'DEFICIT_USED',
@@ -185,7 +191,7 @@ class SliceStatsHandler(EmpowerApp):
                     self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['deficit_used'],
                     self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['max_queue_length'],
                     self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['crr_queue_length'],
-                    crr_default_quantum,
+                    crr_quantum,
                     crr_queue_delay_ms,
                     self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['tx_bytes'],
                     self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['tx_packets'],
