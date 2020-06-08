@@ -35,7 +35,7 @@ class EmpowerMon:
         self.__threshold_min = 5
 
         self.__config = configparser.ConfigParser()
-        self.__config.read('../config.ini')
+        self.__config.read('empower/grafana/config.ini')
 
         if 'PostgreSQL' in self.__config:
             db_config = self.__config['PostgreSQL']
@@ -49,7 +49,7 @@ class EmpowerMon:
                     self.__db_host = db_config['db_host']
 
             if 'threshold_min' in db_config:
-                self.__db_user = db_config['threshold_min']
+                self.__threshold_min = db_config['threshold_min']
 
     def keep_last_measurements_only(self, table=None):
         try:
@@ -62,7 +62,7 @@ class EmpowerMon:
             sql_delete_query = 'DELETE FROM ' + str(table) + ' WHERE TIMESTAMP_MS < %s'
 
             # Keeping only the last measurements (i.e., the last x minutes)
-            cursor.execute(sql_delete_query, (int(round(time.time() - self.__threshold_min * 60)),))
+            cursor.execute(sql_delete_query, (int(round(time.time() - int(self.__threshold_min * 60))),))
             connection.commit()
 
         except (Exception, psycopg2.Error) as error:
