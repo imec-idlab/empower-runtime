@@ -15,7 +15,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Sandbox MCDA Manager APP."""
+"""Sandbox MCDA handover daemon APP."""
 
 from empower.core.app import EmpowerApp
 from empower.main import RUNTIME
@@ -30,8 +30,8 @@ import json
 DEFAULT_LONG_PERIOD = 20000
 
 
-class MCDAManager(EmpowerApp):
-    """Sandbox MCDA Manager APP.
+class MCDAHandoverDaemon(EmpowerApp):
+    """Sandbox MCDA handover daemon APP.
 
     Command Line Parameters:
 
@@ -40,13 +40,13 @@ class MCDAManager(EmpowerApp):
 
     Example:
 
-        ./empower-runtime.py apps.sandbox.managers.mcdamanager.mcdamanager \
+        ./empower-runtime.py apps.sandbox.daemons.mcdahandoverdaemon.mcdahandoverdaemon \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
     """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.__mcda_manager = {"message": "Sandbox MCDA Manager is online!", "wtps": {}}
+        self.__mcda_handover_daemon = {"message": "Sandbox MCDA handover daemon is online!", "wtps": {}}
 
         # Stats handlers
         self.__slice_stats_handler = None
@@ -54,12 +54,11 @@ class MCDAManager(EmpowerApp):
         self.__ucqm_stats_handler = None
         self.__flow_handler = None
         self.__active = True
-        self.__mcda_manager['active'] = self.__active
-
+        self.__mcda_handover_daemon['active'] = self.__active
 
         # MCDA file handlers
-        self.__mcda_results_filename = 'empower/apps/sandbox/managers/mcdamanager/results/mcda_run_.txt'
-        self.__mcda_descriptor_filename = "empower/apps/sandbox/managers/mcdamanager/descriptors/" + str(
+        self.__mcda_results_filename = 'empower/apps/sandbox/daemons/mcdahandoverdaemon/results/mcda_run_.txt'
+        self.__mcda_descriptor_filename = "empower/apps/sandbox/daemons/mcdahandoverdaemon/descriptors/" + str(
             self.descriptor)
 
         # Other parameters
@@ -129,11 +128,11 @@ class MCDAManager(EmpowerApp):
                         # Create MCDA structure
                         mtx = []
                         wtp_addresses = []
-                        for crr_wtp_addr in self.__mcda_manager['wtps']:
+                        for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
                             wtp_addresses.append(crr_wtp_addr)
-                            if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                            if crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
                                 mtx.append(
-                                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                    self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
                                         'values'])
 
                         # if any of the (active) flows in this LVAP is QoS, use QoS weights
@@ -195,10 +194,10 @@ class MCDAManager(EmpowerApp):
                                     lvap.blocks = block
                                 # and update metrics
                                 if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
-                                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                    self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
                                         'values'][sta_association_index] = 1
                             elif 'sta_association_flag' in self.__mcda_descriptor['criteria']:
-                                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
                                     'values'][sta_association_index] = 0
 
                         # Recalculate WTP expected load on handover, if any...
@@ -236,52 +235,52 @@ class MCDAManager(EmpowerApp):
         wtp_load_expected_mbps_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
 
         # Reduce expected load from old wtp (for each lvap structure)
-        for crr_lvap_addr in self.__mcda_manager['wtps'][old_wtp_addr]['lvaps']:
+        for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][old_wtp_addr]['lvaps']:
             # Meaning that the moving_lvap_addr is moving out...
             if moving_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
-                self.__mcda_manager['wtps'][old_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                self.__mcda_handover_daemon['wtps'][old_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                     wtp_load_expected_mbps_index] -= sum(self.__flow_handler['lvap_load_expected_map'][moving_lvap_addr])
 
         # Increase expected load from new wtp
-        for crr_lvap_addr in self.__mcda_manager['wtps'][best_alternative_wtp_addr]['lvaps']:
+        for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][best_alternative_wtp_addr]['lvaps']:
             # Meaning that the moving_lvap_addr is moving in...
             if moving_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
-                self.__mcda_manager['wtps'][best_alternative_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                self.__mcda_handover_daemon['wtps'][best_alternative_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                     wtp_load_expected_mbps_index] += sum(self.__flow_handler['lvap_load_expected_map'][moving_lvap_addr])
 
     def compute_wtp_load_expected_mbps(self):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
-        for crr_wtp_addr in self.__mcda_manager['wtps']:
-            self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] = 0
-            for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
+        for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
+            self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['expected_load'] = 0
+            for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['connected_lvaps']:
                 if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
-                    self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] += \
+                    self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['expected_load'] += \
                     sum(self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr])
 
-        for crr_wtp_addr in self.__mcda_manager['wtps']:
-            for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+        for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
+            for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
                 discount_factor = 0
                 if crr_lvap_addr in self.__flow_handler['lvap_load_expected_map']:
                     # Discounting this lvap expected load
-                    if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
+                    if crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['connected_lvaps']:
                         discount_factor = sum(self.__flow_handler['lvap_load_expected_map'][crr_lvap_addr])
 
-                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                    crr_criteria_index] = self.__mcda_manager['wtps'][crr_wtp_addr]['expected_load'] - discount_factor
+                self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                    crr_criteria_index] = self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['expected_load'] - discount_factor
 
     def create_mcda_structure(self):
         for wtp in self.wtps():
             crr_wtp_addr = str(wtp.addr)
-            if crr_wtp_addr not in self.__mcda_manager['wtps']:
+            if crr_wtp_addr not in self.__mcda_handover_daemon['wtps']:
 
                 # Initializing criteria with None
-                self.__mcda_manager['wtps'][crr_wtp_addr] = {'lvaps': {},
+                self.__mcda_handover_daemon['wtps'][crr_wtp_addr] = {'lvaps': {},
                                                              'connected_lvaps': [],
                                                              'expected_load': 0}
             for lvap in self.lvaps():
                 crr_lvap_addr = str(lvap.addr)
-                if crr_lvap_addr not in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
-                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr] = {
+                if crr_lvap_addr not in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
+                    self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr] = {
                         'metrics': {
                             'names': self.__mcda_descriptor['criteria'],
                             'values': [None] * len(self.__mcda_descriptor['criteria']),
@@ -305,13 +304,13 @@ class MCDAManager(EmpowerApp):
             self.__slice_stats_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.handlers.slicestatshandler'].to_dict()
             crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_measured_mbps')
-            for crr_wtp_addr in self.__mcda_manager['wtps']:
+            for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
                 if crr_wtp_addr in self.__slice_stats_handler['wtps']:
-                    for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                    for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
                         wtp_mean_throughput_mbps = \
                             self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall']['throughput_mbps']['mean']
                         if wtp_mean_throughput_mbps is not None:
-                            self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                            self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                 crr_criteria_index] = wtp_mean_throughput_mbps
                         else:
                             raise ValueError("WTP average throughput is not ready yet!")
@@ -330,13 +329,13 @@ class MCDAManager(EmpowerApp):
             self.__slice_stats_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.handlers.slicestatshandler'].to_dict()
             crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_queue_delay_ms')
-            for crr_wtp_addr in self.__mcda_manager['wtps']:
+            for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
                 if crr_wtp_addr in self.__slice_stats_handler['wtps']:
-                    for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                    for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
                         wtp_mean_queue_delay_ms = \
                             self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall']['queue_delay_ms']['mean']
                         if wtp_mean_queue_delay_ms is not None:
-                            self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                            self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                 crr_criteria_index] = wtp_mean_queue_delay_ms
                         else:
                             raise ValueError("WTP average queue_delay is not ready yet!")
@@ -355,13 +354,13 @@ class MCDAManager(EmpowerApp):
             self.__wifi_stats_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.handlers.wifistatshandler'].to_dict()
             crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_channel_load_rate')
-            for crr_wtp_addr in self.__mcda_manager['wtps']:
+            for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
                 if crr_wtp_addr in self.__wifi_stats_handler['wtps']:
-                    for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                    for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
                         wtp_mean_channel_load_rate = \
                             self.__wifi_stats_handler['wtps'][crr_wtp_addr]['channel_utilization']['mean']
                         if wtp_mean_channel_load_rate is not None:
-                            self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                            self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                 crr_criteria_index] = wtp_mean_channel_load_rate
                         else:
                             raise ValueError("WTP channel load rate is not ready yet!")
@@ -380,21 +379,21 @@ class MCDAManager(EmpowerApp):
             self.__ucqm_stats_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.handlers.ucqmstatshandler'].to_dict()
             crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_sta_rssi_dbm')
-            for crr_wtp_addr in self.__mcda_manager['wtps']:
+            for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
                 if crr_wtp_addr in self.__ucqm_stats_handler['wtps']:
-                    for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+                    for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
                         if crr_lvap_addr in self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps']:
                             wtp_sta_mean_rssi_dbm = \
                                 self.__ucqm_stats_handler['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['mov_rssi'][
                                     'mean']
                             if wtp_sta_mean_rssi_dbm is not None:
-                                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                                self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                     crr_criteria_index] = wtp_sta_mean_rssi_dbm
                             else:
-                                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                                self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                     crr_criteria_index] = None
                         else:
-                            self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                            self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                 crr_criteria_index] = None
                 else:
                     raise ValueError("WTP is not yet present in ucqmstatshandler dictionary!")
@@ -407,17 +406,17 @@ class MCDAManager(EmpowerApp):
     def get_sta_association_flag(self):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
         crr_time_in_ms = int(round(time.time()))
-        for crr_wtp_addr in self.__mcda_manager['wtps']:
-            for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
+        for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
+            for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
                 if not self.__initial_association:
-                    if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
-                        self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                    if crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['connected_lvaps']:
+                        self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                             crr_criteria_index] = 1
                     else:
-                        self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                        self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                             crr_criteria_index] = 0
                 else:
-                    self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                    self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                         crr_criteria_index] = 0
 
                 if self.__db_monitor:
@@ -425,7 +424,7 @@ class MCDAManager(EmpowerApp):
                     fields = ['LVAP_ADDR', 'WTP_ADDR', 'ASSOCIATION_FLAG']
                     values = [crr_lvap_addr,
                               crr_wtp_addr,
-                              self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                              self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                                   crr_criteria_index]]
 
                     # Saving into db
@@ -439,19 +438,19 @@ class MCDAManager(EmpowerApp):
             crr_lvap_addr = str(lvap.addr)
             if lvap.blocks[0] is not None:
                 associated_wtp_addr = str(lvap.blocks[0].addr)
-                for crr_wtp_addr in self.__mcda_manager['wtps']:
+                for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
                     if crr_wtp_addr == associated_wtp_addr:
-                        if crr_lvap_addr not in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
-                            self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps'].append(crr_lvap_addr)
+                        if crr_lvap_addr not in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['connected_lvaps']:
+                            self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['connected_lvaps'].append(crr_lvap_addr)
                     else:
-                        if crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps']:
-                            self.__mcda_manager['wtps'][crr_wtp_addr]['connected_lvaps'].remove(crr_lvap_addr)
+                        if crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['connected_lvaps']:
+                            self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['connected_lvaps'].remove(crr_lvap_addr)
 
     def initialize_wtp_load_expected(self):
         crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_expected_mbps')
-        for crr_wtp_addr in self.__mcda_manager['wtps']:
-            for crr_lvap_addr in self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps']:
-                self.__mcda_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+        for crr_wtp_addr in self.__mcda_handover_daemon['wtps']:
+            for crr_lvap_addr in self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps']:
+                self.__mcda_handover_daemon['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
                     crr_criteria_index] = 0  # WTP expected load initialized with 0
 
     @property
@@ -508,16 +507,12 @@ class MCDAManager(EmpowerApp):
     @property
     def active(self):
         """Return active."""
-
         return self.__active
 
     @active.setter
     def active(self, value):
         """Set active."""
-
         self.__active = value
-
-
 
     @property
     def every(self):
@@ -544,8 +539,8 @@ class MCDAManager(EmpowerApp):
 
     def to_dict(self):
         """ Return a JSON-serializable."""
-        self.__mcda_manager['active'] = self.__active
-        return self.__mcda_manager
+        self.__mcda_handover_daemon['active'] = self.__active
+        return self.__mcda_handover_daemon
 
 
 def launch(tenant_id,
@@ -554,7 +549,7 @@ def launch(tenant_id,
            every=DEFAULT_LONG_PERIOD):
     """ Initialize the module. """
 
-    return MCDAManager(tenant_id=tenant_id,
-                       descriptor=descriptor,
-                       db_monitor=db_monitor,
-                       every=every)
+    return MCDAHandoverDaemon(tenant_id=tenant_id,
+                              descriptor=descriptor,
+                              db_monitor=db_monitor,
+                              every=every)
