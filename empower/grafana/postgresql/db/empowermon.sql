@@ -16,9 +16,61 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: adaptive_slicing; Type: TABLE; Schema: public; Owner: empower
+--
+
+CREATE TABLE public.adaptive_slicing (
+    id integer NOT NULL,
+    min_quantum integer,
+    max_quantum integer,
+    inc_rate double precision,
+    dec_rate double precision,
+    timestamp_ms bigint
+);
+
+
+ALTER TABLE public.adaptive_slicing OWNER TO empower;
+
+--
+-- Name: adaptive_slicing_id_seq; Type: SEQUENCE; Schema: public; Owner: empower
+--
+
+CREATE SEQUENCE public.adaptive_slicing_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.adaptive_slicing_id_seq OWNER TO empower;
+
+--
+-- Name: adaptive_slicing_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: empower
+--
+
+ALTER SEQUENCE public.adaptive_slicing_id_seq OWNED BY public.adaptive_slicing.id;
+
 
 --
 -- Name: bin_stats; Type: TABLE; Schema: public; Owner: empower
@@ -431,6 +483,13 @@ ALTER SEQUENCE public.wifi_stats_id_seq OWNED BY public.wifi_stats.id;
 
 
 --
+-- Name: adaptive_slicing id; Type: DEFAULT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.adaptive_slicing ALTER COLUMN id SET DEFAULT nextval('public.adaptive_slicing_id_seq'::regclass);
+
+
+--
 -- Name: bin_stats id; Type: DEFAULT; Schema: public; Owner: empower
 --
 
@@ -498,6 +557,14 @@ ALTER TABLE ONLY public.ucqm_stats ALTER COLUMN id SET DEFAULT nextval('public.u
 --
 
 ALTER TABLE ONLY public.wifi_stats ALTER COLUMN id SET DEFAULT nextval('public.wifi_stats_id_seq'::regclass);
+
+
+--
+-- Name: adaptive_slicing adaptive_slicing_pkey; Type: CONSTRAINT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.adaptive_slicing
+    ADD CONSTRAINT adaptive_slicing_pkey PRIMARY KEY (id);
 
 
 --

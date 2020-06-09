@@ -212,7 +212,7 @@ class MCDAHandoverManager(EmpowerApp):
             if self.__initial_association:
                 self.__initial_association = False
 
-            if self.__db_monitor:
+            if self.__db_monitor is not None:
                 fields = self.__mcda_descriptor['criteria'] + ['TYPE']
                 values = self.__mcda_descriptor['weights_qos'] + ['QoS']
 
@@ -225,8 +225,7 @@ class MCDAHandoverManager(EmpowerApp):
                 # Saving into db
                 self.monitor.insert_into_db(table='mcda_weights', fields=fields, values=values)
 
-            # Keeping only the last measurements in db
-            if self.__db_monitor is not None:
+                # Keeping only the last measurements in db
                 self.monitor.keep_last_measurements_only('mcda_association_stats')
                 self.monitor.keep_last_measurements_only('mcda_results')
                 self.monitor.keep_last_measurements_only('mcda_weights')
