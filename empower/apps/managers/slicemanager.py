@@ -63,7 +63,8 @@ class SliceManager(EmpowerApp):
                                                         dscp=self.__dscp,
                                                         default_quantum=self.__quantum,
                                                         default_amsdu=self.__amsdu,
-                                                        default_scheduler=self.__scheduler)
+                                                        default_scheduler=self.__scheduler,
+                                                        wtps=None)
             else:
                 wtp = [
                     {
@@ -79,7 +80,6 @@ class SliceManager(EmpowerApp):
                                                         default_amsdu=self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['amsdu_aggregation'],
                                                         default_scheduler=self.tenant.slices[DSCP(self.__dscp)].wifi['static-properties']['scheduler'],
                                                         wtps=wtp)
-                self.__wtp_addr = None
             self.log.debug("Sending new slice configurations to APs")
             self.tenant.set_slice(self.__dscp, new_slice)
             self.reset_slice_parameters()
