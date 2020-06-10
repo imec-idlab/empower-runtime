@@ -39,6 +39,12 @@ MANIFEST = {
             "default": 100,
             "type": "int"
         },
+        "maximum_quantum": {
+            "desc": "The maximum quantum that a slice should have (in us).",
+            "mandatory": False,
+            "default": 12000,
+            "type": "int"
+        },
         "quantum_decrease_rate": {
             "desc": "The rate which the quantum of the best effort slices should be decrease (e.g., 0.2, 0.4).",
             "mandatory": False,

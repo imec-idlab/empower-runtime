@@ -30,11 +30,20 @@ class WiFiSliceManager(EmpowerApp):
 
     Command Line Parameters:
         tenant_id: tenant id
+        minimum_quantum: minimum_quantum,
+        maximum_quantum: maximum_quantum,
+        quantum_decrease_rate: quantum_decrease_rate,
+        quantum_increase_rate: quantum_increase_rate,
+        db_monitor: db_monitor,
         every: loop period in ms (optional, default 5000ms)
 
     Example:
         ./empower-runtime.py apps.sandbox.managers.adaptiveslicemanager.adaptiveslicemanager \
             --tenant_id=52313ecb-9d00-4b7d-b873-b55d3d9ada26D
+            --minimum_quantum=10
+            --minimum_quantum=12000
+            --quantum_increase_rate=0.1
+            --quantum_decrease_rate=0.1
             /
     """
 
