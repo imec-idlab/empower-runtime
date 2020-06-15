@@ -184,21 +184,22 @@ class MCDAHandoverManager(EmpowerApp):
                         old_wtp_addr = None
                         for block in self.blocks():
                             crr_wtp_addr = str(block.addr)
-                            if crr_wtp_addr == best_alternative_wtp_addr:
-                                # Do handover to this block only if the station is not connected to it
-                                sta_crr_wtp_addr = str(lvap.blocks[0].addr)
-                                if sta_crr_wtp_addr != best_alternative_wtp_addr:
-                                    self.log.info("Sandbox handover triggered!")
-                                    old_wtp_addr = sta_crr_wtp_addr
-                                    # Handover now..
-                                    lvap.blocks = block
-                                # and update metrics
-                                if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                            if lvap.blocks[0] is not None:
+                                if crr_wtp_addr == best_alternative_wtp_addr:
+                                    # Do handover to this block only if the station is not connected to it
+                                    sta_crr_wtp_addr = str(lvap.blocks[0].addr)
+                                    if sta_crr_wtp_addr != best_alternative_wtp_addr:
+                                        self.log.info("Sandbox handover triggered!")
+                                        old_wtp_addr = sta_crr_wtp_addr
+                                        # Handover now..
+                                        lvap.blocks = block
+                                    # and update metrics
+                                    if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                                        self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                            'values'][sta_association_index] = 1
+                                elif 'sta_association_flag' in self.__mcda_descriptor['criteria']:
                                     self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                        'values'][sta_association_index] = 1
-                            elif 'sta_association_flag' in self.__mcda_descriptor['criteria']:
-                                self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                    'values'][sta_association_index] = 0
+                                        'values'][sta_association_index] = 0
 
                         # Recalculate WTP expected load on handover, if any...
                         # OBS: not possible to access lvap.blocks[0] while performing handover
