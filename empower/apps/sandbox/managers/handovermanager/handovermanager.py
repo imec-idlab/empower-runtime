@@ -55,9 +55,10 @@ class HandoverManager(EmpowerApp):
                     # If there is a static placement for the station
                     if str(lvap.addr) in self.__WTP_LVAP_map[str(block.addr)]["LVAPs"]:
                         # If the station is not connected to the defined static configuration: do handover
-                        if str(lvap.blocks[0].addr) != str(block.addr):
-                            self.log.info("Sandbox handover triggered!")
-                            lvap.blocks = block
+                        if lvap.blocks[0] is not None:
+                            if str(lvap.blocks[0].addr) != str(block.addr):
+                                self.log.info("Sandbox handover triggered!")
+                                lvap.blocks = block
 
     @property
     def every(self):
