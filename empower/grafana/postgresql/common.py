@@ -62,7 +62,7 @@ class EmpowerMon:
             sql_delete_query = 'DELETE FROM ' + str(table) + ' WHERE TIMESTAMP_MS < %s'
 
             # Keeping only the last measurements (i.e., the last x minutes)
-            cursor.execute(sql_delete_query, (int(round(time.time() - int(self.__threshold_min * 60))),))
+            cursor.execute(sql_delete_query, (int(round(time.time() - int(self.__threshold_min) * 60)),))
             connection.commit()
 
         except (Exception, psycopg2.Error) as error:
