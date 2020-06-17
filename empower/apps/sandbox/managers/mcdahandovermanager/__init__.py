@@ -19,7 +19,7 @@
 
 # the manifest
 MANIFEST = {
-    "name": "empower.apps.sandbox.daemons.mcdahandoverdaemon.mcdahandoverdaemon",
+    "name": "empower.apps.sandbox.managers.mcdahandovermanager.mcdahandovermanager",
     "desc": "An MCDA manager REST API.",
     "params": {
         "tenant_id": {
