@@ -52,7 +52,7 @@ class WiFiSliceManager(EmpowerApp):
         self.__adaptive_slice_manager = {"message": "Adaptive Slice Manager is online!"}
         self.__slice_stats_handler = None
         self.__active_flows_handler = None
-        self.__active = False
+        self.__active = True
         self.__adaptive_slice_manager['active'] = self.__active
         self.__minimum_quantum = self.minimum_quantum
         self.__maximum_quantum = self.maximum_quantum

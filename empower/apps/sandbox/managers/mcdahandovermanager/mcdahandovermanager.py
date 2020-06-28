@@ -19,7 +19,6 @@
 
 from empower.core.app import EmpowerApp
 from empower.main import RUNTIME
-from empower.core.resourcepool import BT_HT20
 
 from skcriteria import Data, MIN, MAX
 from skcriteria.madm import closeness, simple
