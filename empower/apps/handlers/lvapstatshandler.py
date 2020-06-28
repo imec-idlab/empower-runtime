@@ -126,7 +126,7 @@ class LVAPStatsHandler(EmpowerApp):
         return self.__lvap_stats_handler
 
 
-def launch(tenant_id, db_monitor=None, polling=DEFAULT_MONITORING_PERIOD, every=DEFAULT_PERIOD):
+def launch(tenant_id, db_monitor=None, polling=DEFAULT_MONITORING_PERIOD, every=DEFAULT_MONITORING_PERIOD):
     """ Initialize the module. """
 
     return LVAPStatsHandler(tenant_id=tenant_id, db_monitor=db_monitor, polling=polling, every=every)
