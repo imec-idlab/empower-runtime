@@ -60,6 +60,7 @@ class LVAPStatsHandler(EmpowerApp):
                     self.monitor.insert_into_db(table='lvap_association_stats', fields=fields, values=values)
 
         if self.__db_monitor is not None:
+            self.monitor.keep_last_measurements_only(table='lvap_association_stats')
             self.monitor.keep_last_measurements_only(table='lvap_stats')
 
     def lvap_stats_callback(self, lvap_stats):
