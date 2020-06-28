@@ -52,8 +52,8 @@ class LVAPStatsHandler(EmpowerApp):
 
             if self.__db_monitor is not None:
                 crr_lvap_addr = str(lvap.addr)
-                fields = ['LVAP_ADDR', 'WTP_ADDR', 'FLAG']
                 for block in self.blocks():
+                    fields = ['LVAP_ADDR', 'WTP_ADDR', 'FLAG']
                     flag_value = 0
                     crr_wtp_addr = str(block.addr)
                     if lvap.blocks[0] is not None:
