@@ -50,11 +50,15 @@ class LVAPStatsHandler(EmpowerApp):
                             every=self.__polling,
                             callback=self.lvap_stats_callback)
 
-            if lvap.blocks[0] is not None:
-                associated_wtp_addr = lvap.blocks[0].addr
-                if self.__db_monitor is not None:
-                    fields = ['LVAP_ADDR', 'WTP_ADDR', 'FLAG']
-                    values = [str(lvap.addr), str(associated_wtp_addr), 1]
+            if self.__db_monitor is not None:
+                fields = ['LVAP_ADDR', 'WTP_ADDR', 'FLAG']
+                for block in self.blocks():
+                    flag_value = 0
+                    if lvap.blocks[0] is not None:
+                        associated_wtp_addr = lvap.blocks[0].addr
+                        if str(associated_wtp_addr) == str(block.addr):
+                            flag_value = 1
+                    values = [str(lvap.addr), str(associated_wtp_addr), flag_value]
 
                     # Saving into db
                     self.monitor.insert_into_db(table='lvap_association_stats', fields=fields, values=values)
