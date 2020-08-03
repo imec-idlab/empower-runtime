@@ -1,0 +1,10 @@
+{"version":
+	"1.0",
+	"params": {
+		"ip_addr": "192.168.2.23",
+		"port": 7777,
+		"bw_shaper": 1205000,
+		"dl_shaper": 2,
+		"config_lvap": true
+	}
+}

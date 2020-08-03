@@ -34,7 +34,7 @@ MANIFEST = {
             "type": "int"
         },
         "mac_address": {
-            "desc": "MAC Address from the station in which a transmission policy will be applied.",
+            "desc": "MAC Address from the LVAP in which a transmission policy will be applied.",
             "mandatory": False,
             "default": None,
             "type": "string"
@@ -117,6 +117,51 @@ MANIFEST = {
         },
         "config_slice": {
             "desc": "The flag used to config a slice, needs to be last argument.",
+            "mandatory": True,
+            "default": True,
+            "type": "bool"
+        }
+    }
+}
+
+"""An LVAP manager."""
+
+# the manifest
+MANIFEST = {
+    "name": "empower.apps.managers.lvapmanager",
+    "desc": "A LVAP manager REST API.",
+    "params": {
+        "tenant_id": {
+            "desc": "The tenant on which this app must be loaded.",
+            "mandatory": True,
+            "type": "UUID"
+        },
+        "ip_addr": {
+            "desc": "The IP address from the LVAP in which a configuration will be applied.",
+            "mandatory": True,
+            "default": None,
+            "type": "string"
+        },
+        "port": {
+            "desc": "The port the LVAP is listening to.",
+            "mandatory": True,
+            "default": False,
+            "type": "int"
+        },
+        "bw_shaper": {
+            "desc": "The bandwidth shaper value for uplink in B/s in which the LVAP will apply.",
+            "mandatory": False,
+            "default": None,
+            "type": "int"
+        },
+        "dl_shaper": {
+            "desc": "The delay shaper value for uplink in seconds in which the LVAP will apply.",
+            "mandatory": False,
+            "default": None,
+            "type": "int"
+        },
+        "config_lvap": {
+            "desc": "The flag used to config a LVAP, needs to be last argument.",
             "mandatory": True,
             "default": True,
             "type": "bool"
