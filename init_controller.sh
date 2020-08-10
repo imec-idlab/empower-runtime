@@ -13,7 +13,7 @@ QUANTUM_INCREASE_RATE=0.1
 DB_MONITOR=True
 
 # MCDA manager filename,
-# the file must be placed in empower/apps/sandbox/managers/mcdamanager/descriptors/
+# the file must be placed in empower/apps/managers/mcdamanager/descriptors/
 # RSSI, Channel load, AP load, AP expected load, and Queue delay with different weights (QoS and BE)
 MCDA_DESCRIPTOR="mcdainput.json"
 
@@ -25,7 +25,7 @@ MCDA_DESCRIPTOR="mcdainput.json"
 #./empower-runtime.py apps.managers.slicemanager.slicemanager --tenant_id=$TENANT_ID
 
 # Fixing STA positions (handover manager)
-#./empower-runtime.py apps.sandbox.managers.handovermanager.handovermanager --tenant_id=$TENANT_ID
+#./empower-runtime.py apps.managers.handovermanager.handovermanager --tenant_id=$TENANT_ID
 
 # Bin stats
 #./empower-runtime.py apps.handlers.binstatshandler --tenant_id=$TENANT_ID --db_monitor=$DB_MONITOR

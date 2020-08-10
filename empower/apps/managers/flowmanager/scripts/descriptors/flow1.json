@@ -3,6 +3,7 @@
   "params": {
       "flow_id": 1,
       "flow_type": "QoS",
+      "flow_direction": "DOWN",
       "flow_dscp": "0x01",
       "flow_protocol": "UDP",
       "flow_distribution": "POISSON",

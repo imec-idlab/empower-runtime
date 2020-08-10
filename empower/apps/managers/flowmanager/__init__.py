@@ -45,6 +45,12 @@ MANIFEST = {
             "default": None,
             "type": "str"
         },
+        "flow_direction": {
+            "desc": "The direction of the flow, UP or DOWN.",
+            "mandatory": True,
+            "default": None,
+            "type": "str"
+        },
         "flow_dscp": {
             "desc": "The DSCP in which the flow is going to belong to.",
             "mandatory": True,
@@ -77,7 +83,7 @@ MANIFEST = {
         },
         "flow_delay_req_ms": {
             "desc": "The delay requirements of the flow (ms)",
-            "mandatory": True,
+            "mandatory": False,
             "default": None,
             "type": "str"
         },
@@ -107,7 +113,7 @@ MANIFEST = {
         },
         "start_flow": {
             "desc": "The flag used to start a flow, needs to be last argument.",
-            "mandatory": True,
+            "mandatory": False,
             "default": True,
             "type": "bool"
         }

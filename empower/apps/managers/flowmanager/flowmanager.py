@@ -44,13 +44,16 @@ class FlowManager(EmpowerApp):
                                'be_slices': [],
                                'qos_flows': [],
                                'qos_slices': [],
-                               'lvap_flow_map': {},
-                               'lvap_load_expected_map': {}}
+                               'lvap_flow_map': {},                 # downlink flow map
+                               'lvap_load_expected_map': {},        # downlink expected load
+                               'network_flow_map': {},              # TODO: uplink flow map
+                               'network_load_expected_map': {}}     # TODO: uplink expected load
         self.__process_handler = {'flows': {}}
 
         # Flow params
         self.__flow_id = None
         self.__flow_type = None
+        self.__flow_direction = None
         self.__flow_dscp = None
         self.__flow_protocol = None
         self.__flow_distribution = None
@@ -65,6 +68,7 @@ class FlowManager(EmpowerApp):
     def reset_flow_parameters(self):
         self.__flow_id = None
         self.__flow_type = None
+        self.__flow_direction = None
         self.__flow_dscp = None
         self.__flow_protocol = None
         self.__flow_distribution = None
@@ -91,7 +95,7 @@ class FlowManager(EmpowerApp):
         for flow_proc in flow_processes_to_expire:
             del self.__process_handler['flows'][flow_proc]
 
-    def create_mgen_script(self):
+    def create_and_run_mgen_script(self):
         # For the POISSON and PERIODIC distributions, 120 pps = 1Mbps
         multiplier = 120
         try:
@@ -104,6 +108,12 @@ class FlowManager(EmpowerApp):
                         self.__flow_frame_size) + ']\n' + str(self.__flow_duration) + ' OFF ' + str(
                         self.__flow_id) + '\n'))
                 mgen_file.close()
+
+                # mgen command
+                mgen_command = ['mgen', 'input',
+                                'empower/apps/managers/flowmanager/scripts/mgen/flow' + str(self.__flow_id) + '.mgn']
+
+                self.__process_handler['flows'][self.__flow_id] = subprocess.Popen(mgen_command)
                 return True
         except TypeError:
             raise ValueError("Invalid path for mgen script files!")
@@ -112,6 +122,7 @@ class FlowManager(EmpowerApp):
     def add_flow(self):
         flow = {
             'flow_type': self.__flow_type,
+            'flow_direction': self.__flow_direction,
             'flow_dscp': self.__flow_dscp,
             'flow_protocol': self.__flow_protocol,
             'flow_distribution': self.__flow_distribution,
@@ -149,12 +160,6 @@ class FlowManager(EmpowerApp):
         # add flow structure
         self.__flow_manager['flows'][self.__flow_id] = flow
 
-        # mgen command
-        mgen_command = ['mgen', 'input',
-                        'empower/apps/managers/flowmanager/scripts/mgen/flow' + str(self.__flow_id) + '.mgn']
-
-        self.__process_handler['flows'][self.__flow_id] = subprocess.Popen(mgen_command)
-
     def remove_flow(self, flow_id):
         flow = self.__flow_manager['flows'][flow_id]
 
@@ -169,9 +174,9 @@ class FlowManager(EmpowerApp):
         self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
         self.__flow_manager['lvap_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
 
-        if self.__process_handler['flows'][flow_id].poll() is None:
-            self.__process_handler['flows'][flow_id].kill()
-
+        if flow_id in self.__process_handler['flows']:
+            if self.__process_handler['flows'][flow_id].poll() is None:
+                self.__process_handler['flows'][flow_id].kill()
 
     @property
     def start_flow(self):
@@ -184,9 +189,11 @@ class FlowManager(EmpowerApp):
         """Set start_flow."""
 
         if value is not None:
-            if self.create_mgen_script():
-                self.add_flow()
-                self.reset_flow_parameters()
+            if self.create_and_run_mgen_script():
+                self.log.debug("Starting flow using MGEN!")
+            else:
+                raise ValueError("Could not start flow with MGEN!")
+            self.reset_flow_parameters()
 
     @property
     def flow_id(self):
@@ -329,8 +336,17 @@ class FlowManager(EmpowerApp):
     @flow_duration.setter
     def flow_duration(self, value):
         """Set flow_duration."""
-
-        self.__flow_duration = value
+        if isinstance(value, int):
+            if value >= 0:
+                self.__flow_duration = value
+                self.add_flow()
+            else:
+                self.reset_flow_parameters()
+                raise ValueError(
+                    "Invalid value for flow duration, flow duration needs to be greater than or equal to 0!")
+        else:
+            self.reset_flow_parameters()
+            raise ValueError("Invalid value type for flow duration, integer required!")
     
     @property
     def every(self):
