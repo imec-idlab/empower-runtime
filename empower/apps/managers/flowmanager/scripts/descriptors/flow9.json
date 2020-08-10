@@ -1,17 +1,17 @@
 {
   "version": "1.0",
   "params": {
-      "flow_id": 8,
+      "flow_id": 9,
       "flow_type": "BE",
-      "flow_dscp": "0x02",
+      "flow_dscp": "0x03",
       "flow_protocol": "UDP",
       "flow_distribution": "POISSON",
       "flow_frame_size":  1024,
       "flow_bw_req_mbps" : 25.0,
       "flow_delay_req_ms" : null,
-      "flow_dst_ip_addr" : "192.168.2.22",
-      "flow_dst_port" : "4002",
-      "flow_dst_mac_addr": "00:0E:8E:30:9E:90",
+      "flow_dst_ip_addr" : "192.168.2.23",
+      "flow_dst_port" : "4003",
+      "flow_dst_mac_addr": "00:0E:8E:30:9C:DB",
       "flow_duration": 120,
       "start_flow": true
   }
