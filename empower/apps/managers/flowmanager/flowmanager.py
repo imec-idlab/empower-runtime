@@ -205,18 +205,12 @@ class FlowManager(EmpowerApp):
         if flow['flow_dst_mac_addr'] in self.__flow_manager['lvap_flow_map']:
             if flow_id in self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']]:
                 self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
-
-        if flow['flow_dst_mac_addr'] in self.__flow_manager['lvap_load_expected_map']:
-            if flow_id in self.__flow_manager['lvap_load_expected_map'][flow['flow_dst_mac_addr']]:
                 self.__flow_manager['lvap_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
 
         # remove from network flow map
         if flow['flow_dst_mac_addr'] in self.__flow_manager['network_flow_map']:
             if flow_id in self.__flow_manager['network_flow_map'][flow['flow_dst_mac_addr']]:
                 self.__flow_manager['network_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
-
-        if flow['flow_dst_mac_addr'] in self.__flow_manager['network_load_expected_map']:
-            if flow_id in self.__flow_manager['network_load_expected_map'][flow['flow_dst_mac_addr']]:
                 self.__flow_manager['network_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
 
         if flow_id in self.__process_handler['flows']:
