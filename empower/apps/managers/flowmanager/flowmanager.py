@@ -139,10 +139,12 @@ class FlowManager(EmpowerApp):
         # fill in QoS and BE flow list
         if self.__flow_type == 'QoS':
             self.__flow_manager['qos_flows'].append(self.__flow_id)
-            self.__flow_manager['qos_slices'].append(self.__flow_dscp)
+            if self.__flow_dscp is not None:
+                self.__flow_manager['qos_slices'].append(self.__flow_dscp)
         else:
             self.__flow_manager['be_flows'].append(self.__flow_id)
-            self.__flow_manager['be_slices'].append(self.__flow_dscp)
+            if self.__flow_dscp is not None:
+                self.__flow_manager['be_slices'].append(self.__flow_dscp)
 
         current_lvaps = []
         for lvap in self.lvaps():
