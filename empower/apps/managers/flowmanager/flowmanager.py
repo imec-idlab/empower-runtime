@@ -117,6 +117,16 @@ class FlowManager(EmpowerApp):
             raise ValueError("Invalid path for mgen script files!")
         return False
 
+    def create_sleep_process(self):
+        # For the uplink flow tracking
+        try:
+            sleep_command = ['sleep', self.__duration]
+            self.__process_handler['flows'][self.__flow_id] = subprocess.Popen(sleep_command)
+            return True
+        except TypeError:
+            raise ValueError("Error creating sleep process!")
+        return False
+
     def add_flow(self):
         flow = {
             'flow_type': self.__flow_type,
@@ -167,10 +177,13 @@ class FlowManager(EmpowerApp):
                 self.__flow_manager['network_flow_map'][self.__flow_dst_mac_addr] = []
             self.__flow_manager['network_flow_map'][self.__flow_dst_mac_addr].append(self.__flow_id)
 
-            # fill in LVAP's flow load list
+            # fill in network flow load into list
             if self.__flow_dst_mac_addr not in self.__flow_manager['network_load_expected_map']:
                 self.__flow_manager['network_load_expected_map'][self.__flow_dst_mac_addr] = []
             self.__flow_manager['network_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
+
+            # creating sleep process to track uplink flows
+            self.create_sleep_process()
 
         # add flow structure
         self.__flow_manager['flows'][self.__flow_id] = flow
@@ -181,13 +194,22 @@ class FlowManager(EmpowerApp):
         del self.__flow_manager['flows'][flow_id]
         if flow['flow_type'] == 'QoS':
             self.__flow_manager['qos_flows'].remove(flow_id)
-            self.__flow_manager['qos_slices'].remove(flow['flow_dscp'])
+            if self.__flow_dscp is not None:
+                self.__flow_manager['qos_slices'].remove(flow['flow_dscp'])
         else:
             self.__flow_manager['be_flows'].remove(flow_id)
-            self.__flow_manager['be_slices'].remove(flow['flow_dscp'])
+            if self.__flow_dscp is not None:
+                self.__flow_manager['be_slices'].remove(flow['flow_dscp'])
 
-        self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
-        self.__flow_manager['lvap_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
+        # remove from lvap flow map
+        if flow_id in self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']]:
+            self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
+            self.__flow_manager['lvap_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
+
+        # remove from network flow map
+        if flow_id in self.__flow_manager['network_flow_map'][flow['flow_dst_mac_addr']]:
+            self.__flow_manager['network_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
+            self.__flow_manager['network_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
 
         if flow_id in self.__process_handler['flows']:
             if self.__process_handler['flows'][flow_id].poll() is None:
