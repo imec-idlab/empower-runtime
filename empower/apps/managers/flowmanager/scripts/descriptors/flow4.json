@@ -3,7 +3,6 @@
   "params": {
       "flow_id": 4,
       "flow_type": "BE",
-      "flow_direction": "DOWN",
       "flow_dscp": "0x08",
       "flow_protocol": "UDP",
       "flow_distribution": "POISSON",

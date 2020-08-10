@@ -1,18 +1,18 @@
-{
+    {
   "version": "1.0",
   "params": {
       "flow_id": 1,
       "flow_type": "QoS",
-      "flow_dscp": "0x01",
+      "flow_dscp": null,
       "flow_protocol": "UDP",
       "flow_distribution": "POISSON",
       "flow_frame_size":  1024,
       "flow_bw_req_mbps" : 2.0,
       "flow_delay_req_ms" : 30,
-      "flow_dst_ip_addr" : "192.168.2.21",
+      "flow_dst_ip_addr" : "192.168.2.2",
       "flow_dst_port" : "4001",
-      "flow_dst_mac_addr": "DC:A6:32:65:E7:AA",
-      "flow_duration": 0,
+      "flow_dst_mac_addr": "00:25:90:1D:24:D8",
+      "flow_duration": 30,
       "start_flow": true
   }
 }

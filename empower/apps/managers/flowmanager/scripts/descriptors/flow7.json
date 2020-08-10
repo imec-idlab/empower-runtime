@@ -11,8 +11,8 @@
       "flow_delay_req_ms" : 30,
       "flow_dst_ip_addr" : "192.168.2.21",
       "flow_dst_port" : "4001",
-      "flow_dst_mac_addr": "DC:A6:32:65:E7:AA",
-      "flow_duration": 0,
+      "flow_dst_mac_addr": "00:0E:8E:30:9C:F2",
+      "flow_duration": 30,
       "start_flow": true
   }
 }
