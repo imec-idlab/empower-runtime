@@ -220,6 +220,18 @@ class FlowManager(EmpowerApp):
         self.__flow_type = value
 
     @property
+    def flow_direction(self):
+        """Return flow_direction."""
+
+        return self.__flow_direction
+
+    @flow_direction.setter
+    def flow_direction(self, value):
+        """Set flow_direction."""
+
+        self.__flow_direction = value
+
+    @property
     def flow_dscp(self):
         """Return flow_dscp."""
 
