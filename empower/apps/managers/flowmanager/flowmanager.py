@@ -120,7 +120,7 @@ class FlowManager(EmpowerApp):
     def create_sleep_process(self):
         # For the uplink flow tracking
         try:
-            sleep_command = ['sleep', self.__flow_duration]
+            sleep_command = ['sleep', str(self.__flow_duration)]
             self.__process_handler['flows'][self.__flow_id] = subprocess.Popen(sleep_command)
             return True
         except TypeError:
