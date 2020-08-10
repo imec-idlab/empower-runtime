@@ -21,6 +21,7 @@ from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
 from empower.datatypes.dscp import DSCP
 from empower.main import RUNTIME
+from empower.apps.managers.adaptiveslicemanager.parsers import sliceconfigrequest
 
 
 class WiFiSliceManager(EmpowerApp):
@@ -122,9 +123,9 @@ class WiFiSliceManager(EmpowerApp):
         return True
 
     def send_slice_config_to_wtp(self, dscp, new_quantum):
-        new_slice = format_slice_config_request(tenant_id=self.tenant_id,
-                                                dscp=dscp,
-                                                default_quantum=new_quantum)
+        new_slice = sliceconfigrequest.format_slice_config_request(tenant_id=self.tenant_id,
+                                                                   dscp=dscp,
+                                                                   default_quantum=new_quantum)
         self.log.debug("Sending new slice configurations to APs")
         self.tenant.set_slice(DSCP(dscp), new_slice)
 
