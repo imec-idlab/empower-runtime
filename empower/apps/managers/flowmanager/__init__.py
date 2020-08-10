@@ -45,15 +45,9 @@ MANIFEST = {
             "default": None,
             "type": "str"
         },
-        "flow_direction": {
-            "desc": "The direction of the flow, UP or DOWN.",
-            "mandatory": True,
-            "default": None,
-            "type": "str"
-        },
         "flow_dscp": {
             "desc": "The DSCP in which the flow is going to belong to.",
-            "mandatory": True,
+            "mandatory": False,
             "default": None,
             "type": "str"
         },
@@ -65,13 +59,13 @@ MANIFEST = {
         },
         "flow_distribution": {
             "desc": "The flow distribution.",
-            "mandatory": True,
+            "mandatory": False,
             "default": "PERIODIC",
             "type": "str"
         },
         "flow_frame_size": {
             "desc": "The frame size of the flow.",
-            "mandatory": True,
+            "mandatory": False,
             "default": 1024,
             "type": "int"
         },

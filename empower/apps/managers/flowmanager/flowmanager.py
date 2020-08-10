@@ -53,7 +53,6 @@ class FlowManager(EmpowerApp):
         # Flow params
         self.__flow_id = None
         self.__flow_type = None
-        self.__flow_direction = None
         self.__flow_dscp = None
         self.__flow_protocol = None
         self.__flow_distribution = None
@@ -68,7 +67,6 @@ class FlowManager(EmpowerApp):
     def reset_flow_parameters(self):
         self.__flow_id = None
         self.__flow_type = None
-        self.__flow_direction = None
         self.__flow_dscp = None
         self.__flow_protocol = None
         self.__flow_distribution = None
@@ -122,7 +120,6 @@ class FlowManager(EmpowerApp):
     def add_flow(self):
         flow = {
             'flow_type': self.__flow_type,
-            'flow_direction': self.__flow_direction,
             'flow_dscp': self.__flow_dscp,
             'flow_protocol': self.__flow_protocol,
             'flow_distribution': self.__flow_distribution,
@@ -147,15 +144,31 @@ class FlowManager(EmpowerApp):
             self.__flow_manager['be_flows'].append(self.__flow_id)
             self.__flow_manager['be_slices'].append(self.__flow_dscp)
 
-        # fill in LVAP's flow list
-        if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_flow_map']:
-            self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr] = []
-        self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr].append(self.__flow_id)
+        current_lvaps = []
+        for lvap in self.lvaps():
+            current_lvaps.append(str(lvap.addr))
 
-        # fill in LVAP's flow load list
-        if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_load_expected_map']:
-            self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr] = []
-        self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
+        # if DST is a LVAP (downlink)
+        if self.__flow_dst_mac_addr in current_lvaps:
+            # fill in LVAP's flow list
+            if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_flow_map']:
+                self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr] = []
+            self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr].append(self.__flow_id)
+
+            # fill in LVAP's flow load list
+            if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_load_expected_map']:
+                self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr] = []
+            self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
+        else:
+            # it is an uplink flow
+            if self.__flow_dst_mac_addr not in self.__flow_manager['network_flow_map']:
+                self.__flow_manager['network_flow_map'][self.__flow_dst_mac_addr] = []
+            self.__flow_manager['network_flow_map'][self.__flow_dst_mac_addr].append(self.__flow_id)
+
+            # fill in LVAP's flow load list
+            if self.__flow_dst_mac_addr not in self.__flow_manager['network_load_expected_map']:
+                self.__flow_manager['network_load_expected_map'][self.__flow_dst_mac_addr] = []
+            self.__flow_manager['network_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
 
         # add flow structure
         self.__flow_manager['flows'][self.__flow_id] = flow
@@ -218,18 +231,6 @@ class FlowManager(EmpowerApp):
         """Set flow_type."""
 
         self.__flow_type = value
-
-    @property
-    def flow_direction(self):
-        """Return flow_direction."""
-
-        return self.__flow_direction
-
-    @flow_direction.setter
-    def flow_direction(self, value):
-        """Set flow_direction."""
-
-        self.__flow_direction = value
 
     @property
     def flow_dscp(self):
