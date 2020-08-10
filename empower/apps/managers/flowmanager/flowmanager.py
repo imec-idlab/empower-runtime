@@ -219,8 +219,6 @@ class FlowManager(EmpowerApp):
                 self.__process_handler['flows'][flow_id].kill()
 
     def check_slices(self, flow_id):
-        flow = self.__flow_manager['flows'][flow_id]
-
         if self.__flow_manager['flows']:
             for flow in self.__flow_manager['flows']:
                 if self.__flow_dscp is not None:
