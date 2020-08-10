@@ -88,6 +88,7 @@ class FlowManager(EmpowerApp):
             if self.__process_handler['flows'][flow_id].poll() is not None:
                 # expire flow
                 self.remove_flow(flow_id)
+                self.check_slices(flow_id)
                 flow_processes_to_expire.append(flow_id)
 
         for flow_proc in flow_processes_to_expire:
@@ -216,6 +217,23 @@ class FlowManager(EmpowerApp):
         if flow_id in self.__process_handler['flows']:
             if self.__process_handler['flows'][flow_id].poll() is None:
                 self.__process_handler['flows'][flow_id].kill()
+
+    def check_slices(self, flow_id):
+        flow = self.__flow_manager['flows'][flow_id]
+
+        if self.__flow_manager['flows']:
+            for flow in self.__flow_manager['flows']:
+                if self.__flow_dscp is not None:
+                    if flow['flow_type'] == 'QoS':
+                        if flow_id not in self.__flow_manager['qos_slices']:
+                            self.__flow_manager['qos_slices'].append(flow['flow_dscp'])
+                    else:
+                        if flow_id not in self.__flow_manager['qos_slices']:
+                            self.__flow_manager['qos_slices'].append(flow['flow_dscp'])
+        else:
+            self.__flow_manager['qos_slices'].clear()
+            self.__flow_manager['be_slices'].clear()
+
 
     @property
     def start_flow(self):
