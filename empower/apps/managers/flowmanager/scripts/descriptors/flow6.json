@@ -1,7 +1,7 @@
     {
   "version": "1.0",
   "params": {
-      "flow_id": 1,
+      "flow_id": 6,
       "flow_type": "QoS",
       "flow_dscp": null,
       "flow_protocol": "UDP",
