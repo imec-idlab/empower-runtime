@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
-TENANT_ID=8aaca1c6-bf3c-4455-8c6d-4e4b6eef7719
+# Sandbox tenant
+# TENANT_ID=8aaca1c6-bf3c-4455-8c6d-4e4b6eef7719
+
+# wilabt tenant
+TENANT_ID=f1160872-c9c6-4d7f-b7f7-3e4a01c62a90
+
 MINIMUM_QUANTUM=10
 MAXIMUM_QUANTUM=12000
 QUANTUM_DECREASE_RATE=0.7
