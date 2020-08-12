@@ -353,6 +353,18 @@ class FlowManager(EmpowerApp):
         self.__flow_delay_req_ms = value
 
     @property
+    def flow_src_ip_addr(self):
+        """Return flow_src_ip_addr."""
+
+        return self.__flow_src_ip_addr
+
+    @flow_src_ip_addr.setter
+    def flow_src_ip_addr(self, value):
+        """Set flow_src_ip_addr."""
+
+        self.__flow_src_ip_addr = value
+
+    @property
     def flow_dst_ip_addr(self):
         """Return flow_dst_ip_addr."""
 
@@ -370,11 +382,17 @@ class FlowManager(EmpowerApp):
 
         return self.__flow_dst_port
 
-    @flow_dst_port.setter
-    def flow_dst_port(self, value):
-        """Set flow_dst_port."""
+    @property
+    def flow_src_mac_addr(self):
+        """Return flow_src_mac_addr."""
 
-        self.__flow_dst_port = value
+        return self.__flow_src_mac_addr
+
+    @flow_src_mac_addr.setter
+    def flow_src_mac_addr(self, value):
+        """Set flow_src_mac_addr."""
+
+        self.__flow_src_mac_addr = value
 
     @property
     def flow_dst_mac_addr(self):
@@ -387,6 +405,12 @@ class FlowManager(EmpowerApp):
         """Set flow_dst_mac_addr."""
 
         self.__flow_dst_mac_addr = value
+
+    @flow_dst_port.setter
+    def flow_dst_port(self, value):
+        """Set flow_dst_port."""
+
+        self.__flow_dst_port = value
 
     @property
     def flow_duration(self):
