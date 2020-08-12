@@ -59,9 +59,11 @@ class FlowManager(EmpowerApp):
         self.__flow_frame_size = None
         self.__flow_bw_req_mbps = None
         self.__flow_delay_req_ms = None
+        self.__flow_src_ip_addr = None
         self.__flow_dst_ip_addr = None
-        self.__flow_dst_port = None
+        self.__flow_src_mac_addr = None
         self.__flow_dst_mac_addr = None
+        self.__flow_dst_port = None
         self.__flow_duration = None
 
     def reset_flow_parameters(self):
@@ -73,9 +75,11 @@ class FlowManager(EmpowerApp):
         self.__flow_frame_size = None
         self.__flow_bw_req_mbps = None
         self.__flow_delay_req_ms = None
+        self.__flow_src_ip_addr = None
         self.__flow_dst_ip_addr = None
-        self.__flow_dst_port = None
+        self.__flow_src_mac_addr = None
         self.__flow_dst_mac_addr = None
+        self.__flow_dst_port = None
         self.__flow_duration = None
 
     def loop(self):
@@ -137,7 +141,9 @@ class FlowManager(EmpowerApp):
             'flow_frame_size': self.__flow_frame_size,
             'flow_bw_req_mbps': self.__flow_bw_req_mbps,
             'flow_delay_req_ms': self.__flow_delay_req_ms,
+            'flow_src_ip_addr': self.__flow_src_ip_addr,
             'flow_dst_ip_addr': self.__flow_dst_ip_addr,
+            'flow_src_mac_addr': self.__flow_src_mac_addr,
             'flow_dst_mac_addr': self.__flow_dst_mac_addr,
             'flow_dst_port': self.__flow_dst_port,
             'flow_duration': self.__flow_duration
@@ -220,18 +226,18 @@ class FlowManager(EmpowerApp):
 
     def check_slices(self):
         if self.__flow_manager['flows']:
-            for flow in self.__flow_manager['flows']:
+            for flow_id in self.__flow_manager['flows']:
+                flow = self.__flow_manager['flows'][flow_id]
                 if self.__flow_dscp is not None:
                     if flow['flow_type'] == 'QoS':
                         if flow_id not in self.__flow_manager['qos_slices']:
                             self.__flow_manager['qos_slices'].append(flow['flow_dscp'])
                     else:
-                        if flow_id not in self.__flow_manager['qos_slices']:
+                        if 'flow_id' not in self.__flow_manager['qos_slices']:
                             self.__flow_manager['qos_slices'].append(flow['flow_dscp'])
         else:
             self.__flow_manager['qos_slices'].clear()
             self.__flow_manager['be_slices'].clear()
-
 
     @property
     def start_flow(self):

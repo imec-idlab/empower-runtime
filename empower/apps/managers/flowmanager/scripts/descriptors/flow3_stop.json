@@ -9,9 +9,11 @@
       "flow_frame_size":  1024,
       "flow_bw_req_mbps" : 4.0,
       "flow_delay_req_ms" : null,
+      "flow_src_ip_addr" : "192.168.2.2",
       "flow_dst_ip_addr" : "192.168.2.22",
-      "flow_dst_port" : "5002",
+      "flow_src_mac_addr": "00:25:90:1D:24:D8",
       "flow_dst_mac_addr": "DC:A6:32:0A:E1:D4",
+      "flow_dst_port" : "5002",
       "flow_duration": 0,
       "start_flow": true
   }
