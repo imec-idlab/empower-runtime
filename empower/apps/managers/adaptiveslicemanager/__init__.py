@@ -46,15 +46,21 @@ MANIFEST = {
             "type": "int"
         },
         "quantum_decrease_rate": {
-            "desc": "The rate which the quantum of the best effort slices should be decrease (e.g., 0.2, 0.4).",
+            "desc": "The rate which the quantum of the best effort slices should be decreased (e.g., 0.2, 0.4).",
             "mandatory": False,
             "default": 0.2,
             "type": "int"
         },
         "quantum_increase_rate": {
-            "desc": "The rate which the quantum of the best effort slices should be increase (e.g., 0.2, 0.4).",
+            "desc": "The rate which the quantum of the best effort slices should be increased (e.g., 0.2, 0.4).",
             "mandatory": False,
             "default": 0.2,
+            "type": "int"
+        },
+        "uplink_bw_threshold": {
+            "desc": "The uplink bandwidth threshold for slicing in percentage (e.g., 0.2, 0.4).",
+            "mandatory": False,
+            "default": 0.1,
             "type": "int"
         },
         "active": {

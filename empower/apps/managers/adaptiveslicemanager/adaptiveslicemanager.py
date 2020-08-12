@@ -49,6 +49,7 @@ class WiFiSliceManager(EmpowerApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.__adaptive_slice_manager = {"message": "Adaptive Slice Manager is online!"}
+        self.__sta_stats_handler = None
         self.__slice_stats_handler = None
         self.__active_flows_handler = None
         self.__active = True
@@ -57,13 +58,14 @@ class WiFiSliceManager(EmpowerApp):
         self.__maximum_quantum = self.maximum_quantum
         self.__quantum_decrease_rate = self.quantum_decrease_rate
         self.__quantum_increase_rate = self.quantum_increase_rate
+        self.__uplink_bw_threshold = self.__uplink_bw_threshold
 
     def loop(self):
         """Periodic job."""
         if self.__active:
-            if self.get_slice_stats() and self.get_active_flows():
+            if self.get_slice_stats() and self.get_active_flows() and self.get_sta_stats():
                 # Is there are QoS flows active?
-                if self.__active_flows_handler['qos_flows']:
+                if 'qos_flows' in self.__active_flows_handler['qos_flows']:
                     for crr_wtp_addr in self.__slice_stats_handler['wtps']:
                         if self.requirements_met(wtp=crr_wtp_addr):
                             factor = self.__quantum_increase_rate + 1
@@ -114,12 +116,25 @@ class WiFiSliceManager(EmpowerApp):
     def requirements_met(self, wtp):
         for qos_flow_id in self.__active_flows_handler['qos_flows']:
             qos_flow = self.__active_flows_handler['flows'][qos_flow_id]
+            # If downlink QoS flow
             if qos_flow['flow_dscp'] in self.__slice_stats_handler['wtps'][wtp]['slices']:
                 queue_delay_median = \
                 self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['flow_dscp']]['queue_delay_ms']['median']
                 if queue_delay_median is not None and qos_flow['flow_delay_req_ms'] is not None:
                     if qos_flow['flow_delay_req_ms'] < queue_delay_median:
                         return False
+            # If uplink QoS flow
+            elif qos_flow['flow_dscp'] is None:
+                if 'flow_src_mac_addr' in qos_flow:
+                    if qos_flow['flow_src_mac_addr'] in self.sta_stats_handler['lvaps']:
+                        sta_rx_bw_mean = self.sta_stats_handler['lvaps']['rx_throughput_mbps']['mean']
+                        # Applying bw threshold...
+                        if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
+                            # Search if the LVAP is connected to the WTP being analyzed
+                            for lvap in self.lvaps():
+                                if str(lvap.addr) == qos_flow['flow_src_mac_addr']:
+                                    if str(lvap.blocks[0].addr) == wtp:
+                                        return False
         return True
 
     def send_slice_config_to_wtp(self, dscp, new_quantum):
@@ -147,6 +162,15 @@ class WiFiSliceManager(EmpowerApp):
             raise ValueError("APP 'empower.apps.handlers.slicestatshandler' is not online!")
             return False
 
+    def get_sta_stats(self):
+        if 'empower.apps.handlers.binstatshandler' in RUNTIME.tenants[self.tenant_id].components:
+            self.__sta_stats_handler = RUNTIME.tenants[self.tenant_id].components[
+                'empower.apps.handlers.binstatshandler'].to_dict()
+            return True
+        else:
+            raise ValueError("APP 'empower.apps.handlers.binstatshandler' is not online!")
+            return False
+
     @property
     def active_flows_handler(self):
         """Return default active_flows_handler"""
@@ -156,6 +180,16 @@ class WiFiSliceManager(EmpowerApp):
     def active_flows_handler(self, value):
         """Set active_flows_handler"""
         self.__active_flows_handler = value
+
+    @property
+    def sta_stats_handler(self):
+        """Return default sta_stats_handler"""
+        return self.__sta_stats_handler
+
+    @sta_stats_handler.setter
+    def sta_stats_handler(self, value):
+        """Set sta_stats_handler"""
+        self.__sta_stats_handler = value
 
     @property
     def slice_stats_handler(self):
@@ -254,6 +288,22 @@ class WiFiSliceManager(EmpowerApp):
             self.__quantum_increase_rate = None
 
     @property
+    def uplink_bw_threshold(self):
+        """Return uplink_bw_threshold"""
+        return self.__uplink_bw_threshold
+
+    @uplink_bw_threshold.setter
+    def uplink_bw_threshold(self, value):
+        """Set uplink_bw_threshold"""
+        if value is not None:
+            try:
+                self.__uplink_bw_threshold = float(value)
+            except TypeError:
+                raise ValueError("Invalid value type for uplink_bw_threshold, should be a float!")
+        else:
+            self.__uplink_bw_threshold = None
+
+    @property
     def db_monitor(self):
         """Return db_monitor"""
         return self.__db_monitor
@@ -281,10 +331,11 @@ class WiFiSliceManager(EmpowerApp):
         self.__adaptive_slice_manager['max_quantum'] = self.__maximum_quantum
         self.__adaptive_slice_manager['inc_rate'] = self.__quantum_increase_rate
         self.__adaptive_slice_manager['dec_rate'] = self.__quantum_decrease_rate
+        self.__adaptive_slice_manager['uplink_bw_threshold'] = self.__uplink_bw_threshold
         return self.__adaptive_slice_manager
 
 
-def launch(tenant_id, minimum_quantum, maximum_quantum, quantum_decrease_rate, quantum_increase_rate, db_monitor, every=DEFAULT_PERIOD):
+def launch(tenant_id, minimum_quantum, maximum_quantum, quantum_decrease_rate, quantum_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
     return WiFiSliceManager(tenant_id=tenant_id,
@@ -292,5 +343,6 @@ def launch(tenant_id, minimum_quantum, maximum_quantum, quantum_decrease_rate, q
                             maximum_quantum=maximum_quantum,
                             quantum_decrease_rate=quantum_decrease_rate,
                             quantum_increase_rate=quantum_increase_rate,
+                            uplink_bw_threshold=uplink_bw_threshold,
                             db_monitor=db_monitor,
                             every=every)
