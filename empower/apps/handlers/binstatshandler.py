@@ -20,6 +20,7 @@
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
+import statistics
 
 
 class BinStatsHandler(EmpowerApp):
@@ -41,6 +42,7 @@ class BinStatsHandler(EmpowerApp):
                               'rx_packets',
                               'tx_bytes',
                               'tx_packets']
+        self.__moving_window_metrics = ['tx_throughput_mbps', 'rx_throughput_mbps']
         self.__bin_stats_handler = {'message': 'Bin stats handler is online!', 'lvaps': {}}
 
     def loop(self):
@@ -55,43 +57,87 @@ class BinStatsHandler(EmpowerApp):
 
     def bin_stats_callback(self, bin_stats):
         """ New stats available. """
-        lvap = str(bin_stats.to_dict()['lvap'])
-        self.__bin_stats_handler['lvaps'][lvap] = bin_stats.to_dict()
+        lvap_addr = str(bin_stats.to_dict()['lvap'])
+        if lvap_addr not in self.__bin_stats_handler['lvaps']:
+            self.__bin_stats_handler['lvaps'][lvap_addr] = {
+                'bin_stats': bin_stats.to_dict(),
+                'tx_throughput_mbps': {
+                    "values": [],
+                    "mean": None,
+                    "median": None,
+                    "stdev": None
+                },
+                'rx_throughput_mbps': {
+                    "values": [],
+                    "mean": None,
+                    "median": None,
+                    "stdev": None
+                }
+            }
+        else:
+            self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats'] = bin_stats.to_dict()
 
         for metric in self.__raw_metrics:
-            self.__bin_stats_handler['lvaps'][lvap][metric + '_moving'] = []
+            self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats'][metric + '_moving'] = []
 
         if self.__db_monitor is not None:
 
-            rx_bytes = self.__bin_stats_handler['lvaps'][lvap]['rx_bytes'][0]
-            rx_packets = self.__bin_stats_handler['lvaps'][lvap]['rx_packets'][0]
-            tx_bytes = self.__bin_stats_handler['lvaps'][lvap]['tx_bytes'][0]
-            tx_packets = self.__bin_stats_handler['lvaps'][lvap]['tx_packets'][0]
+            rx_bytes = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['rx_bytes'][0]
+            rx_packets = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['rx_packets'][0]
+            tx_bytes = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['tx_bytes'][0]
+            tx_packets = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['tx_packets'][0]
 
             # bytes per second
-            if not self.__bin_stats_handler['lvaps'][lvap]['rx_bytes_per_second']:
+            if not self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['rx_bytes_per_second']:
                 rx_bytes_per_second = 0  # as None
             else:
-                rx_bytes_per_second = self.__bin_stats_handler['lvaps'][lvap]['rx_bytes_per_second'][0]
+                rx_bytes_per_second = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['rx_bytes_per_second'][0]
 
             # packets per second
-            if not self.__bin_stats_handler['lvaps'][lvap]['rx_packets_per_second']:
+            if not self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['rx_packets_per_second']:
                 rx_packets_per_second = 0  # as None
             else:
-                rx_packets_per_second = self.__bin_stats_handler['lvaps'][lvap]['rx_packets_per_second'][0]
+                rx_packets_per_second = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['rx_packets_per_second'][0]
 
-            if not self.__bin_stats_handler['lvaps'][lvap]['tx_bytes_per_second']:
+            if not self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['tx_bytes_per_second']:
                 tx_bytes_per_second = 0  # as None
             else:
-                tx_bytes_per_second = self.__bin_stats_handler['lvaps'][lvap]['tx_bytes_per_second'][0]
+                tx_bytes_per_second = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['tx_bytes_per_second'][0]
 
-            if not self.__bin_stats_handler['lvaps'][lvap]['tx_packets_per_second']:
+            if not self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['tx_packets_per_second']:
                 tx_packets_per_second = 0  # as None
             else:
-                tx_packets_per_second = self.__bin_stats_handler['lvaps'][lvap]['tx_packets_per_second'][0]
+                tx_packets_per_second = self.__bin_stats_handler['lvaps'][lvap_addr]['bin_stats']['tx_packets_per_second'][0]
 
-            tx_throughput_mbps = tx_bytes_per_second / 125000
-            rx_throughput_mbps = rx_bytes_per_second / 125000
+            if tx_bytes_per_second == 0:
+                tx_throughput_mbps = 0
+            else:
+                tx_throughput_mbps = tx_bytes_per_second / 125000
+
+            if rx_bytes_per_second == 0:
+                rx_throughput_mbps = 0
+            else:
+                rx_throughput_mbps = rx_bytes_per_second / 125000
+
+            self.__bin_stats_handler['lvaps'][lvap_addr]['tx_throughput_mbps']['values'].append(tx_throughput_mbps)
+            self.__bin_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['values'].append(rx_throughput_mbps)
+
+            for metric in self.__moving_window_metrics:
+                if len(self.__bin_stats_handler['lvaps'][lvap_addr][metric]['values']) > 10:
+                    self.__bin_stats_handler['lvaps'][lvap_addr][metric]['values'].pop(0)
+
+                if len(self.__bin_stats_handler['lvaps'][lvap_addr][metric]['values']) >= 2:
+                    # Mean
+                    self.__bin_stats_handler['lvaps'][lvap_addr][metric]['mean'] = statistics.mean(
+                        self.__bin_stats_handler['lvaps'][lvap_addr][metric]['values'])
+
+                    # Median
+                    self.__bin_stats_handler['lvaps'][lvap_addr][metric]['median'] = statistics.median(
+                        self.__bin_stats_handler['lvaps'][lvap_addr][metric]['values'])
+
+                    # STDEV
+                    self.__bin_stats_handler['lvaps'][lvap_addr][metric]['stdev'] = statistics.stdev(
+                        self.__bin_stats_handler['lvaps'][lvap_addr][metric]['values'])
 
             fields = ['LVAP_ADDR',
                       'RX_BYTES', 'RX_BYTES_PER_SECOND', 'RX_PACKETS', 'RX_PACKETS_PER_SECOND',
