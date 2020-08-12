@@ -81,20 +81,32 @@ MANIFEST = {
             "default": None,
             "type": "str"
         },
+        "flow_src_ip_addr": {
+            "desc": "The IP address of the source.",
+            "mandatory": True,
+            "default": None,
+            "type": "str"
+        },
         "flow_dst_ip_addr": {
             "desc": "The IP address of the destination.",
             "mandatory": True,
             "default": None,
             "type": "str"
         },
-        "flow_dst_port": {
-            "desc": "The port of the destination.",
+        "flow_src_mac_addr": {
+            "desc": "The MAC address of the source.",
             "mandatory": True,
             "default": None,
             "type": "str"
         },
         "flow_dst_mac_addr": {
             "desc": "The MAC address of the destination.",
+            "mandatory": True,
+            "default": None,
+            "type": "str"
+        },
+        "flow_dst_port": {
+            "desc": "The port of the destination.",
             "mandatory": True,
             "default": None,
             "type": "str"
