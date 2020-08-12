@@ -68,7 +68,7 @@ class WiFiSliceManager(EmpowerApp):
                 if 'qos_flows' in self.__active_flows_handler:
                     for crr_wtp_addr in self.__slice_stats_handler['wtps']:
                         if self.requirements_met(wtp=crr_wtp_addr):
-                            factor = self.__quantum_increase_rate + 1
+                            factor = self.__quantum_increase_rate
                         else:
                             factor = self.__quantum_decrease_rate
 
