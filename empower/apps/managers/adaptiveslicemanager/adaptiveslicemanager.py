@@ -65,7 +65,7 @@ class WiFiSliceManager(EmpowerApp):
         if self.__active:
             if self.get_slice_stats() and self.get_active_flows() and self.get_sta_stats():
                 # Is there are QoS flows active?
-                if 'qos_flows' in self.__active_flows_handler['qos_flows']:
+                if 'qos_flows' in self.__active_flows_handler:
                     for crr_wtp_addr in self.__slice_stats_handler['wtps']:
                         if self.requirements_met(wtp=crr_wtp_addr):
                             factor = self.__quantum_increase_rate + 1
@@ -127,7 +127,8 @@ class WiFiSliceManager(EmpowerApp):
             elif qos_flow['flow_dscp'] is None:
                 if 'flow_src_mac_addr' in qos_flow:
                     if qos_flow['flow_src_mac_addr'] in self.sta_stats_handler['lvaps']:
-                        sta_rx_bw_mean = self.sta_stats_handler['lvaps']['rx_throughput_mbps']['mean']
+                        sta_rx_bw_mean = \
+                        self.sta_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
                         # Applying bw threshold...
                         if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
                             # Search if the LVAP is connected to the WTP being analyzed
