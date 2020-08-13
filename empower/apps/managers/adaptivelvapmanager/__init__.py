@@ -19,7 +19,7 @@
 
 # the manifest
 MANIFEST = {
-    "name": "empower.apps.managers.adaptivestamanager.adaptivestamanager",
+    "name": "empower.apps.managers.adaptivelvapmanager.adaptivelvapmanager",
     "desc": "STA shaper manager REST API.",
     "params": {
         "tenant_id": {

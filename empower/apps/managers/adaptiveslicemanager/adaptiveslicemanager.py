@@ -24,7 +24,7 @@ from empower.main import RUNTIME
 from empower.apps.managers.adaptiveslicemanager.parsers import sliceconfigrequest
 
 
-class WiFiSliceManager(EmpowerApp):
+class AdaptiveSliceManager(EmpowerApp):
     """Adaptive Slice Manager App
 
     Command Line Parameters:
@@ -339,11 +339,11 @@ class WiFiSliceManager(EmpowerApp):
 def launch(tenant_id, minimum_quantum, maximum_quantum, quantum_decrease_rate, quantum_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
-    return WiFiSliceManager(tenant_id=tenant_id,
-                            minimum_quantum=minimum_quantum,
-                            maximum_quantum=maximum_quantum,
-                            quantum_decrease_rate=quantum_decrease_rate,
-                            quantum_increase_rate=quantum_increase_rate,
-                            uplink_bw_threshold=uplink_bw_threshold,
-                            db_monitor=db_monitor,
-                            every=every)
+    return AdaptiveSliceManager(tenant_id=tenant_id,
+                                minimum_quantum=minimum_quantum,
+                                maximum_quantum=maximum_quantum,
+                                quantum_decrease_rate=quantum_decrease_rate,
+                                quantum_increase_rate=quantum_increase_rate,
+                                uplink_bw_threshold=uplink_bw_threshold,
+                                db_monitor=db_monitor,
+                                every=every)
