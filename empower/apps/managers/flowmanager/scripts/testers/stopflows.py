@@ -24,7 +24,7 @@ parser.add_option("", "--password", type="string", default="root")  # e.g., root
 # Start all 5 flows together
 for i in range(1, 6):
     # Curl terminal command for latency measurements
-    curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/flow' + str(i) + '_stop.json',
+    curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/flow' + str(i) + '_stop.json',
                              'http://' + str(options.user) + ':' + str(options.password) + '@' +
                              str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                              '/components/empower.apps.managers.flowmanager.flowmanager']
