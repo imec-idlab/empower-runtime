@@ -21,6 +21,10 @@ from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_PERIOD
 from empower.main import RUNTIME
 
+import ipaddress
+import socket
+import threading
+
 DEFAULT_PORT = 7777
 
 
@@ -82,10 +86,6 @@ class AdaptiveLVAPManager(EmpowerApp):
     # def requirements_met(self, lvap_addr):
         # TODO: Check if both downlink and uplink QoS are met
 
-    # def send_lvap_config(self, new_bw, sta_ip_addr):
-        # TODO: Open a socket and send the new bw shaping to the LVAP
-    #     self.log.debug("Sending new configurations to LVAP")
-
     def get_lvap_configs(self):
         for flow_id in self.__active_flows_handler['flows']:
             flow = self.__active_flows_handler['flows'][flow_id]
@@ -95,11 +95,29 @@ class AdaptiveLVAPManager(EmpowerApp):
                     if flow['flow_src_mac_addr'] not in self.__adaptive_lvap_manager['configs']:
                         self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']] = {
                             'ip_addr': None,
-                            'port': DEFAULT_PORT
+                            'crr_bw_shaper': 100    # TODO: get if from the clients
                         }
                     if 'flow_src_ip_addr' in flow:
                         self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
                             'flow_src_ip_addr']
+
+    def send_config_to_lvap(self, ip_addr, new_bw_shaper):
+        if ip_addr is not None:
+            thread = threading.Thread(target=self.send_config(ip_addr, new_bw_shaper))
+            thread.daemon = True
+            thread.start()
+        else:
+            self.log.debug("IP address is not set, aborting configuration!")
+
+    def send_config(self, ip_addr, new_bw_shaper):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((str(ip_addr), DEFAULT_PORT))
+            cmd = "WRITE "
+            if self.__bw_shaper is not None:
+                cmd_bw_shaper = cmd + "bw_shaper.rate " + str(new_bw_shaper) + "\n"
+                s.sendall(cmd_bw_shaper.encode())
+                data = s.recv(1024)
+                self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
 
     def get_active_flows(self):
         if 'empower.apps.managers.flowmanager.flowmanager' in RUNTIME.tenants[self.tenant_id].components:
