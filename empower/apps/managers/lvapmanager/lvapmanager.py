@@ -58,20 +58,25 @@ class LVAPManager(EmpowerApp):
             self.log.debug("IP address or port is not set, aborting configuration!")
 
     def open_socket(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((str(self.__ip_addr), self.__port))
-            cmd = "WRITE "
-            if self.__bw_shaper is not None:
-                cmd_bw_shaper = cmd + "bw_shaper.rate " + str(self.__bw_shaper) + "\n"
-                s.sendall(cmd_bw_shaper.encode())
-                data = s.recv(1024)
-                self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
-            if self.__dl_shaper is not None:
-                cmd_bw_shaper = cmd + "dl_shaper.delay " + str(self.__dl_shaper) + "\n"
-                s.sendall(cmd_bw_shaper.encode())
-                data = s.recv(1024)
-                self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
-        self.reset_lvap_parameters()
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(10)    # 10 seconds timeout
+                s.connect((str(self.__ip_addr), self.__port))
+                cmd = "WRITE "
+                if self.__bw_shaper is not None:
+                    cmd_bw_shaper = cmd + "bw_shaper.rate " + str(self.__bw_shaper) + "\n"
+                    s.sendall(cmd_bw_shaper.encode())
+                    data = s.recv(1024)
+                    self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
+                if self.__dl_shaper is not None:
+                    cmd_bw_shaper = cmd + "dl_shaper.delay " + str(self.__dl_shaper) + "\n"
+                    s.sendall(cmd_bw_shaper.encode())
+                    data = s.recv(1024)
+                    self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
+        except:
+            raise ValueError("Timeout sending configuration from LVAP")
+        finally:
+            self.reset_lvap_parameters()
 
     @property
     def ip_addr(self):
