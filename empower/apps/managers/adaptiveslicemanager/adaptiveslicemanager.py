@@ -64,7 +64,7 @@ class WiFiSliceManager(EmpowerApp):
         """Periodic job."""
         if self.__active:
             if self.get_slice_stats() and self.get_active_flows() and self.get_sta_stats():
-                # Is there are QoS flows active?
+                # Run only when there are QoS flows
                 if 'qos_flows' in self.__active_flows_handler:
                     for crr_wtp_addr in self.__slice_stats_handler['wtps']:
                         if self.requirements_met(wtp=crr_wtp_addr):
