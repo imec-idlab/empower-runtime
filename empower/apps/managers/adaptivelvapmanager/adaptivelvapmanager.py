@@ -94,12 +94,14 @@ class AdaptiveLVAPManager(EmpowerApp):
                 if 'flow_src_mac_addr' in flow:
                     if flow['flow_src_mac_addr'] not in self.__adaptive_lvap_manager['configs']:
                         self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']] = {
-                            'ip_addr': None,
-                            'crr_bw_shaper': 100    # TODO: get if from the clients
+                            'ip_addr': flow['flow_src_ip_addr'],
+                            'crr_bw_shaper': 100    # TODO: get it from the clients
                         }
-                    if 'flow_src_ip_addr' in flow:
-                        self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
-                            'flow_src_ip_addr']
+                        self.send_config_to_lvap(
+                            ip_addr=self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'],
+                            new_bw_shaper=self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']][
+                                'crr_bw_shaper']
+                        )
 
     def send_config_to_lvap(self, ip_addr, new_bw_shaper):
         if ip_addr is not None:
