@@ -95,7 +95,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                     if flow['flow_src_mac_addr'] not in self.__adaptive_lvap_manager['configs']:
                         self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']] = {
                             'ip_addr': None,
-                            'crr_bw_shaper': 100 * 125000
+                            'crr_bw_shaper_mbps': 100
                         }
                     self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
                         'flow_src_ip_addr']
