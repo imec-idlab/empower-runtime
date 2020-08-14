@@ -68,7 +68,7 @@ class AdaptiveLVAPManager(EmpowerApp):
     def loop(self):
         """Periodic job."""
         if self.__active:
-            if self.get_slice_stats() and self.get_active_flows() and self.get_sta_stats():
+            if self.get_slice_stats() and self.get_active_flows() and self.get_lvap_stats():
 
                 # Get LVAP current configs
                 self.get_lvap_configs()
