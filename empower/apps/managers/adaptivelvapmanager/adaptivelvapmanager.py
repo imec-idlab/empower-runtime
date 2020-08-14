@@ -81,7 +81,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                         else:
                             factor = self.__bw_decrease_rate
 
-                        # Reconfigure all slices in the WTP
+                        # Reconfigure all LVAP in the WTP
                         self.reconfigure(factor, crr_wtp_addr)
                 else:
                     for crr_wtp_addr in self.__slice_stats_handler['wtps']:
@@ -102,18 +102,19 @@ class AdaptiveLVAPManager(EmpowerApp):
             # If LVAP is connected to the WTP
             if crr_wtp_addr == wtp:
                 if lvap_addr in self.__adaptive_lvap_manager['configs']:
-                    sta_rx_bw_mean = self.sta_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
-                    # only if the slice active...
-                    if sta_rx_bw_mean > 0:
-                        crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
-                        ip_addr = self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr']
-                        adapted_bw_shaper = float(crr_bw_shaper * factor)
-                        if adapted_bw_shaper > self.__maximum_bw:
-                            adapted_bw_shaper = self.__maximum_bw
-                        if adapted_bw_shaper < self.__minimum_bw:
-                            adapted_bw_shaper = self.__minimum_bw
-                        if adapted_bw_shaper != crr_bw_shaper:
-                            self.send_config_to_lvap(ip_addr=ip_addr, new_bw_shaper=adapted_bw_shaper)
+                    if self.__adaptive_lvap_manager['configs'][lvap_addr]['flow_type'] == 'BE':
+                        sta_rx_bw_mean = self.sta_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
+                        # only if the slice active...
+                        if sta_rx_bw_mean > 0:
+                            crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
+                            ip_addr = self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr']
+                            adapted_bw_shaper = float(crr_bw_shaper * factor)
+                            if adapted_bw_shaper > self.__maximum_bw:
+                                adapted_bw_shaper = self.__maximum_bw
+                            if adapted_bw_shaper < self.__minimum_bw:
+                                adapted_bw_shaper = self.__minimum_bw
+                            if adapted_bw_shaper != crr_bw_shaper:
+                                self.send_config_to_lvap(ip_addr=ip_addr, new_bw_shaper=adapted_bw_shaper)
 
     def requirements_met(self, wtp):
         for qos_flow_id in self.__active_flows_handler['qos_flows']:
