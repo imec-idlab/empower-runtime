@@ -64,6 +64,7 @@ class AdaptiveLVAPManager(EmpowerApp):
         self.__maximum_bw = self.maximum_bw
         self.__bw_decrease_rate = self.bw_decrease_rate
         self.__bw_increase_rate = self.bw_increase_rate
+        self.__uplink_bw_threshold = self.__uplink_bw_threshold
 
     def loop(self):
         """Periodic job."""
@@ -342,6 +343,22 @@ class AdaptiveLVAPManager(EmpowerApp):
             self.__bw_increase_rate = None
 
     @property
+    def uplink_bw_threshold(self):
+        """Return uplink_bw_threshold"""
+        return self.__uplink_bw_threshold
+
+    @uplink_bw_threshold.setter
+    def uplink_bw_threshold(self, value):
+        """Set uplink_bw_threshold"""
+        if value is not None:
+            try:
+                self.__uplink_bw_threshold = float(value)
+            except TypeError:
+                raise ValueError("Invalid value type for uplink_bw_threshold, should be a float!")
+        else:
+            self.__uplink_bw_threshold = None
+
+    @property
     def db_monitor(self):
         """Return db_monitor"""
         return self.__db_monitor
@@ -373,7 +390,7 @@ class AdaptiveLVAPManager(EmpowerApp):
         return self.__adaptive_lvap_manager
 
 
-def launch(tenant_id, minimum_bw, maximum_bw, bw_decrease_rate, bw_increase_rate, db_monitor, every=DEFAULT_PERIOD):
+def launch(tenant_id, minimum_bw, maximum_bw, bw_decrease_rate, bw_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
     return AdaptiveLVAPManager(tenant_id=tenant_id,
@@ -381,5 +398,6 @@ def launch(tenant_id, minimum_bw, maximum_bw, bw_decrease_rate, bw_increase_rate
                                maximum_bw=maximum_bw,
                                bw_decrease_rate=bw_decrease_rate,
                                bw_increase_rate=bw_increase_rate,
+                               uplink_bw_threshold=uplink_bw_threshold,
                                db_monitor=db_monitor,
                                every=every)
