@@ -86,9 +86,9 @@ class AdaptiveLVAPManager(EmpowerApp):
                 else:
                     for crr_wtp_addr in self.__slice_stats_handler['wtps']:
                         # Reconfigure all slices in the WTP
-                        self.reset_all(crr_wtp_addr)
+                        self.reset_all_lvap_configs()
 
-    def reset_all(self, crr_wtp_addr):
+    def reset_all_lvap_configs(self):
         for lvap_addr in self.__adaptive_lvap_manager['configs']:
             crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
             if self.__maximum_bw != crr_bw_shaper:
