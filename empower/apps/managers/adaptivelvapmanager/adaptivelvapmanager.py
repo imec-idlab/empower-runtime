@@ -125,7 +125,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                 crr_bw_shaper = data.decode("utf-8").splitlines()[-1]
                 if 'Mbps' in crr_bw_shaper:
                     crr_bw_shaper = crr_bw_shaper.replace('Mbps', '')
-                    self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper'] = crr_bw_shaper
+                    self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = crr_bw_shaper
         except:
             raise ValueError("Timeout getting configuration from LVAP")
 
