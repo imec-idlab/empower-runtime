@@ -93,7 +93,7 @@ class AdaptiveLVAPManager(EmpowerApp):
             crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
             if self.__maximum_bw != crr_bw_shaper:
                 self.send_config_to_lvap(ip_addr=self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr'],
-                                         new_bw_shaper=(self.__maximum_bw * 125000))    # From Mbps to B/s
+                                         new_bw_shaper=(self.__maximum_bw))
 
     def reconfigure(self, factor, crr_wtp_addr):
         for lvap in self.lvaps():
@@ -191,7 +191,7 @@ class AdaptiveLVAPManager(EmpowerApp):
 
     def send_config_to_lvap(self, ip_addr, new_bw_shaper):
         if ip_addr is not None:
-            thread = threading.Thread(target=self.send_config(ip_addr, new_bw_shaper))
+            thread = threading.Thread(target=self.send_config(ip_addr, new_bw_shaper * 125000))
             thread.daemon = True
             thread.start()
         else:
