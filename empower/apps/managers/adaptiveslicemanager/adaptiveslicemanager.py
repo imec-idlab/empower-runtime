@@ -129,13 +129,14 @@ class AdaptiveSliceManager(EmpowerApp):
                     if qos_flow['flow_src_mac_addr'] in self.sta_stats_handler['lvaps']:
                         sta_rx_bw_mean = \
                         self.sta_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
-                        # Applying bw threshold...
-                        if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
-                            # Search if the LVAP is connected to the WTP being analyzed
-                            for lvap in self.lvaps():
-                                if str(lvap.addr) == qos_flow['flow_src_mac_addr']:
-                                    if str(lvap.blocks[0].addr) == wtp:
-                                        return False
+                        if sta_rx_bw_mean is not None:
+                            # Applying bw threshold...
+                            if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
+                                # Search if the LVAP is connected to the WTP being analyzed
+                                for lvap in self.lvaps():
+                                    if str(lvap.addr) == qos_flow['flow_src_mac_addr']:
+                                        if str(lvap.blocks[0].addr) == wtp:
+                                            return False
         return True
 
     def send_slice_config_to_wtp(self, dscp, new_quantum):
