@@ -203,7 +203,7 @@ class AdaptiveLVAPManager(EmpowerApp):
             s.settimeout(3)  # 3 seconds timeout
             s.connect((str(ip_addr), DEFAULT_PORT))
             cmd = "WRITE "
-            if self.__bw_shaper is not None:
+            if new_bw_shaper is not None:
                 cmd_bw_shaper = cmd + "bw_shaper.rate " + str(new_bw_shaper) + "\n"
                 s.sendall(cmd_bw_shaper.encode())
                 data = s.recv(1024)
