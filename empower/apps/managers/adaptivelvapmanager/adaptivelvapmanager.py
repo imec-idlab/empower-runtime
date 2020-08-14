@@ -68,23 +68,77 @@ class AdaptiveLVAPManager(EmpowerApp):
     def loop(self):
         """Periodic job."""
         if self.__active:
-            if self.get_lvap_stats() and self.get_active_flows():
+            if self.get_slice_stats() and self.get_active_flows() and self.get_sta_stats():
+
                 # Get LVAP current configs
                 self.get_lvap_configs()
 
                 # Run only when there are QoS flows
-                # if 'qos_flows' in self.__active_flows_handler:
-                    # Check the uplink flows and get their configs (IP, bw_shaper)
-                    # TODO: check requirements
+                if 'qos_flows' in self.__active_flows_handler:
+                    for crr_wtp_addr in self.__slice_stats_handler['wtps']:
+                        if self.requirements_met(wtp=crr_wtp_addr):
+                            factor = self.__bw_increase_rate
+                        else:
+                            factor = self.__bw_decrease_rate
 
-    # def reset_lvap_config(self, lvap_addr):
-        # TODO: Set the bw shaping to max value
+                        # Reconfigure all slices in the WTP
+                        self.reconfigure(factor, crr_wtp_addr)
+                else:
+                    for crr_wtp_addr in self.__slice_stats_handler['wtps']:
+                        # Reconfigure all slices in the WTP
+                        self.reset_all(crr_wtp_addr)
 
-    # def reconfigure(self, factor, lvap_addr):
-        # TODO: Adapt the bw shaping applying the factor
+    def reset_all(self, crr_wtp_addr):
+        for lvap_addr in self.__adaptive_lvap_manager['configs']:
+            crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
+            if self.__maximum_bw != crr_bw_shaper:
+                self.send_config_to_lvap(ip_addr=self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr'],
+                                         new_bw_shaper=(self.__maximum_bw * 125000))    # From Mbps to B/s
 
-    # def requirements_met(self, lvap_addr):
-        # TODO: Check if both downlink and uplink QoS are met
+    def reconfigure(self, factor, crr_wtp_addr):
+        for lvap in self.lvaps():
+            wtp = str(lvap.blocks[0].addr)
+            lvap_addr = str(lvap.addr)
+            # If LVAP is connected to the WTP
+            if crr_wtp_addr == wtp:
+                if lvap_addr in self.__adaptive_lvap_manager['configs']:
+                    sta_rx_bw_mean = self.sta_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
+                    # only if the slice active...
+                    if sta_rx_bw_mean > 0:
+                        crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
+                        ip_addr = self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr']
+                        adapted_bw_shaper = float(crr_bw_shaper * factor)
+                        if adapted_bw_shaper > self.__maximum_bw:
+                            adapted_bw_shaper = self.__maximum_bw
+                        if adapted_bw_shaper < self.__minimum_bw:
+                            adapted_bw_shaper = self.__minimum_bw
+                        if adapted_bw_shaper != crr_bw_shaper:
+                            self.send_config_to_lvap(ip_addr=ip_addr, new_bw_shaper=adapted_bw_shaper)
+
+    def requirements_met(self, wtp):
+        for qos_flow_id in self.__active_flows_handler['qos_flows']:
+            qos_flow = self.__active_flows_handler['flows'][qos_flow_id]
+            # If downlink QoS flow
+            if qos_flow['flow_dscp'] in self.__slice_stats_handler['wtps'][wtp]['slices']:
+                queue_delay_median = \
+                    self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['flow_dscp']]['queue_delay_ms']['median']
+                if queue_delay_median is not None and qos_flow['flow_delay_req_ms'] is not None:
+                    if qos_flow['flow_delay_req_ms'] < queue_delay_median:
+                        return False
+            # If uplink QoS flow
+            elif qos_flow['flow_dscp'] is None:
+                if 'flow_src_mac_addr' in qos_flow:
+                    if qos_flow['flow_src_mac_addr'] in self.sta_stats_handler['lvaps']:
+                        sta_rx_bw_mean = \
+                            self.sta_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
+                        # Applying bw threshold...
+                        if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
+                            # Search if the LVAP is connected to the WTP being analyzed
+                            for lvap in self.lvaps():
+                                if str(lvap.addr) == qos_flow['flow_src_mac_addr']:
+                                    if str(lvap.blocks[0].addr) == wtp:
+                                        return False
+        return True
 
     def get_lvap_configs(self):
         for flow_id in self.__active_flows_handler['flows']:
@@ -93,15 +147,19 @@ class AdaptiveLVAPManager(EmpowerApp):
             if flow['flow_dscp'] is None:
                 if 'flow_src_mac_addr' in flow:
                     if flow['flow_src_mac_addr'] not in self.__adaptive_lvap_manager['configs']:
-                        ip_addr = flow['flow_src_ip_addr']
                         initial_bw_shaper = 100
                         self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']] = {
-                            'ip_addr': ip_addr,
-                            'crr_bw_shaper_mbps': initial_bw_shaper
+                            'ip_addr': None,
+                            'crr_bw_shaper_mbps': initial_bw_shaper,
+                            'flow_type': None
                         }
+                    self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
+                        'flow_src_ip_addr']
+                    self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['flow_type'] = flow[
+                        'flow_type']
 
                     # Try getting config from LVAP (parsing needed)
-                    # This might be slow sometimes so there is a timeout of 3 seconds for the socket connection
+                    # This might be slow so there is a timeout of 3 seconds for the socket connection
                     self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
 
     def get_config_from_lvap(self, lvap_addr):
@@ -156,6 +214,15 @@ class AdaptiveLVAPManager(EmpowerApp):
             return True
         else:
             raise ValueError("APP 'empower.apps.managers.flowmanager.flowmanager' is not online!")
+            return False
+
+    def get_slice_stats(self):
+        if 'empower.apps.handlers.slicestatshandler' in RUNTIME.tenants[self.tenant_id].components:
+            self.__slice_stats_handler = RUNTIME.tenants[self.tenant_id].components[
+                'empower.apps.handlers.slicestatshandler'].to_dict()
+            return True
+        else:
+            raise ValueError("APP 'empower.apps.handlers.slicestatshandler' is not online!")
             return False
 
     def get_lvap_stats(self):
