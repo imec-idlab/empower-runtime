@@ -18,10 +18,9 @@
 """Adaptive LVAP Manager App."""
 
 from empower.core.app import EmpowerApp
-from empower.core.app import DEFAULT_PERIOD
+from empower.core.app import DEFAULT_CONTROL_PERIOD
 from empower.main import RUNTIME
 
-import ipaddress
 import socket
 import threading
 
@@ -188,7 +187,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                     crr_bw_shaper = float(crr_bw_shaper) if '.' in crr_bw_shaper else int(crr_bw_shaper)
                     self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = crr_bw_shaper
         except:
-            raise ValueError("Timeout getting configuration from LVAP")
+            raise ValueError("Timeout getting configuration from LVAP", ip_addr, DEFAULT_PORT)
 
     def send_config_to_lvap(self, ip_addr, new_bw_shaper):
         if ip_addr is not None:
@@ -390,7 +389,7 @@ class AdaptiveLVAPManager(EmpowerApp):
         return self.__adaptive_lvap_manager
 
 
-def launch(tenant_id, minimum_bw, maximum_bw, bw_decrease_rate, bw_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_PERIOD):
+def launch(tenant_id, minimum_bw, maximum_bw, bw_decrease_rate, bw_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_CONTROL_PERIOD):
     """ Initialize the module. """
 
     return AdaptiveLVAPManager(tenant_id=tenant_id,

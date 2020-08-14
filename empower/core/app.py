@@ -28,6 +28,7 @@ from empower.grafana.postgresql.common import EmpowerMon
 
 from empower.main import RUNTIME
 
+DEFAULT_CONTROL_PERIOD = 10000
 DEFAULT_PERIOD = 5000
 DEFAULT_MONITORING_PERIOD = 1000
 
