@@ -65,7 +65,7 @@ class AdaptiveSliceManager(EmpowerApp):
         if self.__active:
             if self.get_slice_stats() and self.get_active_flows() and self.get_sta_stats():
                 # Run only when there are QoS flows
-                if 'qos_flows' in self.__active_flows_handler:
+                if self.__active_flows_handler['qos_flows']:
                     for crr_wtp_addr in self.__slice_stats_handler['wtps']:
                         if self.requirements_met(wtp=crr_wtp_addr):
                             factor = self.__quantum_increase_rate
