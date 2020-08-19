@@ -28,6 +28,27 @@ DEFAULT_PORT = 7777
 DEFAULT_TIMEOUT = 15
 
 
+class LVAPSendConfigThread (threading.Thread):
+
+    def __init__(self, ip_addr, new_bw_shaper):
+        threading.Thread.__init__(self)
+        self.__ip_addr = ip_addr
+        self.__new_bw_shaper = new_bw_shaper
+
+    def run(self):
+        print("Starting ", self.__ip_addr, self.__new_bw_shaper)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(DEFAULT_TIMEOUT)  # timeout
+            s.connect((str(self.__ip_addr), DEFAULT_PORT))
+            cmd = "WRITE "
+            if self.__new_bw_shaper is not None:
+                cmd_bw_shaper = cmd + "bw_shaper.rate " + str(self.__new_bw_shaper) + "\n"
+                s.sendall(cmd_bw_shaper.encode())
+                data = s.recv(1024)
+                self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
+        print("Exiting ", self.__thread_id, self.__new_bw_shaper)
+
+
 class AdaptiveLVAPManager(EmpowerApp):
     """Adaptive LVAP Manager App
 
@@ -196,12 +217,14 @@ class AdaptiveLVAPManager(EmpowerApp):
 
     def send_config_to_lvap(self, ip_addr, new_bw_shaper):
         if ip_addr is not None:
-            thread = threading.Thread(target=self.send_config(ip_addr, new_bw_shaper * 125000))
+            thread = LVAPSendConfigThread(ip_addr, new_bw_shaper * 125000)
+            #thread = threading.Thread(target=self.send_config(ip_addr, new_bw_shaper * 125000))
             thread.daemon = True
             thread.start()
         else:
             self.log.debug("IP address is not set, aborting configuration!")
 
+    # TODO: remove, not used
     def send_config(self, ip_addr, new_bw_shaper):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(DEFAULT_TIMEOUT)  # timeout
