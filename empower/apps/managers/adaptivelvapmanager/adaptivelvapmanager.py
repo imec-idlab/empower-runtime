@@ -184,7 +184,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                 s.sendall(cmd.encode())
                 data = s.recv(1024)
                 self.log.debug(
-                    "Getting new configurations from LVAP IP " + str(ip_addr) + ":" + DEFAULT_PORT + " - " + str(
+                    "Getting new configurations from LVAP IP " + str(ip_addr) + ":" + str(DEFAULT_PORT) + " - " + str(
                         repr(data)))
                 crr_bw_shaper = data.decode("utf-8").splitlines()[-1]
                 if 'Mbps' in crr_bw_shaper:
@@ -213,7 +213,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                 s.sendall(cmd_bw_shaper.encode())
                 data = s.recv(1024)
                 self.log.debug(
-                    "Sending new configurations to LVAP: IP " + str(ip_addr) + ":" + DEFAULT_PORT + " - " + str(
+                    "Sending new configurations to LVAP: IP " + str(ip_addr) + ":" + str(DEFAULT_PORT) + " - " + str(
                         repr(data)))
 
     def get_active_flows(self):
