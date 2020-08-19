@@ -94,7 +94,7 @@ class AdaptiveLVAPManager(EmpowerApp):
             crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
             if self.__maximum_bw != crr_bw_shaper:
                 self.send_config_to_lvap(ip_addr=self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr'],
-                                         new_bw_shaper=(self.__maximum_bw))
+                                         new_bw_shaper=self.__maximum_bw)
 
     def reconfigure(self, factor, crr_wtp_addr):
         for lvap in self.lvaps():
@@ -150,10 +150,9 @@ class AdaptiveLVAPManager(EmpowerApp):
             if flow['flow_dscp'] is None:
                 if 'flow_src_mac_addr' in flow:
                     if flow['flow_src_mac_addr'] not in self.__adaptive_lvap_manager['configs']:
-                        initial_bw_shaper = 100
                         self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']] = {
                             'ip_addr': None,
-                            'crr_bw_shaper_mbps': initial_bw_shaper,
+                            'crr_bw_shaper_mbps': self.__maximum_bw,
                             'flow_type': None
                         }
                     self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
@@ -162,9 +161,12 @@ class AdaptiveLVAPManager(EmpowerApp):
                         'flow_type']
 
                     # Try getting config from LVAP (parsing needed)
-                    # This might be slow so there is a timeout for the socket connection
-                    self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
+                    # This might be too slow so there is a timeout for the socket connection
+                    # self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
+                    # Instead of getting the values, we set the max bw shaper as an initial value
+                    self.send_config_to_lvap(ip_addr=flow['flow_src_ip_addr'], new_bw_shaper=self.__maximum_bw)
 
+    # TODO: remove, not used, too expensive
     def get_config_from_lvap(self, lvap_addr):
         if lvap_addr is not None:
             thread = threading.Thread(target=self.get_config(lvap_addr))
@@ -173,6 +175,7 @@ class AdaptiveLVAPManager(EmpowerApp):
         else:
             self.log.debug("IP address is not set, aborting!")
 
+    # TODO: remove, not used, too expensive
     def get_config(self, lvap_addr):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
