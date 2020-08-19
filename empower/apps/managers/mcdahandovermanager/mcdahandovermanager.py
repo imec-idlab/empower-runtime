@@ -18,6 +18,7 @@
 """MCDA handover manager APP."""
 
 from empower.core.app import EmpowerApp
+from empower.core.app import DEFAULT_LONG_PERIOD
 from empower.main import RUNTIME
 
 from skcriteria import Data, MIN, MAX
@@ -25,8 +26,6 @@ from skcriteria.madm import closeness, simple
 import math
 import time
 import json
-
-DEFAULT_LONG_PERIOD = 20000
 
 
 class MCDAHandoverManager(EmpowerApp):

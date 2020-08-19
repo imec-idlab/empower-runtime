@@ -12,7 +12,7 @@ from optparse import OptionParser
 
 # Experimentation parameters and values
 parser = OptionParser()
-parser.add_option("", "--json_config_file", type="string", default="flow6.json")  # filename
+parser.add_option("", "--json_config_file", type="string", default="up_flow6.json")  # filename
 parser.add_option("", "--controller_ip", type="string", default="10.11.17.1")  # Empower controller (wilabt)
 #parser.add_option("", "--controller_ip", type="string", default="146.175.219.129")  # Empower controller (sandbox)
 parser.add_option("", "--tenant_id", type="string", default="f1160872-c9c6-4d7f-b7f7-3e4a01c62a90")  # wilabt
