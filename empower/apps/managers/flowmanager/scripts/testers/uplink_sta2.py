@@ -23,7 +23,7 @@ parser.add_option("", "--password", type="string", default="root")  # e.g., root
 (options, args) = parser.parse_args()
 
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/wilabt/up_flow6.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/wilabt/up_flow10.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
