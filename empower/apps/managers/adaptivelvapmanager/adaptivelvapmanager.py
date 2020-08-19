@@ -18,7 +18,7 @@
 """Adaptive LVAP Manager App."""
 
 from empower.core.app import EmpowerApp
-from empower.core.app import DEFAULT_LONG_PERIOD
+from empower.core.app import DEFAULT_CONTROL_PERIOD
 from empower.main import RUNTIME
 
 import socket
@@ -397,7 +397,7 @@ class AdaptiveLVAPManager(EmpowerApp):
         return self.__adaptive_lvap_manager
 
 
-def launch(tenant_id, minimum_bw, maximum_bw, bw_decrease_rate, bw_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_LONG_PERIOD):
+def launch(tenant_id, minimum_bw, maximum_bw, bw_decrease_rate, bw_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_CONTROL_PERIOD):
     """ Initialize the module. """
 
     return AdaptiveLVAPManager(tenant_id=tenant_id,
