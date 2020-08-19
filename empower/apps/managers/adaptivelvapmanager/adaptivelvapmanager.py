@@ -214,7 +214,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                 data = s.recv(1024)
                 self.log.debug(
                     "Sending new configurations to LVAP: IP " + str(ip_addr) + ":" + str(DEFAULT_PORT) + " - " + str(
-                        repr(data)))
+                        new_bw_shaper) + " - " + str(repr(data)))
 
     def get_active_flows(self):
         if 'empower.apps.managers.flowmanager.flowmanager' in RUNTIME.tenants[self.tenant_id].components:
