@@ -9,7 +9,7 @@ __status__ = "Prototype"
 
 from subprocess import call
 from optparse import OptionParser
-import time
+import subprocess
 
 # Experimentation parameters and values
 parser = OptionParser()
@@ -23,24 +23,12 @@ parser.add_option("", "--password", type="string", default="root")  # e.g., root
 (options, args) = parser.parse_args()
 
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/wilabt/up_flow6.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/wilabt/up_flow11.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
 call(curl_terminal_command)
 
-# time.sleep(30)
-#
-# curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/wilabt/down_flow8.json',
-#                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
-#                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
-#                          '/components/empower.apps.managers.flowmanager.flowmanager']
-# call(curl_terminal_command)
+mgen_terminal_command = ['mgen', 'input', 'mgen/up_30Mbps.mgn']
 
-time.sleep(30)
-
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/wilabt/down_flow7.json',
-                         'http://' + str(options.user) + ':' + str(options.password) + '@' +
-                         str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
-                         '/components/empower.apps.managers.flowmanager.flowmanager']
-call(curl_terminal_command)
+subprocess.call(mgen_terminal_command)
