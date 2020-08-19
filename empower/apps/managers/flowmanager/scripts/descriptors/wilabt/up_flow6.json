@@ -14,7 +14,7 @@
       "flow_src_mac_addr": "00:0E:8E:30:9C:F2",
       "flow_dst_mac_addr": "00:25:90:1D:24:D8",
       "flow_dst_port" : "4001",
-      "flow_duration": 120,
+      "flow_duration": 300,
       "start_flow": true
   }
 }

@@ -151,22 +151,21 @@ class AdaptiveLVAPManager(EmpowerApp):
                 if 'flow_src_mac_addr' in flow:
                     if flow['flow_src_mac_addr'] not in self.__adaptive_lvap_manager['configs']:
                         self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']] = {
-                            'ip_addr': None,
+                            'ip_addr': flow['flow_src_ip_addr'],
                             'crr_bw_shaper_mbps': self.__maximum_bw,
-                            'flow_type': None
+                            'flow_type': flow['flow_type']
                         }
-                    self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
-                        'flow_src_ip_addr']
-                    self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['flow_type'] = flow[
-                        'flow_type']
+                        # Instead of getting the values, we set the max bw shaper as an initial value
+                        self.send_config_to_lvap(ip_addr=flow['flow_src_ip_addr'], new_bw_shaper=self.__maximum_bw)
+                    else:
+                        self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
+                            'flow_src_ip_addr']
+                        self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['flow_type'] = flow[
+                            'flow_type']
+                        # Try getting config from LVAP (parsing needed)
+                        # This might be too slow so there is a timeout for the socket connection
+                        self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
 
-                    # Try getting config from LVAP (parsing needed)
-                    # This might be too slow so there is a timeout for the socket connection
-                    # self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
-                    # Instead of getting the values, we set the max bw shaper as an initial value
-                    self.send_config_to_lvap(ip_addr=flow['flow_src_ip_addr'], new_bw_shaper=self.__maximum_bw)
-
-    # TODO: remove, not used, too expensive
     def get_config_from_lvap(self, lvap_addr):
         if lvap_addr is not None:
             thread = threading.Thread(target=self.get_config, kwargs=dict(lvap_addr=lvap_addr))
@@ -175,7 +174,6 @@ class AdaptiveLVAPManager(EmpowerApp):
         else:
             self.log.debug("IP address is not set, aborting!")
 
-    # TODO: remove, not used, too expensive
     def get_config(self, lvap_addr):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
