@@ -183,7 +183,9 @@ class AdaptiveLVAPManager(EmpowerApp):
                 cmd = "READ bw_shaper.rate\n"
                 s.sendall(cmd.encode())
                 data = s.recv(1024)
-                self.log.debug("Getting new configurations from LVAP" + str(repr(data)))
+                self.log.debug(
+                    "Getting new configurations from LVAP IP " + str(ip_addr) + ":" + DEFAULT_PORT + " - " + str(
+                        repr(data)))
                 crr_bw_shaper = data.decode("utf-8").splitlines()[-1]
                 if 'Mbps' in crr_bw_shaper:
                     crr_bw_shaper = crr_bw_shaper.replace('Mbps', '')
@@ -210,7 +212,9 @@ class AdaptiveLVAPManager(EmpowerApp):
                 cmd_bw_shaper = cmd + "bw_shaper.rate " + str(new_bw_shaper) + "\n"
                 s.sendall(cmd_bw_shaper.encode())
                 data = s.recv(1024)
-                self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
+                self.log.debug(
+                    "Sending new configurations to LVAP: IP " + str(ip_addr) + ":" + DEFAULT_PORT + " - " + str(
+                        repr(data)))
 
     def get_active_flows(self):
         if 'empower.apps.managers.flowmanager.flowmanager' in RUNTIME.tenants[self.tenant_id].components:
