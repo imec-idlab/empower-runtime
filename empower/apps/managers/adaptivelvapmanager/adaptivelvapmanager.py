@@ -25,6 +25,7 @@ import socket
 import threading
 
 DEFAULT_PORT = 7777
+DEFAULT_TIMEOUT = 15
 
 
 class AdaptiveLVAPManager(EmpowerApp):
@@ -161,7 +162,7 @@ class AdaptiveLVAPManager(EmpowerApp):
                         'flow_type']
 
                     # Try getting config from LVAP (parsing needed)
-                    # This might be slow so there is a timeout of 8 seconds for the socket connection
+                    # This might be slow so there is a timeout for the socket connection
                     self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
 
     def get_config_from_lvap(self, lvap_addr):
@@ -175,7 +176,7 @@ class AdaptiveLVAPManager(EmpowerApp):
     def get_config(self, lvap_addr):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(8)  # 8 seconds timeout
+                s.settimeout(DEFAULT_TIMEOUT)  # timeout
                 ip_addr = self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr']
                 s.connect((str(ip_addr), DEFAULT_PORT))
                 cmd = "READ bw_shaper.rate\n"
@@ -200,7 +201,7 @@ class AdaptiveLVAPManager(EmpowerApp):
 
     def send_config(self, ip_addr, new_bw_shaper):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(8)  # 8 seconds timeout
+            s.settimeout(DEFAULT_TIMEOUT)  # timeout
             s.connect((str(ip_addr), DEFAULT_PORT))
             cmd = "WRITE "
             if new_bw_shaper is not None:
