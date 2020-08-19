@@ -31,4 +31,4 @@ call(curl_terminal_command)
 
 mgen_terminal_command = ['mgen', 'input', 'mgen/up_30Mbps.mgn']
 
-subprocess.Popen(mgen_terminal_command)
+subprocess.call(mgen_terminal_command)
