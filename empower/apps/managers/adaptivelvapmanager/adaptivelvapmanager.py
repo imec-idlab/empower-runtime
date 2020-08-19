@@ -28,7 +28,7 @@ DEFAULT_PORT = 7777
 DEFAULT_TIMEOUT = 15
 
 
-class LVAPSendConfigThread (threading.Thread):
+class LVAPSendConfigThread(threading.Thread):
 
     def __init__(self, ip_addr, new_bw_shaper):
         threading.Thread.__init__(self)
@@ -45,7 +45,6 @@ class LVAPSendConfigThread (threading.Thread):
                 cmd_bw_shaper = cmd + "bw_shaper.rate " + str(self.__new_bw_shaper) + "\n"
                 s.sendall(cmd_bw_shaper.encode())
                 data = s.recv(1024)
-                self.log.debug("Sending new configurations to LVAP" + str(repr(data)))
         print("Exiting ", self.__thread_id, self.__new_bw_shaper)
 
 
