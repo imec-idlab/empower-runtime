@@ -45,7 +45,7 @@ class LVAPSendConfigThread(threading.Thread):
                 cmd_bw_shaper = cmd + "bw_shaper.rate " + str(self.__new_bw_shaper) + "\n"
                 s.sendall(cmd_bw_shaper.encode())
                 data = s.recv(1024)
-        print("Exiting ", self.__thread_id, self.__new_bw_shaper)
+        print("Exiting ", self.__ip_addr, self.__new_bw_shaper)
 
 
 class AdaptiveLVAPManager(EmpowerApp):
