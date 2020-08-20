@@ -15,7 +15,7 @@ QUANTUM_INCREASE_RATE=1.1   # 10% increase
 # Adaptive STA Manager params
 MINIMUM_BW=1
 MAXIMUM_BW=100
-BW_DECREASE_RATE=0.3   # 70% decrease
+BW_DECREASE_RATE=0.1   # 90% decrease
 BW_INCREASE_RATE=1.1   # 10% increase
 
 # General bandwidth threshold

@@ -3,7 +3,7 @@
   "params": {
       "flow_id": 9,
       "flow_type": "QoS",
-      "flow_dscp": "0x03",
+      "flow_dscp": "0x01",
       "flow_protocol": "UDP",
       "flow_distribution": "POISSON",
       "flow_frame_size":  1024,
