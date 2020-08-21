@@ -50,6 +50,7 @@ class FullMCDAHandoverManager(EmpowerApp):
         self.__slice_stats_handler = None
         self.__wifi_stats_handler = None
         self.__ucqm_stats_handler = None
+        self.__lvap_stats_handler = None
         self.__flow_handler = None
         self.__active = True
         self.__mcda_handover_manager['active'] = self.__active
@@ -95,7 +96,7 @@ class FullMCDAHandoverManager(EmpowerApp):
             # Step 3: for each criteria, get all metrics and populate structure
             for crr_criteria in self.__mcda_descriptor['criteria']:
                 if crr_criteria == 'wtp_load_measured_mbps':
-                    if not self.get_wtp_load_measurements():
+                    if not self.get_wtp_load_measurements() and not self.get_lvap_load_measurements():
                         return
                 elif crr_criteria == 'wtp_queue_delay_ms':
                     if not self.get_wtp_queue_delay_measurements():
@@ -296,6 +297,34 @@ class FullMCDAHandoverManager(EmpowerApp):
             raise ValueError("APP 'empower.apps.managers.flowmanager.flowmanager' is not online!")
             return False
 
+    def get_lvap_load_measurements(self):
+        if 'empower.apps.handlers.binstatshandler' in RUNTIME.tenants[self.tenant_id].components:
+            self.__lvap_stats_handler = RUNTIME.tenants[self.tenant_id].components[
+                'empower.apps.handlers.binstatshandler'].to_dict()
+            crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_measured_mbps')
+            for lvap in self.lvaps():
+                lvap_addr = str(lvap.addr)
+                if lvap_addr in self.__lvap_stats_handler['lvaps']:
+                    crr_wtp_addr = str(lvap.blocks[0])
+                    if crr_lvap_addr in self.__mcda_handover_manager['wtps']:
+                        for crr_lvap_addr in self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps']:
+                            lvap_mean_throughput_mbps = \
+                                self.__lvap_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
+                            if lvap_mean_throughput_mbps is not None:
+                                self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                    'values'][
+                                    crr_criteria_index] += lvap_mean_throughput_mbps
+                            else:
+                                raise ValueError("LVAP average throughput is not ready yet!")
+                                return False
+                else:
+                    raise ValueError("LVAP is not yet present in lvapstatshandler dictionary!")
+                    return False
+            return True
+        else:
+            raise ValueError("APP 'empower.apps.handlers.binstatshandler' is not online!")
+            return False
+
     def get_wtp_load_measurements(self):
         # Slice stats handler
         if 'empower.apps.handlers.slicestatshandler' in RUNTIME.tenants[self.tenant_id].components:
@@ -309,7 +338,7 @@ class FullMCDAHandoverManager(EmpowerApp):
                             self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall']['throughput_mbps']['mean']
                         if wtp_mean_throughput_mbps is not None:
                             self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                                crr_criteria_index] = wtp_mean_throughput_mbps
+                                crr_criteria_index] += wtp_mean_throughput_mbps
                         else:
                             raise ValueError("WTP average throughput is not ready yet!")
                             return False

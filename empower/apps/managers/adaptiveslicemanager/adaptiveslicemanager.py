@@ -49,7 +49,7 @@ class AdaptiveSliceManager(EmpowerApp):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.__adaptive_slice_manager = {"message": "Adaptive Slice Manager is online!"}
-        self.__sta_stats_handler = None
+        self.__lvap_stats_handler = None
         self.__slice_stats_handler = None
         self.__active_flows_handler = None
         self.__active = True
@@ -126,9 +126,9 @@ class AdaptiveSliceManager(EmpowerApp):
             # If uplink QoS flow
             elif qos_flow['flow_dscp'] is None:
                 if 'flow_src_mac_addr' in qos_flow:
-                    if qos_flow['flow_src_mac_addr'] in self.sta_stats_handler['lvaps']:
+                    if qos_flow['flow_src_mac_addr'] in self.lvap_stats_handler['lvaps']:
                         sta_rx_bw_mean = \
-                        self.sta_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
+                        self.lvap_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
                         if sta_rx_bw_mean is not None:
                             # Applying bw threshold...
                             if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
@@ -166,7 +166,7 @@ class AdaptiveSliceManager(EmpowerApp):
 
     def get_sta_stats(self):
         if 'empower.apps.handlers.binstatshandler' in RUNTIME.tenants[self.tenant_id].components:
-            self.__sta_stats_handler = RUNTIME.tenants[self.tenant_id].components[
+            self.__lvap_stats_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.handlers.binstatshandler'].to_dict()
             return True
         else:
@@ -184,14 +184,14 @@ class AdaptiveSliceManager(EmpowerApp):
         self.__active_flows_handler = value
 
     @property
-    def sta_stats_handler(self):
-        """Return default sta_stats_handler"""
-        return self.__sta_stats_handler
+    def lvap_stats_handler(self):
+        """Return default lvap_stats_handler"""
+        return self.__lvap_stats_handler
 
-    @sta_stats_handler.setter
-    def sta_stats_handler(self, value):
-        """Set sta_stats_handler"""
-        self.__sta_stats_handler = value
+    @lvap_stats_handler.setter
+    def lvap_stats_handler(self, value):
+        """Set lvap_stats_handler"""
+        self.__lvap_stats_handler = value
 
     @property
     def slice_stats_handler(self):

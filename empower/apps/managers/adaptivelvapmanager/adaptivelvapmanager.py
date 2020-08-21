@@ -104,7 +104,7 @@ class AdaptiveLVAPManager(EmpowerApp):
             if crr_wtp_addr == wtp:
                 if lvap_addr in self.__adaptive_lvap_manager['configs']:
                     if self.__adaptive_lvap_manager['configs'][lvap_addr]['flow_type'] == 'BE':
-                        sta_rx_bw_mean = self.sta_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
+                        sta_rx_bw_mean = self.lvap_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
                         # only if the slice active...
                         if sta_rx_bw_mean > 0:
                             crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
@@ -130,9 +130,9 @@ class AdaptiveLVAPManager(EmpowerApp):
             # If uplink QoS flow
             elif qos_flow['flow_dscp'] is None:
                 if 'flow_src_mac_addr' in qos_flow:
-                    if qos_flow['flow_src_mac_addr'] in self.sta_stats_handler['lvaps']:
+                    if qos_flow['flow_src_mac_addr'] in self.lvap_stats_handler['lvaps']:
                         sta_rx_bw_mean = \
-                            self.sta_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
+                            self.lvap_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
                         if sta_rx_bw_mean is not None:
                             # Applying bw threshold...
                             if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
@@ -252,16 +252,6 @@ class AdaptiveLVAPManager(EmpowerApp):
     def active_flows_handler(self, value):
         """Set active_flows_handler"""
         self.__active_flows_handler = value
-
-    @property
-    def sta_stats_handler(self):
-        """Return default sta_stats_handler"""
-        return self.__lvap_stats_handler
-
-    @sta_stats_handler.setter
-    def sta_stats_handler(self, value):
-        """Set sta_stats_handler"""
-        self.__lvap_stats_handler = value
 
     @property
     def every(self):
