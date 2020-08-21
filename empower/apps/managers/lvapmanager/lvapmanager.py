@@ -148,7 +148,7 @@ class LVAPManager(EmpowerApp):
 
     @property
     def config_lvap(self):
-        """Return config_slice."""
+        """Return config_lvap."""
         return self.__config_slice
 
     @config_lvap.setter

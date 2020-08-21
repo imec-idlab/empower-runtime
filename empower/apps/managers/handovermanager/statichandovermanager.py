@@ -37,48 +37,28 @@ class HandoverManager(EmpowerApp):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.__wifi_handover_manager = {"message": "Handover Manager is online!"}
-        self.__wtp_addr = None
-        self.__lvap_addr = None
+        self.__wifi_handover_manager = {"message": "Static Handover Manager is online!"}
+        self.__WTP_LVAP_map = {"00:0D:B9:42:6A:00": {"LVAPs": ["DC:A6:32:65:E7:AA",
+                                                               "DC:A6:32:0A:E1:D4"]},
+                               "00:0D:B9:42:72:08": {"LVAPs": ["DC:A6:32:0A:E0:C9",
+                                                               "DC:A6:32:0A:B8:22"]}}
 
-    def reset_parameters(self):
-        self.__wtp_addr = None
-        self.__lvap_addr = None
-
-    def do_handover(self):
+    def loop(self):
+        """Periodic job."""
+        # self.log.debug("Handover Manager APP loop...")
         # For all blocks in all APs
         for block in self.blocks():
             # If there is a static configuration in the map
-            if str(block.addr) == self.__lvap_addr:
+            if str(block.addr) in self.__WTP_LVAP_map:
                 # For all clients connected...
                 for lvap in self.lvaps():
                     # If there is a static placement for the station
-                    if str(lvap.addr) == self.__lvap_addr:
+                    if str(lvap.addr) in self.__WTP_LVAP_map[str(block.addr)]["LVAPs"]:
+                        # If the station is not connected to the defined static configuration: do handover
                         if lvap.blocks[0] is not None:
-                            # If the station is not connected: do handover
                             if str(lvap.blocks[0].addr) != str(block.addr):
                                 self.log.info("Handover triggered!")
                                 lvap.blocks = block
-
-    @property
-    def lvap_addr(self):
-        """Return lvap_addr"""
-        return self.__lvap_addr
-
-    @lvap_addr.setter
-    def lvap_addr(self, value):
-        """Set lvap_addr"""
-        self.__lvap_addr = value
-
-    @property
-    def wtp_addr(self):
-        """Return wtp_addr"""
-        return self.__wtp_addr
-
-    @wtp_addr.setter
-    def wtp_addr(self, value):
-        """Set wtp_addr"""
-        self.__wtp_addr = value
 
     @property
     def every(self):
@@ -91,17 +71,6 @@ class HandoverManager(EmpowerApp):
         self.log.info("Setting control loop interval to %ums", int(value))
         self.__every = int(value)
         super().restart(self.__every)
-
-    @property
-    def config_handover(self):
-        """Return config_handover."""
-        return self.config_handover
-
-    @config_handover.setter
-    def config_handover(self, value):
-        """Set config_handover."""
-        if value is not None:
-            self.do_handover()
 
     def to_dict(self):
         """ Return a JSON-serializable."""
