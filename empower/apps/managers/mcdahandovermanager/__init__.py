@@ -47,3 +47,36 @@ MANIFEST = {
         }
     }
 }
+
+"""A Full MCDA manager APP."""
+
+# the manifest
+MANIFEST = {
+    "name": "empower.apps.managers.mcdahandovermanager.fullmcdahandovermanager",
+    "desc": "A Full MCDA manager REST API.",
+    "params": {
+        "tenant_id": {
+            "desc": "The tenant on which this app must be loaded.",
+            "mandatory": True,
+            "type": "UUID"
+        },
+        "every": {
+            "desc": "The control loop period (in ms).",
+            "mandatory": False,
+            "default": 5000,
+            "type": "int"
+        },
+        "mcda_descriptor": {
+            "desc": "The MCDA parameters in JSON.",
+            "mandatory": False,
+            "default": None,
+            "type": "str"
+        },
+        "active": {
+            "desc": "The flag used to activate/deactivate MCDA",
+            "mandatory": True,
+            "default": True,
+            "type": "bool"
+        }
+    }
+}
