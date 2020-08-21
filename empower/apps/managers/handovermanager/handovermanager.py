@@ -49,7 +49,7 @@ class HandoverManager(EmpowerApp):
         # For all blocks in all APs
         for block in self.blocks():
             # If there is a static configuration in the map
-            if str(block.addr) == self.__lvap_addr:
+            if str(block.addr) == self.__wtp_addr:
                 # For all clients connected...
                 for lvap in self.lvaps():
                     # If there is a static placement for the station
@@ -59,6 +59,7 @@ class HandoverManager(EmpowerApp):
                             if str(lvap.blocks[0].addr) != str(block.addr):
                                 self.log.info("Handover triggered!")
                                 lvap.blocks = block
+        self.reset_parameters()
 
     @property
     def lvap_addr(self):
