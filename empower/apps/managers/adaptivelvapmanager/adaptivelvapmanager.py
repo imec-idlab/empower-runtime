@@ -89,6 +89,18 @@ class AdaptiveLVAPManager(EmpowerApp):
                         # Reconfigure all slices in the WTP
                         self.reset_all_lvap_configs()
 
+            if self.__db_monitor is not None:
+                fields = ['MIN_BW_MBPS', 'MAX_BW_MBPS', 'INC_RATE', 'DEC_RATE', 'UP_BW_THRESHOLD_MBPS']
+                values = [self.__minimum_bw, self.__maximum_bw,
+                          self.__bw_increase_rate, self.__bw_decrease_rate, self.__uplink_bw_threshold]
+
+                # Saving into db
+                self.monitor.insert_into_db(table='adaptive_shaping', fields=fields, values=values)
+
+                # Keeping only the last measurements in db
+                self.monitor.keep_last_measurements_only('adaptive_shaping')
+                self.monitor.keep_last_measurements_only('lvap_shaping')
+
     def reset_all_lvap_configs(self):
         for lvap_addr in self.__adaptive_lvap_manager['configs']:
             crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
@@ -191,6 +203,13 @@ class AdaptiveLVAPManager(EmpowerApp):
                     crr_bw_shaper = crr_bw_shaper.replace('Mbps', '')
                     crr_bw_shaper = float(crr_bw_shaper) if '.' in crr_bw_shaper else int(crr_bw_shaper)
                     self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = crr_bw_shaper
+
+                    if self.__db_monitor is not None:
+                        fields = ['LVAP_ADDR', 'BW_SHAPER_MBPS']
+                        values = [lvap_addr, crr_bw_shaper]
+
+                        # Saving into db
+                        self.monitor.insert_into_db(table='lvap_shaping', fields=fields, values=values)
         except:
             raise ValueError("Timeout getting configuration from LVAP", ip_addr, DEFAULT_PORT)
 

@@ -80,9 +80,9 @@ class AdaptiveSliceManager(EmpowerApp):
                         self.reset_all(crr_wtp_addr)
 
             if self.__db_monitor is not None:
-                fields = ['MIN_QUANTUM', 'MAX_QUANTUM', 'INC_RATE', 'DEC_RATE']
+                fields = ['MIN_QUANTUM', 'MAX_QUANTUM', 'INC_RATE', 'DEC_RATE', 'UP_BW_THRESHOLD_MBPS']
                 values = [self.__minimum_quantum, self.__maximum_quantum,
-                          self.__quantum_increase_rate, self.quantum_decrease_rate]
+                          self.__quantum_increase_rate, self.__quantum_decrease_rate, self.__uplink_bw_threshold]
 
                 # Saving into db
                 self.monitor.insert_into_db(table='adaptive_slicing', fields=fields, values=values)
