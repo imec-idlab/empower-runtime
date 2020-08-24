@@ -44,10 +44,8 @@ class FlowManager(EmpowerApp):
                                'be_slices': [],
                                'qos_flows': [],
                                'qos_slices': [],
-                               'lvap_flow_map': {},                 # downlink flow map
-                               'lvap_load_expected_map': {},        # downlink expected load
-                               'network_flow_map': {},              # TODO: uplink flow map
-                               'network_load_expected_map': {}}     # TODO: uplink expected load
+                               'lvap_flow_map': {},                 # flow map
+                               'lvap_load_expected_map': {}}        # expected load
         self.__process_handler = {'flows': {}}
 
         # Flow params
@@ -178,19 +176,22 @@ class FlowManager(EmpowerApp):
             if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_load_expected_map']:
                 self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr] = []
             self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
-        else:
+        elif self.__flow_src_mac_addr in current_lvaps:
             # it is an uplink flow
-            if self.__flow_dst_mac_addr not in self.__flow_manager['network_flow_map']:
-                self.__flow_manager['network_flow_map'][self.__flow_dst_mac_addr] = []
-            self.__flow_manager['network_flow_map'][self.__flow_dst_mac_addr].append(self.__flow_id)
+            if self.__flow_src_mac_addr not in self.__flow_manager['lvap_flow_map']:
+                self.__flow_manager['lvap_flow_map'][self.__flow_src_mac_addr] = []
+            self.__flow_manager['lvap_flow_map'][self.__flow_src_mac_addr].append(self.__flow_id)
 
-            # fill in network flow load into list
-            if self.__flow_dst_mac_addr not in self.__flow_manager['network_load_expected_map']:
-                self.__flow_manager['network_load_expected_map'][self.__flow_dst_mac_addr] = []
-            self.__flow_manager['network_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
+            # fill in flow load into list
+            if self.__flow_src_mac_addr not in self.__flow_manager['lvap_load_expected_map']:
+                self.__flow_manager['lvap_load_expected_map'][self.__flow_src_mac_addr] = []
+            self.__flow_manager['lvap_load_expected_map'][self.__flow_src_mac_addr].append(self.__flow_bw_req_mbps)
 
             # creating sleep process to track uplink flows
             self.create_sleep_process()
+        else:
+            raise ValueError("Both SRC and DST MAC addresses not found in current LVAPs (SRC, DST)",
+                             self.__flow_src_mac_addr, self.__flow_dst_mac_addr)
 
         # add flow structure
         self.__flow_manager['flows'][self.__flow_id] = flow
