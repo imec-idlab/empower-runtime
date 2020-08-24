@@ -303,20 +303,31 @@ class FullMCDAHandoverManager(EmpowerApp):
             self.__lvap_stats_handler = RUNTIME.tenants[self.tenant_id].components[
                 'empower.apps.handlers.binstatshandler'].to_dict()
             crr_criteria_index = self.__mcda_descriptor['criteria'].index('wtp_load_measured_mbps')
+
+            # Creating WTPs load structure
+            wtps_load = {'wtps': {}}
             for crr_wtp_addr in self.__mcda_handover_manager['wtps']:
-                for crr_lvap_addr in self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps']:
+                if crr_wtp_addr not in wtps_load:
+                    wtps_load[crr_wtp_addr] = 0
+
+            # Getting LVAPs load and filling the structure
+            for lvap in self.lvaps():
+                crr_lvap_addr = str(lvap.addr)
+                if lvap.blocks[0] is not None:
+                    crr_wtp_addr = str(lvap.blocks[0].addr)
                     if crr_lvap_addr in self.__lvap_stats_handler['lvaps']:
                         lvap_mean_throughput_mbps = \
                             self.__lvap_stats_handler['lvaps'][crr_lvap_addr]['rx_throughput_mbps']['mean']
                         if lvap_mean_throughput_mbps is not None:
-                            self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                'values'][
-                                crr_criteria_index] += lvap_mean_throughput_mbps
-                        else:
-                            self.log.debug("LVAP average throughput is not ready yet! Skipping LVAP...")
+                            wtps_load[crr_wtp_addr] += lvap_mean_throughput_mbps
                     else:
                         raise ValueError("LVAP is not yet present in lvapstatshandler dictionary!")
-                        return False
+
+            # Now filling the MCDA matrix structure
+            for crr_wtp_addr in self.__mcda_handover_manager['wtps']:
+                for crr_lvap_addr in self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps']:
+                    self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                        crr_criteria_index] += wtps_load[crr_wtp_addr]    # sum of all LVAP load
             return True
         else:
             raise ValueError("APP 'empower.apps.handlers.binstatshandler' is not online!")
