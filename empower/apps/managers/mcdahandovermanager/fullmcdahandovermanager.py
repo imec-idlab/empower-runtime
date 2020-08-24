@@ -96,6 +96,7 @@ class FullMCDAHandoverManager(EmpowerApp):
             # Step 3: for each criteria, get all metrics and populate structure
             for crr_criteria in self.__mcda_descriptor['criteria']:
                 if crr_criteria == 'wtp_load_measured_mbps':
+                    # LVAP has to be checked later so it increments the WTP load (+=)
                     if not self.get_wtp_load_measurements() and not self.get_lvap_load_measurements():
                         return
                 elif crr_criteria == 'wtp_queue_delay_ms':
@@ -316,7 +317,6 @@ class FullMCDAHandoverManager(EmpowerApp):
                                     crr_criteria_index] += lvap_mean_throughput_mbps
                             else:
                                 raise ValueError("LVAP average throughput is not ready yet!")
-                                return False
                 else:
                     raise ValueError("LVAP is not yet present in lvapstatshandler dictionary!")
                     return False
@@ -338,7 +338,7 @@ class FullMCDAHandoverManager(EmpowerApp):
                             self.__slice_stats_handler['wtps'][crr_wtp_addr]['overall']['throughput_mbps']['mean']
                         if wtp_mean_throughput_mbps is not None:
                             self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
-                                crr_criteria_index] += wtp_mean_throughput_mbps
+                                crr_criteria_index] = wtp_mean_throughput_mbps
                         else:
                             raise ValueError("WTP average throughput is not ready yet!")
                             return False
