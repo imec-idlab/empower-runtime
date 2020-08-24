@@ -167,31 +167,26 @@ class FlowManager(EmpowerApp):
 
         # if DST is a LVAP (downlink)
         if self.__flow_dst_mac_addr in current_lvaps:
-            # fill in LVAP's flow list
-            if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_flow_map']:
-                self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr] = []
-            self.__flow_manager['lvap_flow_map'][self.__flow_dst_mac_addr].append(self.__flow_id)
-
-            # fill in LVAP's flow load list
-            if self.__flow_dst_mac_addr not in self.__flow_manager['lvap_load_expected_map']:
-                self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr] = []
-            self.__flow_manager['lvap_load_expected_map'][self.__flow_dst_mac_addr].append(self.__flow_bw_req_mbps)
+            lvap_addr_to_add = self.__flow_dst_mac_addr
         elif self.__flow_src_mac_addr in current_lvaps:
             # it is an uplink flow
-            if self.__flow_src_mac_addr not in self.__flow_manager['lvap_flow_map']:
-                self.__flow_manager['lvap_flow_map'][self.__flow_src_mac_addr] = []
-            self.__flow_manager['lvap_flow_map'][self.__flow_src_mac_addr].append(self.__flow_id)
-
-            # fill in flow load into list
-            if self.__flow_src_mac_addr not in self.__flow_manager['lvap_load_expected_map']:
-                self.__flow_manager['lvap_load_expected_map'][self.__flow_src_mac_addr] = []
-            self.__flow_manager['lvap_load_expected_map'][self.__flow_src_mac_addr].append(self.__flow_bw_req_mbps)
+            lvap_addr_to_add = self.__flow_src_mac_addr
 
             # creating sleep process to track uplink flows
             self.create_sleep_process()
         else:
-            raise ValueError("Both SRC and DST MAC addresses not found in current LVAPs (SRC, DST)",
+            raise ValueError("Add flow: both SRC and DST MAC addresses not found in current LVAPs (SRC, DST)",
                              self.__flow_src_mac_addr, self.__flow_dst_mac_addr)
+
+        # fill in LVAP's flow list
+        if lvap_addr_to_add not in self.__flow_manager['lvap_flow_map']:
+            self.__flow_manager['lvap_flow_map'][lvap_addr_to_add] = []
+        self.__flow_manager['lvap_flow_map'][lvap_addr_to_add].append(self.__flow_id)
+
+        # fill in LVAP's flow load list
+        if lvap_addr_to_add not in self.__flow_manager['lvap_load_expected_map']:
+            self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_add] = []
+        self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_add].append(self.__flow_bw_req_mbps)
 
         # add flow structure
         self.__flow_manager['flows'][self.__flow_id] = flow
@@ -209,11 +204,24 @@ class FlowManager(EmpowerApp):
             if self.__flow_dscp is not None:
                 self.__flow_manager['be_slices'].remove(flow['flow_dscp'])
 
+        current_lvaps = []
+        for lvap in self.lvaps():
+            current_lvaps.append(str(lvap.addr))
+
+        # if DST is a LVAP (downlink)
+        if flow['flow_dst_mac_addr'] in current_lvaps:
+            lvap_addr_to_remove = flow['flow_dst_mac_addr']
+        elif flow['flow_src_mac_addr'] in current_lvaps:
+            lvap_addr_to_remove = flow['flow_src_mac_addr']
+        else:
+            raise ValueError("Remove flow: both SRC and DST MAC addresses not found in current LVAPs (SRC, DST)",
+                             self.__flow_src_mac_addr, self.__flow_dst_mac_addr)
+
         # remove from lvap flow map
-        if flow['flow_dst_mac_addr'] in self.__flow_manager['lvap_flow_map']:
-            if flow_id in self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']]:
-                self.__flow_manager['lvap_flow_map'][flow['flow_dst_mac_addr']].remove(flow_id)
-                self.__flow_manager['lvap_load_expected_map'][flow['flow_dst_mac_addr']].remove(flow['flow_bw_req_mbps'])
+        if lvap_addr_to_remove in self.__flow_manager['lvap_flow_map']:
+            if flow_id in self.__flow_manager['lvap_flow_map'][lvap_addr_to_remove]:
+                self.__flow_manager['lvap_flow_map'][lvap_addr_to_remove].remove(flow_id)
+                self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_remove].remove(flow['flow_bw_req_mbps'])
 
         if flow_id in self.__process_handler['flows']:
             if self.__process_handler['flows'][flow_id].poll() is None:
