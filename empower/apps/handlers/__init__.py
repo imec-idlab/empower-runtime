@@ -41,3 +41,30 @@ MANIFEST = {
         }
     }
 }
+
+"""Uplink stats handler."""
+
+# the manifest
+MANIFEST = {
+    "name": "empower.apps.handlers.uplinkstatshandler",
+    "desc": "An Uplink Stats handler REST API.",
+    "params": {
+        "tenant_id": {
+            "desc": "The tenant on which this app must be loaded.",
+            "mandatory": True,
+            "type": "UUID"
+        },
+        "every": {
+            "desc": "The control loop period (in ms).",
+            "mandatory": False,
+            "default": 5000,
+            "type": "int"
+        },
+        "active": {
+            "desc": "The flag used to activate/deactivate uplink statistics.",
+            "mandatory": True,
+            "default": True,
+            "type": "bool"
+        }
+    }
+}

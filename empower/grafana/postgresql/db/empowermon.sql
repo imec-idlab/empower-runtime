@@ -1,46 +1,9 @@
 --
--- PostgreSQL database cluster dump
---
-
-SET default_transaction_read_only = off;
-
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-
---
--- Roles
---
-
-CREATE ROLE empower;
-ALTER ROLE empower WITH SUPERUSER INHERIT NOCREATEROLE CREATEDB LOGIN NOREPLICATION NOBYPASSRLS PASSWORD 'md5d94158c2fe2d4b84561b12b697fadea4' VALID UNTIL 'infinity';
-CREATE ROLE postgres;
-ALTER ROLE postgres WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICATION BYPASSRLS PASSWORD 'md57941cb8f1d499639b2837780d5af2d48' VALID UNTIL 'infinity';
-
-
-
-
-
-
---
--- Database creation
---
-
-CREATE DATABASE empower WITH TEMPLATE = template0 OWNER = postgres;
-GRANT ALL ON DATABASE empower TO empower;
-REVOKE CONNECT,TEMPORARY ON DATABASE template1 FROM PUBLIC;
-GRANT CONNECT ON DATABASE template1 TO PUBLIC;
-
-
-\connect empower
-
-SET default_transaction_read_only = off;
-
---
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
--- Dumped by pg_dump version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
+-- Dumped from database version 10.14 (Ubuntu 10.14-0ubuntu0.18.04.1)
+-- Dumped by pg_dump version 10.14 (Ubuntu 10.14-0ubuntu0.18.04.1)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -229,6 +192,42 @@ ALTER TABLE public.lvap_association_stats_id_seq OWNER TO empower;
 --
 
 ALTER SEQUENCE public.lvap_association_stats_id_seq OWNED BY public.lvap_association_stats.id;
+
+
+--
+-- Name: lvap_delay_stats; Type: TABLE; Schema: public; Owner: empower
+--
+
+CREATE TABLE public.lvap_delay_stats (
+    id integer NOT NULL,
+    lvap_addr text,
+    queueing_delay_ms double precision,
+    timestamp_ms bigint
+);
+
+
+ALTER TABLE public.lvap_delay_stats OWNER TO empower;
+
+--
+-- Name: lvap_delay_stats_id_seq; Type: SEQUENCE; Schema: public; Owner: empower
+--
+
+CREATE SEQUENCE public.lvap_delay_stats_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.lvap_delay_stats_id_seq OWNER TO empower;
+
+--
+-- Name: lvap_delay_stats_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: empower
+--
+
+ALTER SEQUENCE public.lvap_delay_stats_id_seq OWNED BY public.lvap_delay_stats.id;
 
 
 --
@@ -624,6 +623,13 @@ ALTER TABLE ONLY public.lvap_association_stats ALTER COLUMN id SET DEFAULT nextv
 
 
 --
+-- Name: lvap_delay_stats id; Type: DEFAULT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.lvap_delay_stats ALTER COLUMN id SET DEFAULT nextval('public.lvap_delay_stats_id_seq'::regclass);
+
+
+--
 -- Name: lvap_shaping id; Type: DEFAULT; Schema: public; Owner: empower
 --
 
@@ -719,6 +725,14 @@ ALTER TABLE ONLY public.lvap_association_stats
 
 
 --
+-- Name: lvap_delay_stats lvap_delay_stats_pkey; Type: CONSTRAINT; Schema: public; Owner: empower
+--
+
+ALTER TABLE ONLY public.lvap_delay_stats
+    ADD CONSTRAINT lvap_delay_stats_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: lvap_shaping lvap_shaping_pkey; Type: CONSTRAINT; Schema: public; Owner: empower
 --
 
@@ -792,103 +806,5 @@ ALTER TABLE ONLY public.wifi_stats
 
 --
 -- PostgreSQL database dump complete
---
-
-\connect postgres
-
-SET default_transaction_read_only = off;
-
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
--- Dumped by pg_dump version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: DATABASE postgres; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON DATABASE postgres IS 'default administrative connection database';
-
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
---
--- PostgreSQL database dump complete
---
-
-\connect template1
-
-SET default_transaction_read_only = off;
-
---
--- PostgreSQL database dump
---
-
--- Dumped from database version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
--- Dumped by pg_dump version 10.12 (Ubuntu 10.12-0ubuntu0.18.04.1)
-
-SET statement_timeout = 0;
-SET lock_timeout = 0;
-SET idle_in_transaction_session_timeout = 0;
-SET client_encoding = 'UTF8';
-SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
-SET check_function_bodies = false;
-SET xmloption = content;
-SET client_min_messages = warning;
-SET row_security = off;
-
---
--- Name: DATABASE template1; Type: COMMENT; Schema: -; Owner: postgres
---
-
-COMMENT ON DATABASE template1 IS 'default template for new databases';
-
-
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
---
--- PostgreSQL database dump complete
---
-
---
--- PostgreSQL database cluster dump complete
 --
 

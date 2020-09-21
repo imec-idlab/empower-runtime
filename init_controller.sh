@@ -45,6 +45,9 @@ MCDA_DESCRIPTOR="mcdainput.json"
 # LVAP stats
 #./empower-runtime.py apps.handlers.lvapstatshandler --tenant_id=$TENANT_ID --db_monitor=$DB_MONITOR
 
+# UPlink LVAP stats
+#./empower-runtime.py empower.apps.handlers.uplinkstatshandler --tenant_id=$TENANT_ID --db_monitor=$DB_MONITOR
+
 # NCQM stats
 #./empower-runtime.py apps.handlers.ncqmstatshandler --tenant_id=$TENANT_ID --db_monitor=$DB_MONITOR
 
