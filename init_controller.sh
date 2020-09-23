@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 
 # Sandbox tenant
-# TENANT_ID=8aaca1c6-bf3c-4455-8c6d-4e4b6eef7719
-
-# wilabt tenant
-TENANT_ID=f1160872-c9c6-4d7f-b7f7-3e4a01c62a90
+TENANT_ID=8aaca1c6-bf3c-4455-8c6d-4e4b6eef7719
 
 # Adaptive Slicing Manager params
 MINIMUM_QUANTUM=1
