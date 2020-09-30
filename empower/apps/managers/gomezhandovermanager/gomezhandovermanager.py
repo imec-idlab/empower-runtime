@@ -108,10 +108,16 @@ class GomezHandoverManager(EmpowerApp):
             if not self.parse_channel_stats():
                 return
 
-            # LVAP Stats
+            # LVAP Stats (RSSI)
             if not self.get_ucqm_stats():
                 return
             if not self.parse_ucqm_stats():
+                return
+
+            # LVAP Stats (Load)
+            if not self.get_lvap_stats():
+                return
+            if not self.add_lvap_stats():
                 return
 
             # Step 2: checking APs load
@@ -211,6 +217,43 @@ class GomezHandoverManager(EmpowerApp):
         finally:
             return True
 
+    def get_lvap_stats(self):
+        if 'empower.apps.handlers.binstatshandler' in RUNTIME.tenants[self.tenant_id].components:
+            self.__lvap_stats_handler = RUNTIME.tenants[self.tenant_id].components[
+                'empower.apps.handlers.binstatshandler'].to_dict()
+            return True
+        else:
+            raise ValueError("APP 'empower.apps.handlers.binstatshandler' is not online!")
+            return False
+
+    def add_lvap_stats(self):
+        # Getting LVAPs load and filling the structure
+        for lvap in self.lvaps():
+            crr_lvap_addr = str(lvap.addr)
+            if lvap.blocks[0] is not None:
+                crr_wtp_addr = str(lvap.blocks[0].addr)
+                if crr_wtp_addr in self.__gomez_handover_manager['wtps']:
+                    if crr_lvap_addr in self.__lvap_stats_handler['lvaps']:
+                        lvap_mean_throughput_mbps = \
+                            self.__lvap_stats_handler['lvaps'][crr_lvap_addr]['rx_throughput_mbps']['mean']
+                        if lvap_mean_throughput_mbps is not None:
+                            self.__gomez_handover_manager['wtps'][crr_wtp_addr]['throughput_mbps'] += lvap_mean_throughput_mbps
+                    else:
+                        raise ValueError("LVAP is not yet present in lvapstatshandler dictionary!")
+                        return False
+                else:
+                    raise ValueError("WTP is not yet present in gomez_handover_manager dictionary!")
+                    return False
+        return True
+
+        # Now filling the MCDA matrix structure
+        for crr_wtp_addr in self.__mcda_handover_manager['wtps']:
+            for crr_lvap_addr in self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps']:
+                self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values'][
+                    crr_criteria_index] += wtps_load[crr_wtp_addr]    # sum of all LVAP load
+
+
+
     @property
     def slice_stats_handler(self):
         """Return default slice_stats_handler"""
@@ -274,4 +317,4 @@ def launch(tenant_id,
     """ Initialize the module. """
 
     return GomezHandoverManager(tenant_id=tenant_id,
-                              every=every)
+                                every=every)
