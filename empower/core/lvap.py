@@ -306,8 +306,10 @@ class LVAP:
 
     def commit(self):
         """Send add lvap message for downlink and uplinks blocks."""
-
-        if not self.blocks:
+        
+        # PHI: fix-me None blocks = [None]
+        # if not self.blocks:
+        if not self.blocks[0]:
             return
 
         self.blocks[0].radio.connection.send_add_lvap(self,
