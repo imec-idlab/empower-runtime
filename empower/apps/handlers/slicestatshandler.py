@@ -136,7 +136,9 @@ class SliceStatsHandler(EmpowerApp):
 
         crr_queue_delay_ms = 0
         if self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['tx_bytes'] > 0:
-            crr_queue_delay_ms = slice_stats.to_dict()['slice_stats']['queue_delay'] / 1000  # from usec to ms
+            crr_queue_delay_sec = slice_stats.to_dict()['slice_stats']['queue_delay_sec']  # getting seconds...
+            crr_queue_delay_ms = slice_stats.to_dict()['slice_stats']['queue_delay_usec'] / 1000  # from usec to ms
+            crr_queue_delay_ms += crr_queue_delay_sec * 1000  # from sec to ms
         self.__slice_stats_handler['wtps'][crr_wtp_addr]['slices'][crr_dscp]['queue_delay_ms']['values'].append(
             crr_queue_delay_ms)
 

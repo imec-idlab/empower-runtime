@@ -62,7 +62,8 @@ SLICE_STATS_RESPONSE = \
            UBInt32("crr_queue_length"),
            UBInt32("tx_packets"),
            UBInt32("tx_bytes"),
-           UBInt32("queue_delay"),
+           UBInt32("queue_delay_sec"),
+           UBInt32("queue_delay_usec"),
            UBInt32("deficit_avg"),
            UBInt32("deficit"))
 
@@ -217,7 +218,8 @@ class SliceStats(ModulePeriodic):
             'tx_bytes': response.tx_bytes,
             'tx_packets': response.tx_packets,
             'deficit_used': response.deficit_used,
-            'queue_delay': response.queue_delay,
+            'queue_delay_sec': response.queue_delay_sec,
+            'queue_delay_usec': response.queue_delay_usec,
             'deficit_avg': response.deficit_avg,
             'deficit': response.deficit,
             'max_queue_length': response.max_queue_length,

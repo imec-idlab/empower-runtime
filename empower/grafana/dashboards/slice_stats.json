@@ -116,7 +116,7 @@
       },
       "yaxes": [
         {
-          "format": "short",
+          "format": "µs",
           "label": "Quantum (us)",
           "logBase": 1,
           "max": null,
@@ -265,7 +265,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 10,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 8
       },
@@ -338,7 +338,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 1 - MCDA Closeness",
+      "title": "WTP1 - MCDA Closeness",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -385,8 +385,8 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 10,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 8,
         "y": 8
       },
       "id": 33,
@@ -458,7 +458,127 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP4 - MCDA Closeness",
+      "title": "WTP2 - MCDA Closeness",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 8
+      },
+      "id": 46,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  closeness\nFROM mcda_results\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "closeness"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "mcda_results",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "LIKE",
+                "'00:0D:B9:53:E0:4C'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP3 - MCDA Closeness",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -825,7 +945,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 26
       },
@@ -944,8 +1064,8 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 8,
         "y": 26
       },
       "id": 36,
@@ -1016,7 +1136,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP4 - MCDA Ranks",
+      "title": "WTP2 - MCDA Ranks",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1055,19 +1175,19 @@
     },
     {
       "aliasColors": {},
-      "bars": true,
+      "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": "empower_stats",
-      "fill": 7,
+      "fill": 1,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 34
+        "w": 8,
+        "x": 16,
+        "y": 26
       },
-      "id": 41,
+      "id": 47,
       "legend": {
         "avg": false,
         "current": false,
@@ -1077,9 +1197,9 @@
         "total": false,
         "values": false
       },
-      "lines": false,
+      "lines": true,
       "linewidth": 1,
-      "nullPointMode": "null as zero",
+      "nullPointMode": "null",
       "options": {
         "dataLinks": []
       },
@@ -1089,7 +1209,7 @@
       "renderer": "flot",
       "seriesOverrides": [],
       "spaceLength": 10,
-      "stack": true,
+      "stack": false,
       "steppedLine": false,
       "targets": [
         {
@@ -1097,19 +1217,19 @@
           "group": [],
           "metricColumn": "lvap_addr",
           "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  flag\nFROM lvap_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr = '00:0D:B9:42:6A:00'\nORDER BY 1,2",
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  rank\nFROM mcda_results\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
               {
                 "params": [
-                  "flag"
+                  "rank"
                 ],
                 "type": "column"
               }
             ]
           ],
-          "table": "lvap_association_stats",
+          "table": "mcda_results",
           "timeColumn": "timestamp_ms",
           "timeColumnType": "int8",
           "where": [
@@ -1123,8 +1243,8 @@
               "name": "",
               "params": [
                 "wtp_addr",
-                "=",
-                "'00:0D:B9:42:6A:00'"
+                "LIKE",
+                "'00:0D:B9:53:E0:4C'"
               ],
               "type": "expression"
             }
@@ -1135,7 +1255,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP1 - STA's association",
+      "title": "WTP3 - MCDA Ranks",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1152,9 +1272,9 @@
       "yaxes": [
         {
           "format": "short",
-          "label": "Number of associated STAs",
+          "label": null,
           "logBase": 1,
-          "max": "4",
+          "max": null,
           "min": null,
           "show": true
         },
@@ -1182,128 +1302,9 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 34
-      },
-      "id": 40,
-      "legend": {
-        "avg": false,
-        "current": false,
-        "max": false,
-        "min": false,
-        "show": true,
-        "total": false,
-        "values": false
-      },
-      "lines": false,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": true,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "lvap_addr",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  flag\nFROM lvap_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr = '00:0D:B9:42:72:08'\nORDER BY 1,2",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "flag"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "lvap_association_stats",
-          "timeColumn": "timestamp_ms",
-          "timeColumnType": "int8",
-          "where": [
-            {
-              "name": "$__unixEpochFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "text",
-              "name": "",
-              "params": [
-                "wtp_addr",
-                "=",
-                "'00:0D:B9:42:72:08'"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "WTP4 - STA's association",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": "Number of associated STAs",
-          "logBase": 1,
-          "max": "4",
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": true,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "empower_stats",
-      "fill": 7,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
-        "y": 42
+        "y": 34
       },
       "id": 28,
       "legend": {
@@ -1420,9 +1421,9 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 42
+        "w": 8,
+        "x": 8,
+        "y": 34
       },
       "id": 29,
       "legend": {
@@ -1492,7 +1493,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP4 - MCDA STA's association",
+      "title": "WTP2 - MCDA STA's association",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1531,6 +1532,482 @@
     },
     {
       "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 7,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 34
+      },
+      "id": 48,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  association_flag\nFROM mcda_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "association_flag"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "mcda_association_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "LIKE",
+                "'00:0D:B9:53:E0:4C'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP3 - MCDA STA's association",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Number of associated STAs",
+          "logBase": 1,
+          "max": "4",
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 7,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 42
+      },
+      "id": 41,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  flag\nFROM lvap_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr = '00:0D:B9:42:6A:00'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "flag"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "lvap_association_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "=",
+                "'00:0D:B9:42:6A:00'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP1 - STA's association",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Number of associated STAs",
+          "logBase": 1,
+          "max": "6",
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 7,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 42
+      },
+      "id": 40,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  flag\nFROM lvap_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr = '00:0D:B9:42:72:08'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "flag"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "lvap_association_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "=",
+                "'00:0D:B9:42:72:08'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP2 - STA's association",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Number of associated STAs",
+          "logBase": 1,
+          "max": "6",
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": true,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 7,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 42
+      },
+      "id": 45,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": false,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  flag\nFROM lvap_association_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr = '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "flag"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "lvap_association_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "=",
+                "'00:0D:B9:53:E0:4C'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP3 - STA's association",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Number of associated STAs",
+          "logBase": 1,
+          "max": "6",
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
@@ -1539,7 +2016,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 12,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 50
       },
@@ -1614,7 +2091,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 1 - Slices' Throughput -Channel 1",
+      "title": "WTP1 - Slices' Throughput -Channel 1",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1661,8 +2138,8 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 12,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 8,
         "y": 50
       },
       "id": 20,
@@ -1736,7 +2213,129 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 4 - Slices' Throughput - Channel 11",
+      "title": "WTP2 - Slices' Throughput - Channel 6",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "Mbits",
+          "label": "Throughput (Mbps)",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 6,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 12,
+        "w": 8,
+        "x": 16,
+        "y": 50
+      },
+      "id": 49,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "dscp",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  throughput_mbps\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "throughput_mbps"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "slice_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int4",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "LIKE",
+                "'00:0D:B9:53:E0:4C'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP3 - Slices' Throughput - Channel 11",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1784,7 +2383,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 11,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 62
       },
@@ -1860,7 +2459,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 1 - Slices' Queue Delay",
+      "title": "WTP1 - Slices' Queue Delay",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1908,8 +2507,8 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 11,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 8,
         "y": 62
       },
       "id": 19,
@@ -1984,7 +2583,131 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 4 - Slices' Queue Delay",
+      "title": "WTP2 - Slices' Queue Delay",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "ms",
+          "label": "Queue Delay (ms)",
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "cacheTimeout": null,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 5,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 11,
+        "w": 8,
+        "x": 16,
+        "y": 62
+      },
+      "id": 50,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": false,
+        "hideZero": false,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "dscp",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  queue_delay_msec\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "queue_delay_msec"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "slice_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "LIKE",
+                "'00:0D:B9:53:E0:4C'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP3 - Slices' Queue Delay",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2031,7 +2754,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 15,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 73
       },
@@ -2104,7 +2827,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 1 - Slices' Current Quantum",
+      "title": "WTP1 - Slices' Current Quantum",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2151,8 +2874,8 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 15,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 8,
         "y": 73
       },
       "id": 23,
@@ -2224,7 +2947,127 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 4 - Slices' Current Quantum",
+      "title": "WTP2 - Slices' Current Quantum",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "µs",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 15,
+        "w": 8,
+        "x": 16,
+        "y": 73
+      },
+      "id": 51,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null as zero",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "dscp",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  current_quantum\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "current_quantum"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "slice_stats",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            },
+            {
+              "datatype": "text",
+              "name": "",
+              "params": [
+                "wtp_addr",
+                "LIKE",
+                "'00:0D:B9:53:E0:4C'"
+              ],
+              "type": "expression"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "WTP3 - Slices' Current Quantum",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2270,8 +3113,8 @@
       "fill": 6,
       "fillGradient": 0,
       "gridPos": {
-        "h": 12,
-        "w": 12,
+        "h": 6,
+        "w": 24,
         "x": 0,
         "y": 88
       },
@@ -2285,6 +3128,8 @@
         "max": true,
         "min": true,
         "show": true,
+        "sort": "avg",
+        "sortDesc": true,
         "total": false,
         "values": true
       },
@@ -2382,122 +3227,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 12,
-        "w": 12,
-        "x": 12,
-        "y": 88
-      },
-      "id": 26,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "hideEmpty": false,
-        "hideZero": false,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": true,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "wtp_dscp",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  wtp_dscp AS metric,\n  throughput_mbps\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms)\nORDER BY 1,2",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "throughput_mbps"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "slice_stats",
-          "timeColumn": "timestamp_ms",
-          "timeColumnType": "int4",
-          "where": [
-            {
-              "name": "$__unixEpochFilter",
-              "params": [],
-              "type": "macro"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Slices' Throughput",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "Mbits",
-          "label": "Throughput (Mbps)",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "empower_stats",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 15,
-        "w": 12,
+        "h": 11,
+        "w": 8,
         "x": 0,
-        "y": 100
+        "y": 94
       },
       "id": 10,
       "legend": {
@@ -2570,7 +3303,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 1 - Slices' Average Deficit Used",
+      "title": "WTP1 - Slices' Average Deficit Used",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2616,10 +3349,10 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 15,
-        "w": 12,
-        "x": 12,
-        "y": 100
+        "h": 11,
+        "w": 8,
+        "x": 8,
+        "y": 94
       },
       "id": 21,
       "legend": {
@@ -2692,7 +3425,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 4 - Slices' Average Deficit Used",
+      "title": "WTP2 - Slices' Average Deficit Used",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2738,16 +3471,18 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 12,
-        "w": 12,
-        "x": 0,
-        "y": 115
+        "h": 11,
+        "w": 8,
+        "x": 16,
+        "y": 94
       },
-      "id": 12,
+      "id": 52,
       "legend": {
         "alignAsTable": true,
         "avg": true,
         "current": true,
+        "hideEmpty": false,
+        "hideZero": false,
         "max": true,
         "min": true,
         "show": true,
@@ -2774,13 +3509,13 @@
           "group": [],
           "metricColumn": "dscp",
           "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  deficit\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:42:6A:00'\nORDER BY 1,2",
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  deficit_avg\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:53:E0:4C'\nORDER BY 1,2",
           "refId": "A",
           "select": [
             [
               {
                 "params": [
-                  "deficit"
+                  "deficit_avg"
                 ],
                 "type": "column"
               }
@@ -2801,7 +3536,7 @@
               "params": [
                 "wtp_addr",
                 "LIKE",
-                "'00:0D:B9:42:6A:00'"
+                "'00:0D:B9:53:E0:4C'"
               ],
               "type": "expression"
             }
@@ -2812,7 +3547,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "WTP 1 - Slice's Current Deficit",
+      "title": "WTP3 - Slices' Average Deficit Used",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2829,7 +3564,7 @@
       "yaxes": [
         {
           "format": "µs",
-          "label": null,
+          "label": "Deficit AVG",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -2837,607 +3572,7 @@
         },
         {
           "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "empower_stats",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 12,
-        "w": 12,
-        "x": 12,
-        "y": 115
-      },
-      "id": 25,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "dscp",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  deficit\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:42:72:08'\nORDER BY 1,2",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "deficit"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "slice_stats",
-          "timeColumn": "timestamp_ms",
-          "timeColumnType": "int4",
-          "where": [
-            {
-              "name": "$__unixEpochFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "text",
-              "name": "",
-              "params": [
-                "wtp_addr",
-                "LIKE",
-                "'00:0D:B9:42:72:08'"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "WTP2 - Slice's Current Deficit",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "µs",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "empower_stats",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 13,
-        "w": 6,
-        "x": 0,
-        "y": 127
-      },
-      "id": 16,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "dscp",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  max_queue_length\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:42:6A:00'\nORDER BY 1,2",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "max_queue_length"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "slice_stats",
-          "timeColumn": "timestamp_ms",
-          "timeColumnType": "int8",
-          "where": [
-            {
-              "name": "$__unixEpochFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "text",
-              "name": "",
-              "params": [
-                "wtp_addr",
-                "LIKE",
-                "'00:0D:B9:42:6A:00'"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "WTP 1 - Slice's MAX queue length",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "empower_stats",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 13,
-        "w": 6,
-        "x": 6,
-        "y": 127
-      },
-      "id": 22,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "dscp",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  max_queue_length\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:42:72:08'\nORDER BY 1,2",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "max_queue_length"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "slice_stats",
-          "timeColumn": "timestamp_ms",
-          "timeColumnType": "int8",
-          "where": [
-            {
-              "name": "$__unixEpochFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "text",
-              "name": "",
-              "params": [
-                "wtp_addr",
-                "LIKE",
-                "'00:0D:B9:42:72:08'"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "WTP 4 - Slice's MAX queue length",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "empower_stats",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 13,
-        "w": 6,
-        "x": 12,
-        "y": 127
-      },
-      "id": 18,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "dscp",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  crr_queue_length\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:42:6A:00'\nORDER BY 1,2",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "crr_queue_length"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "slice_stats",
-          "timeColumn": "timestamp_ms",
-          "timeColumnType": "int8",
-          "where": [
-            {
-              "name": "$__unixEpochFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "text",
-              "name": "",
-              "params": [
-                "wtp_addr",
-                "LIKE",
-                "'00:0D:B9:42:6A:00'"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "WTP 1 - Slice's current queue length",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": "Packets",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "empower_stats",
-      "fill": 1,
-      "fillGradient": 0,
-      "gridPos": {
-        "h": 13,
-        "w": 6,
-        "x": 18,
-        "y": 127
-      },
-      "id": 24,
-      "legend": {
-        "alignAsTable": true,
-        "avg": true,
-        "current": true,
-        "max": true,
-        "min": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "nullPointMode": "null as zero",
-      "options": {
-        "dataLinks": []
-      },
-      "percentage": false,
-      "pointradius": 2,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "format": "time_series",
-          "group": [],
-          "metricColumn": "dscp",
-          "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  dscp AS metric,\n  crr_queue_length\nFROM slice_stats\nWHERE\n  $__unixEpochFilter(timestamp_ms) AND\n  wtp_addr LIKE '00:0D:B9:42:72:08'\nORDER BY 1,2",
-          "refId": "A",
-          "select": [
-            [
-              {
-                "params": [
-                  "crr_queue_length"
-                ],
-                "type": "column"
-              }
-            ]
-          ],
-          "table": "slice_stats",
-          "timeColumn": "timestamp_ms",
-          "timeColumnType": "int8",
-          "where": [
-            {
-              "name": "$__unixEpochFilter",
-              "params": [],
-              "type": "macro"
-            },
-            {
-              "datatype": "text",
-              "name": "",
-              "params": [
-                "wtp_addr",
-                "LIKE",
-                "'00:0D:B9:42:72:08'"
-              ],
-              "type": "expression"
-            }
-          ]
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "WTP 4 - Slice's current queue length",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": "Packets",
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
+          "label": "",
           "logBase": 1,
           "max": null,
           "min": null,
@@ -3450,7 +3585,7 @@
       }
     }
   ],
-  "refresh": "5s",
+  "refresh": "1s",
   "schemaVersion": 20,
   "style": "dark",
   "tags": [],
@@ -3479,5 +3614,5 @@
   "timezone": "",
   "title": "Slice Stats",
   "uid": "spUCIjhWz",
-  "version": 4
+  "version": 20
 }
