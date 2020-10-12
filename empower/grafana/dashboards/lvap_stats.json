@@ -569,7 +569,7 @@
       }
     }
   ],
-  "refresh": "5s",
+  "refresh": "1s",
   "schemaVersion": 20,
   "style": "dark",
   "tags": [],
@@ -582,6 +582,7 @@
   },
   "timepicker": {
     "refresh_intervals": [
+      "1s",
       "5s",
       "10s",
       "30s",
@@ -597,5 +598,5 @@
   "timezone": "",
   "title": "LVAP Stats",
   "uid": "tQuqI9hWz",
-  "version": 14
+  "version": 16
 }

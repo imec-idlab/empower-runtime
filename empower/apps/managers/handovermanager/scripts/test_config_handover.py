@@ -18,8 +18,9 @@ from optparse import OptionParser
 # Experimentation parameters and values
 parser = OptionParser()
 parser.add_option("", "--json_config_file", type="string", default="lvap_config.json")  # filename
-parser.add_option("", "--controller_ip", type="string", default="10.11.17.1")  # e.g., the Empower controller
-parser.add_option("", "--tenant_id", type="string", default="f1160872-c9c6-4d7f-b7f7-3e4a01c62a90")  # e.g., c405025a-32cd-47c0-aafe-1cb1e425ae1d
+parser.add_option("", "--controller_ip", type="string", default="143.129.76.37")  # e.g., the Empower controller
+parser.add_option("", "--tenant_id", type="string", default="8aaca1c6-bf3c-4455-8c6d-4e4b6eef7719")  # e.g., c405025a-32cd-47c0-aafe-1cb1e425ae1d
+#parser.add_option("", "--tenant_id", type="string", default="f1160872-c9c6-4d7f-b7f7-3e4a01c62a90")  # e.g., c405025a-32cd-47c0-aafe-1cb1e425ae1d
 parser.add_option("", "--user", type="string", default="root")  # e.g., root, user
 parser.add_option("", "--password", type="string", default="root")  # e.g., root, password
 
