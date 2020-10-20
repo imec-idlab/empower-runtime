@@ -41,7 +41,7 @@ print("Copying MGEN scipts into RPIs..")
 # Copy MGEN script into RPI 1
 ssh = create_ssh_client(str(options.sta1_ip), options.ssh_port, str(options.sta_user), str(options.sta_password))
 scp = SCPClient(ssh.get_transport())
-scp.put('mgen/sandbox/enhanced_qos/flow1.mgn', recursive=True, remote_path='/home/pi/mgen_scripts/')
+scp.put('mgen/sandbox/enhanced_qos/experiment_2/flow1.mgn', recursive=True, remote_path='/home/pi/mgen_scripts/')
 scp.close()
 ssh.close()
 print("STA1 - Done!")
@@ -49,7 +49,7 @@ print("STA1 - Done!")
 # Copy MGEN script into RPI 2
 ssh = create_ssh_client(str(options.sta2_ip), options.ssh_port, str(options.sta_user), str(options.sta_password))
 scp = SCPClient(ssh.get_transport())
-scp.put('mgen/sandbox/enhanced_qos/flow2.mgn', recursive=True, remote_path='/home/pi/mgen_scripts/')
+scp.put('mgen/sandbox/enhanced_qos/experiment_2/flow2.mgn', recursive=True, remote_path='/home/pi/mgen_scripts/')
 scp.close()
 ssh.close()
 print("STA2 - Done!")
@@ -57,7 +57,7 @@ print("STA2 - Done!")
 # Copy MGEN script into RPI 3
 ssh = create_ssh_client(str(options.sta3_ip), options.ssh_port, str(options.sta_user), str(options.sta_password))
 scp = SCPClient(ssh.get_transport())
-scp.put('mgen/sandbox/enhanced_qos/flow3.mgn', recursive=True, remote_path='/home/pi/mgen_scripts/')
+scp.put('mgen/sandbox/enhanced_qos/experiment_2/flow3.mgn', recursive=True, remote_path='/home/pi/mgen_scripts/')
 scp.close()
 ssh.close()
 print("STA3 - Done!")
@@ -65,7 +65,7 @@ print("STA3 - Done!")
 print("Advertising Flow 1...")
 # Advertise flow 1
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/flow1.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/flow1.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
@@ -89,7 +89,7 @@ time.sleep(30)
 print("Advertising Flow 2...")
 # Advertise flow 2
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/flow2.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/flow2.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
@@ -113,7 +113,7 @@ time.sleep(30)
 print("Advertising Flow 3...")
 # Advertise flow 3
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/flow3.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/flow3.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
@@ -137,7 +137,7 @@ time.sleep(30)
 print("Advertising and running Flow 4...")
 # Advertise flow 3
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/flow4.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/flow4.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
@@ -150,7 +150,7 @@ time.sleep(30)
 print("Advertising Flow 5...")
 # Advertise flow 3
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/flow5.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/flow5.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
@@ -163,7 +163,7 @@ time.sleep(30)
 print("Advertising Flow 6...")
 # Advertise flow 3
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/flow6.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/flow6.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
