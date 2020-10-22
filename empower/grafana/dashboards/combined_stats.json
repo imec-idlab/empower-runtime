@@ -40,8 +40,8 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 5,
-        "w": 24,
+        "h": 6,
+        "w": 12,
         "x": 0,
         "y": 1
       },
@@ -150,10 +150,120 @@
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 66,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": true,
+        "min": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "format": "time_series",
+          "group": [],
+          "metricColumn": "lvap_addr",
+          "rawQuery": false,
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  lvap_addr AS metric,\n  bw_shaper_mbps\nFROM lvap_shaping\nWHERE\n  $__unixEpochFilter(timestamp_ms)\nORDER BY 1,2",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "bw_shaper_mbps"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "lvap_shaping",
+          "timeColumn": "timestamp_ms",
+          "timeColumnType": "int8",
+          "where": [
+            {
+              "name": "$__unixEpochFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "LVAP's Traffic Shaper",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "Mbits",
+          "label": "Mbps",
+          "logBase": 10,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "empower_stats",
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
         "h": 9,
         "w": 6,
         "x": 0,
-        "y": 6
+        "y": 7
       },
       "id": 62,
       "legend": {
@@ -263,7 +373,7 @@
         "h": 9,
         "w": 6,
         "x": 6,
-        "y": 6
+        "y": 7
       },
       "id": 64,
       "legend": {
@@ -373,7 +483,7 @@
         "h": 9,
         "w": 6,
         "x": 12,
-        "y": 6
+        "y": 7
       },
       "id": 63,
       "legend": {
@@ -483,7 +593,7 @@
         "h": 9,
         "w": 6,
         "x": 18,
-        "y": 6
+        "y": 7
       },
       "id": 65,
       "legend": {
@@ -593,7 +703,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 15
+        "y": 16
       },
       "id": 41,
       "legend": {
@@ -712,7 +822,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 15
+        "y": 16
       },
       "id": 40,
       "legend": {
@@ -831,7 +941,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 15
+        "y": 16
       },
       "id": 45,
       "legend": {
@@ -950,7 +1060,7 @@
         "h": 12,
         "w": 8,
         "x": 0,
-        "y": 23
+        "y": 24
       },
       "id": 8,
       "legend": {
@@ -1072,7 +1182,7 @@
         "h": 12,
         "w": 8,
         "x": 8,
-        "y": 23
+        "y": 24
       },
       "id": 20,
       "legend": {
@@ -1194,7 +1304,7 @@
         "h": 12,
         "w": 8,
         "x": 16,
-        "y": 23
+        "y": 24
       },
       "id": 49,
       "legend": {
@@ -1317,7 +1427,7 @@
         "h": 11,
         "w": 8,
         "x": 0,
-        "y": 35
+        "y": 36
       },
       "id": 6,
       "legend": {
@@ -1441,7 +1551,7 @@
         "h": 11,
         "w": 8,
         "x": 8,
-        "y": 35
+        "y": 36
       },
       "id": 19,
       "legend": {
@@ -1565,7 +1675,7 @@
         "h": 11,
         "w": 8,
         "x": 16,
-        "y": 35
+        "y": 36
       },
       "id": 50,
       "legend": {
@@ -1688,7 +1798,7 @@
         "h": 7,
         "w": 8,
         "x": 0,
-        "y": 46
+        "y": 47
       },
       "id": 14,
       "legend": {
@@ -1808,7 +1918,7 @@
         "h": 7,
         "w": 8,
         "x": 8,
-        "y": 46
+        "y": 47
       },
       "id": 23,
       "legend": {
@@ -1928,7 +2038,7 @@
         "h": 7,
         "w": 8,
         "x": 16,
-        "y": 46
+        "y": 47
       },
       "id": 51,
       "legend": {
@@ -2048,7 +2158,7 @@
         "h": 11,
         "w": 8,
         "x": 0,
-        "y": 53
+        "y": 54
       },
       "id": 10,
       "legend": {
@@ -2186,7 +2296,7 @@
         "h": 11,
         "w": 8,
         "x": 8,
-        "y": 53
+        "y": 54
       },
       "id": 21,
       "legend": {
@@ -2324,7 +2434,7 @@
         "h": 11,
         "w": 8,
         "x": 16,
-        "y": 53
+        "y": 54
       },
       "id": 52,
       "legend": {
@@ -2462,7 +2572,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 64
+        "y": 65
       },
       "id": 30,
       "legend": {
@@ -2571,7 +2681,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 70
+        "y": 71
       },
       "id": 59,
       "panels": [],
@@ -2590,7 +2700,7 @@
         "h": 9,
         "w": 6,
         "x": 0,
-        "y": 71
+        "y": 72
       },
       "id": 43,
       "legend": {
@@ -2732,7 +2842,7 @@
         "h": 9,
         "w": 6,
         "x": 6,
-        "y": 71
+        "y": 72
       },
       "id": 55,
       "legend": {
@@ -2874,7 +2984,7 @@
         "h": 9,
         "w": 6,
         "x": 12,
-        "y": 71
+        "y": 72
       },
       "id": 38,
       "legend": {
@@ -3034,7 +3144,7 @@
         "h": 9,
         "w": 6,
         "x": 18,
-        "y": 71
+        "y": 72
       },
       "id": 39,
       "legend": {
@@ -3194,7 +3304,7 @@
         "h": 10,
         "w": 8,
         "x": 0,
-        "y": 80
+        "y": 81
       },
       "id": 32,
       "legend": {
@@ -3322,7 +3432,7 @@
         "h": 10,
         "w": 8,
         "x": 8,
-        "y": 80
+        "y": 81
       },
       "id": 33,
       "legend": {
@@ -3450,7 +3560,7 @@
         "h": 10,
         "w": 8,
         "x": 16,
-        "y": 80
+        "y": 81
       },
       "id": 46,
       "legend": {
@@ -3578,7 +3688,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 90
+        "y": 91
       },
       "id": 28,
       "legend": {
@@ -3697,7 +3807,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 90
+        "y": 91
       },
       "id": 29,
       "legend": {
@@ -3816,7 +3926,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 90
+        "y": 91
       },
       "id": 48,
       "legend": {
@@ -3953,5 +4063,5 @@
   "timezone": "",
   "title": "Combined Stats",
   "uid": "spUCIjhWz",
-  "version": 30
+  "version": 31
 }
