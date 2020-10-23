@@ -55,6 +55,7 @@ class FlowManager(EmpowerApp):
         self.__flow_protocol = None
         self.__flow_distribution = None
         self.__flow_frame_size = None
+        self.__flow_bw_mbps = None
         self.__flow_bw_req_mbps = None
         self.__flow_delay_req_ms = None
         self.__flow_src_ip_addr = None
@@ -71,6 +72,7 @@ class FlowManager(EmpowerApp):
         self.__flow_protocol = None
         self.__flow_distribution = None
         self.__flow_frame_size = None
+        self.__flow_bw_mbps = None
         self.__flow_bw_req_mbps = None
         self.__flow_delay_req_ms = None
         self.__flow_src_ip_addr = None
@@ -105,7 +107,7 @@ class FlowManager(EmpowerApp):
                 mgen_file.write(
                     str('0.0 ' + 'ON ' + str(self.__flow_id) + ' ' + str(self.__flow_protocol) + ' ' + 'DST ' + str(
                         self.__flow_dst_ip_addr) + '/' + str(self.__flow_dst_port) + ' ' + str(
-                        self.__flow_distribution) + ' [' + str(int(self.__flow_bw_req_mbps * multiplier)) + ' ' + str(
+                        self.__flow_distribution) + ' [' + str(int(self.__flow_bw_mbps * multiplier)) + ' ' + str(
                         self.__flow_frame_size) + ']\n' + str(self.__flow_duration) + ' OFF ' + str(
                         self.__flow_id) + '\n'))
                 mgen_file.close()
@@ -137,6 +139,7 @@ class FlowManager(EmpowerApp):
             'flow_protocol': self.__flow_protocol,
             'flow_distribution': self.__flow_distribution,
             'flow_frame_size': self.__flow_frame_size,
+            'flow_bw_mbps': self.__flow_bw_mbps,
             'flow_bw_req_mbps': self.__flow_bw_req_mbps,
             'flow_delay_req_ms': self.__flow_delay_req_ms,
             'flow_src_ip_addr': self.__flow_src_ip_addr,
@@ -186,7 +189,7 @@ class FlowManager(EmpowerApp):
         # fill in LVAP's flow load list
         if lvap_addr_to_add not in self.__flow_manager['lvap_load_expected_map']:
             self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_add] = []
-        self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_add].append(self.__flow_bw_req_mbps)
+        self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_add].append(self.__flow_bw_mbps)
 
         # add flow structure
         self.__flow_manager['flows'][self.__flow_id] = flow
@@ -330,6 +333,18 @@ class FlowManager(EmpowerApp):
         """Set flow_frame_size."""
 
         self.__flow_frame_size = value
+
+    @property
+    def flow_bw_mbps(self):
+        """Return flow_bw_mbps."""
+
+        return self.__flow_bw_mbps
+
+    @flow_bw_mbps.setter
+    def flow_bw_mbps(self, value):
+        """Set flow_bw_mbps."""
+
+        self.__flow_bw_mbps = value
 
     @property
     def flow_bw_req_mbps(self):

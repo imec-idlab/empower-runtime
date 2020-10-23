@@ -44,7 +44,6 @@ CREATE TABLE public.adaptive_shaping (
     max_bw_mbps integer,
     inc_rate double precision,
     dec_rate double precision,
-    up_bw_threshold_mbps double precision,
     timestamp_ms bigint
 );
 
@@ -83,8 +82,7 @@ CREATE TABLE public.adaptive_slicing (
     max_quantum integer,
     inc_rate double precision,
     dec_rate double precision,
-    timestamp_ms bigint,
-    up_bw_threshold_mbps double precision
+    timestamp_ms bigint
 );
 
 

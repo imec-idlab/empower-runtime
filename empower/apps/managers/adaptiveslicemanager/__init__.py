@@ -57,12 +57,6 @@ MANIFEST = {
             "default": 0.2,
             "type": "int"
         },
-        "uplink_bw_threshold": {
-            "desc": "The uplink bandwidth threshold for slicing in percentage (e.g., 0.2, 0.4).",
-            "mandatory": False,
-            "default": 0.1,
-            "type": "int"
-        },
         "active": {
             "desc": "The flag used to activate/deactivate adaptive slicing",
             "mandatory": True,

@@ -214,7 +214,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "LVAP's Traffic Shaper",
+      "title": "LVAP's traffic shaper",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -4063,5 +4063,5 @@
   "timezone": "",
   "title": "Combined Stats",
   "uid": "spUCIjhWz",
-  "version": 31
+  "version": 32
 }

@@ -58,7 +58,6 @@ class AdaptiveSliceManager(EmpowerApp):
         self.__maximum_quantum = self.maximum_quantum
         self.__quantum_decrease_rate = self.quantum_decrease_rate
         self.__quantum_increase_rate = self.quantum_increase_rate
-        self.__uplink_bw_threshold = self.__uplink_bw_threshold
 
     def loop(self):
         """Periodic job."""
@@ -80,9 +79,9 @@ class AdaptiveSliceManager(EmpowerApp):
                         self.reset_all(crr_wtp_addr)
 
             if self.__db_monitor is not None:
-                fields = ['MIN_QUANTUM', 'MAX_QUANTUM', 'INC_RATE', 'DEC_RATE', 'UP_BW_THRESHOLD_MBPS']
+                fields = ['MIN_QUANTUM', 'MAX_QUANTUM', 'INC_RATE', 'DEC_RATE']
                 values = [self.__minimum_quantum, self.__maximum_quantum,
-                          self.__quantum_increase_rate, self.__quantum_decrease_rate, self.__uplink_bw_threshold]
+                          self.__quantum_increase_rate, self.__quantum_decrease_rate]
 
                 # Saving into db
                 self.monitor.insert_into_db(table='adaptive_slicing', fields=fields, values=values)
@@ -118,20 +117,29 @@ class AdaptiveSliceManager(EmpowerApp):
             qos_flow = self.__active_flows_handler['flows'][qos_flow_id]
             # If downlink QoS flow
             if qos_flow['flow_dscp'] in self.__slice_stats_handler['wtps'][wtp]['slices']:
+                # Checking queueing delay
                 queue_delay_median = \
-                self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['flow_dscp']]['queue_delay_ms']['median']
+                    self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['flow_dscp']]['queue_delay_ms']['median']
                 if queue_delay_median is not None and qos_flow['flow_delay_req_ms'] is not None:
                     if qos_flow['flow_delay_req_ms'] < queue_delay_median:
                         return False
+                # Checking throughput
+                slc_throughput_mbps_mean = \
+                    self.__slice_stats_handler['wtps'][wtp]['slices'][qos_flow['flow_dscp']]['throughput_mbps']['median']
+                if slc_throughput_mbps_mean is not None and qos_flow['flow_bw_req_mbps'] is not None:
+                    if qos_flow['flow_bw_req_mbps'] < slc_throughput_mbps_mean:
+                        return False
+
             # If uplink QoS flow
             elif qos_flow['flow_dscp'] is None:
                 if 'flow_src_mac_addr' in qos_flow:
                     if qos_flow['flow_src_mac_addr'] in self.lvap_stats_handler['lvaps']:
+                        # Checking throughput
                         sta_rx_bw_mean = \
                         self.lvap_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
                         if sta_rx_bw_mean is not None:
-                            # Applying bw threshold...
-                            if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
+                            # less bw that required...
+                            if sta_rx_bw_mean < qos_flow['flow_bw_req_mbps']:
                                 # Search if the LVAP is connected to the WTP being analyzed
                                 for lvap in self.lvaps():
                                     if str(lvap.addr) == qos_flow['flow_src_mac_addr']:
@@ -290,22 +298,6 @@ class AdaptiveSliceManager(EmpowerApp):
             self.__quantum_increase_rate = None
 
     @property
-    def uplink_bw_threshold(self):
-        """Return uplink_bw_threshold"""
-        return self.__uplink_bw_threshold
-
-    @uplink_bw_threshold.setter
-    def uplink_bw_threshold(self, value):
-        """Set uplink_bw_threshold"""
-        if value is not None:
-            try:
-                self.__uplink_bw_threshold = float(value)
-            except TypeError:
-                raise ValueError("Invalid value type for uplink_bw_threshold, should be a float!")
-        else:
-            self.__uplink_bw_threshold = None
-
-    @property
     def db_monitor(self):
         """Return db_monitor"""
         return self.__db_monitor
@@ -333,11 +325,10 @@ class AdaptiveSliceManager(EmpowerApp):
         self.__adaptive_slice_manager['max_quantum'] = self.__maximum_quantum
         self.__adaptive_slice_manager['inc_rate'] = self.__quantum_increase_rate
         self.__adaptive_slice_manager['dec_rate'] = self.__quantum_decrease_rate
-        self.__adaptive_slice_manager['uplink_bw_threshold'] = self.__uplink_bw_threshold
         return self.__adaptive_slice_manager
 
 
-def launch(tenant_id, minimum_quantum, maximum_quantum, quantum_decrease_rate, quantum_increase_rate, uplink_bw_threshold, db_monitor, every=DEFAULT_PERIOD):
+def launch(tenant_id, minimum_quantum, maximum_quantum, quantum_decrease_rate, quantum_increase_rate, db_monitor, every=DEFAULT_PERIOD):
     """ Initialize the module. """
 
     return AdaptiveSliceManager(tenant_id=tenant_id,
@@ -345,6 +336,5 @@ def launch(tenant_id, minimum_quantum, maximum_quantum, quantum_decrease_rate, q
                                 maximum_quantum=maximum_quantum,
                                 quantum_decrease_rate=quantum_decrease_rate,
                                 quantum_increase_rate=quantum_increase_rate,
-                                uplink_bw_threshold=uplink_bw_threshold,
                                 db_monitor=db_monitor,
                                 every=every)

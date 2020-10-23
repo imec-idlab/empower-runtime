@@ -69,6 +69,12 @@ MANIFEST = {
             "default": 1024,
             "type": "int"
         },
+        "flow_bw_mbps": {
+            "desc": "The bandwidth of the flow (Mbps)",
+            "mandatory": True,
+            "default": None,
+            "type": "str"
+        },
         "flow_bw_req_mbps": {
             "desc": "The bandwidth requirements of the flow (Mbps)",
             "mandatory": True,
