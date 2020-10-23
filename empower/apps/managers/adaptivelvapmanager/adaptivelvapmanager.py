@@ -128,7 +128,9 @@ class AdaptiveLVAPManager(EmpowerApp):
                             if adapted_bw_shaper < self.__minimum_bw:
                                 adapted_bw_shaper = self.__minimum_bw
                             if adapted_bw_shaper != crr_bw_shaper:
-                                self.send_config_to_lvap(ip_addr=ip_addr, new_bw_shaper=adapted_bw_shaper)
+                                self.send_config_to_lvap(lvap_addr=lvap_addr,
+                                                         ip_addr=ip_addr,
+                                                         new_bw_shaper=adapted_bw_shaper)
 
     def requirements_met(self, wtp):
         for qos_flow_id in self.__active_flows_handler['qos_flows']:
