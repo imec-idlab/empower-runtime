@@ -220,7 +220,7 @@ class AdaptiveLVAPManager(EmpowerApp):
             thread = threading.Thread(target=self.send_config,
                                       kwargs=dict(lvap_addr=lvap_addr,
                                                   ip_addr=ip_addr,
-                                                  new_bw_shaper=(new_bw_shaper * 125000)))
+                                                  new_bw_shaper=(new_bw_shaper)))
             thread.daemon = True
             thread.start()
         else:
@@ -232,7 +232,7 @@ class AdaptiveLVAPManager(EmpowerApp):
             s.connect((str(ip_addr), DEFAULT_PORT))
             cmd = "WRITE "
             if new_bw_shaper is not None:
-                cmd_bw_shaper = cmd + "bw_shaper.rate " + str(new_bw_shaper) + "\n"
+                cmd_bw_shaper = cmd + "bw_shaper.rate " + str(new_bw_shaper * 125000) + "\n"
                 s.sendall(cmd_bw_shaper.encode())
                 data = s.recv(1024)
                 self.log.debug(
