@@ -116,7 +116,7 @@ class AdaptiveLVAPManager(EmpowerApp):
             if crr_wtp_addr == wtp:
                 if lvap_addr in self.__adaptive_lvap_manager['configs']:
                     if self.__adaptive_lvap_manager['configs'][lvap_addr]['flow_type'] == 'BE':
-                        sta_rx_bw_mean = self.lvap_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
+                        sta_rx_bw_mean = self.__lvap_stats_handler['lvaps'][lvap_addr]['rx_throughput_mbps']['mean']
                         # only if the slice active...
                         if sta_rx_bw_mean > 0:
                             crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
@@ -142,9 +142,9 @@ class AdaptiveLVAPManager(EmpowerApp):
             # If uplink QoS flow
             elif qos_flow['flow_dscp'] is None:
                 if 'flow_src_mac_addr' in qos_flow:
-                    if qos_flow['flow_src_mac_addr'] in self.lvap_stats_handler['lvaps']:
+                    if qos_flow['flow_src_mac_addr'] in self.__lvap_stats_handler['lvaps']:
                         sta_rx_bw_mean = \
-                            self.lvap_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
+                            self.__lvap_stats_handler['lvaps'][qos_flow['flow_src_mac_addr']]['rx_throughput_mbps']['mean']
                         if sta_rx_bw_mean is not None:
                             # Applying bw threshold...
                             if sta_rx_bw_mean < (qos_flow['flow_bw_req_mbps'] * (1 - self.__uplink_bw_threshold)):
@@ -168,61 +168,65 @@ class AdaptiveLVAPManager(EmpowerApp):
                             'flow_type': flow['flow_type']
                         }
                         # Instead of getting the values, we set the max bw shaper as an initial value
-                        self.send_config_to_lvap(ip_addr=flow['flow_src_ip_addr'], new_bw_shaper=self.__maximum_bw)
-                    else:
-                        self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
-                            'flow_src_ip_addr']
-                        self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['flow_type'] = flow[
-                            'flow_type']
-                        # Try getting config from LVAP (parsing needed)
-                        # This might be too slow so there is a timeout for the socket connection
-                        self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
+                        self.send_config_to_lvap(lvap_addr=flow['flow_src_mac_addr'],
+                                                 ip_addr=flow['flow_src_ip_addr'],
+                                                 new_bw_shaper=self.__maximum_bw)
+                    # else:
+                    #     self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['ip_addr'] = flow[
+                    #         'flow_src_ip_addr']
+                    #     self.__adaptive_lvap_manager['configs'][flow['flow_src_mac_addr']]['flow_type'] = flow[
+                    #         'flow_type']
+                    #     # Try getting config from LVAP (parsing needed)
+                    #     # This might be too slow so there is a timeout for the socket connection
+                    #     self.get_config_from_lvap(lvap_addr=flow['flow_src_mac_addr'])
 
-    def get_config_from_lvap(self, lvap_addr):
-        if lvap_addr is not None:
-            thread = threading.Thread(target=self.get_config, kwargs=dict(lvap_addr=lvap_addr))
-            thread.daemon = True
-            thread.start()
-        else:
-            self.log.debug("IP address is not set, aborting!")
+    # def get_config_from_lvap(self, lvap_addr):
+    #     if lvap_addr is not None:
+    #         thread = threading.Thread(target=self.get_config, kwargs=dict(lvap_addr=lvap_addr))
+    #         thread.daemon = True
+    #         thread.start()
+    #     else:
+    #         self.log.debug("IP address is not set, aborting!")
+    #
+    # def get_config(self, lvap_addr):
+    #     try:
+    #         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    #             s.settimeout(DEFAULT_TIMEOUT)  # timeout
+    #             ip_addr = self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr']
+    #             s.connect((str(ip_addr), DEFAULT_PORT))
+    #             cmd = "READ bw_shaper.rate\n"
+    #             s.sendall(cmd.encode())
+    #             data = s.recv(1024)
+    #             self.log.debug(
+    #                 "Getting new configurations from LVAP IP " + str(ip_addr) + ":" + str(DEFAULT_PORT) + " - " + str(
+    #                     repr(data)))
+    #             crr_bw_shaper = data.decode("utf-8").splitlines()[-1]
+    #             if 'Mbps' in crr_bw_shaper:
+    #                 crr_bw_shaper = crr_bw_shaper.replace('Mbps', '')
+    #                 crr_bw_shaper = float(crr_bw_shaper) if '.' in crr_bw_shaper else int(crr_bw_shaper)
+    #                 self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = crr_bw_shaper
+    #
+    #                 if self.__db_monitor is not None:
+    #                     fields = ['LVAP_ADDR', 'BW_SHAPER_MBPS']
+    #                     values = [lvap_addr, crr_bw_shaper]
+    #
+    #                     # Saving into db
+    #                     self.monitor.insert_into_db(table='lvap_shaping', fields=fields, values=values)
+    #     except:
+    #         raise ValueError("Timeout getting configuration from LVAP", ip_addr, DEFAULT_PORT)
 
-    def get_config(self, lvap_addr):
-        try:
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(DEFAULT_TIMEOUT)  # timeout
-                ip_addr = self.__adaptive_lvap_manager['configs'][lvap_addr]['ip_addr']
-                s.connect((str(ip_addr), DEFAULT_PORT))
-                cmd = "READ bw_shaper.rate\n"
-                s.sendall(cmd.encode())
-                data = s.recv(1024)
-                self.log.debug(
-                    "Getting new configurations from LVAP IP " + str(ip_addr) + ":" + str(DEFAULT_PORT) + " - " + str(
-                        repr(data)))
-                crr_bw_shaper = data.decode("utf-8").splitlines()[-1]
-                if 'Mbps' in crr_bw_shaper:
-                    crr_bw_shaper = crr_bw_shaper.replace('Mbps', '')
-                    crr_bw_shaper = float(crr_bw_shaper) if '.' in crr_bw_shaper else int(crr_bw_shaper)
-                    self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = crr_bw_shaper
-
-                    if self.__db_monitor is not None:
-                        fields = ['LVAP_ADDR', 'BW_SHAPER_MBPS']
-                        values = [lvap_addr, crr_bw_shaper]
-
-                        # Saving into db
-                        self.monitor.insert_into_db(table='lvap_shaping', fields=fields, values=values)
-        except:
-            raise ValueError("Timeout getting configuration from LVAP", ip_addr, DEFAULT_PORT)
-
-    def send_config_to_lvap(self, ip_addr, new_bw_shaper):
+    def send_config_to_lvap(self, lvap_addr, ip_addr, new_bw_shaper):
         if ip_addr is not None:
             thread = threading.Thread(target=self.send_config,
-                                      kwargs=dict(ip_addr=ip_addr, new_bw_shaper=(new_bw_shaper * 125000)))
+                                      kwargs=dict(lvap_addr=lvap_addr,
+                                                  ip_addr=ip_addr,
+                                                  new_bw_shaper=(new_bw_shaper * 125000)))
             thread.daemon = True
             thread.start()
         else:
             self.log.debug("IP address is not set, aborting configuration!")
 
-    def send_config(self, ip_addr, new_bw_shaper):
+    def send_config(self, lvap_addr, ip_addr, new_bw_shaper):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(DEFAULT_TIMEOUT)  # timeout
             s.connect((str(ip_addr), DEFAULT_PORT))
@@ -234,6 +238,15 @@ class AdaptiveLVAPManager(EmpowerApp):
                 self.log.debug(
                     "Sending new configurations to LVAP: IP " + str(ip_addr) + ":" + str(DEFAULT_PORT) + " - " + str(
                         new_bw_shaper) + " - " + str(repr(data)))
+                if self.__db_monitor is not None:
+                    fields = ['LVAP_ADDR', 'BW_SHAPER_MBPS']
+                    values = [lvap_addr, new_bw_shaper]
+
+                    # Update JSON to track traffic shapers
+                    self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = new_bw_shaper
+
+                    # Saving into db
+                    self.monitor.insert_into_db(table='lvap_shaping', fields=fields, values=values)
 
     def get_active_flows(self):
         if 'empower.apps.managers.flowmanager.flowmanager' in RUNTIME.tenants[self.tenant_id].components:
