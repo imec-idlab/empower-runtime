@@ -90,6 +90,14 @@ class AdaptiveLVAPManager(EmpowerApp):
                         self.reset_all_lvap_configs()
 
             if self.__db_monitor is not None:
+                for lvap_addr in self.__adaptive_lvap_manager['configs']:
+                    fields = ['LVAP_ADDR', 'BW_SHAPER_MBPS']
+                    crr_bw_shaper = self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps']
+                    values = [lvap_addr, crr_bw_shaper]
+
+                    # Saving into db
+                    self.monitor.insert_into_db(table='lvap_shaping', fields=fields, values=values)
+
                 fields = ['MIN_BW_MBPS', 'MAX_BW_MBPS', 'INC_RATE', 'DEC_RATE', 'UP_BW_THRESHOLD_MBPS']
                 values = [self.__minimum_bw, self.__maximum_bw,
                           self.__bw_increase_rate, self.__bw_decrease_rate, self.__uplink_bw_threshold]
@@ -241,15 +249,9 @@ class AdaptiveLVAPManager(EmpowerApp):
                 self.log.debug(
                     "Sending new configurations to LVAP: IP " + str(ip_addr) + ":" + str(DEFAULT_PORT) + " - " + str(
                         new_bw_shaper) + " - " + str(repr(data)))
-                if self.__db_monitor is not None:
-                    fields = ['LVAP_ADDR', 'BW_SHAPER_MBPS']
-                    values = [lvap_addr, new_bw_shaper]
 
-                    # Update JSON to track traffic shapers
-                    self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = new_bw_shaper
-
-                    # Saving into db
-                    self.monitor.insert_into_db(table='lvap_shaping', fields=fields, values=values)
+                # Update JSON to track traffic shapers
+                self.__adaptive_lvap_manager['configs'][lvap_addr]['crr_bw_shaper_mbps'] = new_bw_shaper
 
     def get_active_flows(self):
         if 'empower.apps.managers.flowmanager.flowmanager' in RUNTIME.tenants[self.tenant_id].components:
