@@ -2733,7 +2733,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  min_quantum,\n  max_quantum,\n  inc_rate,\n  dec_rate,\n  up_bw_threshold_mbps\nFROM adaptive_slicing\nWHERE\n  $__unixEpochFilter(timestamp_ms)\nORDER BY 1",
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  min_quantum,\n  max_quantum,\n  inc_rate,\n  dec_rate\nFROM adaptive_slicing\nWHERE\n  $__unixEpochFilter(timestamp_ms)\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -2764,14 +2764,6 @@
               {
                 "params": [
                   "dec_rate"
-                ],
-                "type": "column"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "up_bw_threshold_mbps"
                 ],
                 "type": "column"
               }
@@ -2875,7 +2867,7 @@
           "group": [],
           "metricColumn": "none",
           "rawQuery": false,
-          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  min_bw_mbps,\n  max_bw_mbps,\n  dec_rate,\n  inc_rate,\n  up_bw_threshold_mbps\nFROM adaptive_shaping\nWHERE\n  $__unixEpochFilter(timestamp_ms)\nORDER BY 1",
+          "rawSql": "SELECT\n  timestamp_ms AS \"time\",\n  min_bw_mbps,\n  max_bw_mbps,\n  dec_rate,\n  inc_rate\nFROM adaptive_shaping\nWHERE\n  $__unixEpochFilter(timestamp_ms)\nORDER BY 1",
           "refId": "A",
           "select": [
             [
@@ -2906,14 +2898,6 @@
               {
                 "params": [
                   "inc_rate"
-                ],
-                "type": "column"
-              }
-            ],
-            [
-              {
-                "params": [
-                  "up_bw_threshold_mbps"
                 ],
                 "type": "column"
               }
@@ -4063,5 +4047,5 @@
   "timezone": "",
   "title": "Combined Stats",
   "uid": "spUCIjhWz",
-  "version": 32
+  "version": 33
 }
