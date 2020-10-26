@@ -224,7 +224,7 @@ class FlowManager(EmpowerApp):
         if lvap_addr_to_remove in self.__flow_manager['lvap_flow_map']:
             if flow_id in self.__flow_manager['lvap_flow_map'][lvap_addr_to_remove]:
                 self.__flow_manager['lvap_flow_map'][lvap_addr_to_remove].remove(flow_id)
-                self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_remove].remove(flow['flow_bw_req_mbps'])
+                self.__flow_manager['lvap_load_expected_map'][lvap_addr_to_remove].remove(flow['flow_bw_mbps'])
 
         if flow_id in self.__process_handler['flows']:
             if self.__process_handler['flows'][flow_id].poll() is None:
