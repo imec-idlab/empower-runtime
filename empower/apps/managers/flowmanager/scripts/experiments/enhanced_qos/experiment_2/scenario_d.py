@@ -24,7 +24,7 @@ parser.add_option("", "--password", type="string", default="root")  # e.g., root
 print("Advertising Flow 1 (downlink BE)...")
 # Advertise flow 1
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/scenario_d/flow1.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/scenario_d/flow1.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
@@ -37,7 +37,7 @@ time.sleep(10)
 print("Advertising Flow 2 (downlink QoS)...")
 # Advertise flow 2
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/scenario_d/flow2.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/scenario_d/flow2.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
