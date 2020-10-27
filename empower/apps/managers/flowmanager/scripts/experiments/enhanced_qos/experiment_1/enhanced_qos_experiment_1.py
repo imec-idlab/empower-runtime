@@ -22,8 +22,7 @@ parser.add_option("", "--password", type="string", default="root")  # e.g., root
 (options, args) = parser.parse_args()
 
 
-print("Advertising Flow 1...")
-# Advertise flow 1
+print("Event 1 (sec 10)...")
 # Curl terminal command for latency measurements
 curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow1.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
@@ -31,13 +30,11 @@ curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanc
                          '/components/empower.apps.managers.flowmanager.flowmanager']
 call(curl_terminal_command)
 print("Done!")
-print("Now start the flow from the RPI 1 - mgen input flow1.mgn! (click must be running there)")
 
 print("Sleeping...")
 time.sleep(30)
 
-print("Advertising Flow 2...")
-# Advertise flow 2
+print("Event 2 (sec 40)...")
 # Curl terminal command for latency measurements
 curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow2.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
@@ -45,13 +42,11 @@ curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanc
                          '/components/empower.apps.managers.flowmanager.flowmanager']
 call(curl_terminal_command)
 print("Done!")
-print("Now start the flow from the RPI 2 - mgen input flow2.mgn! (click must be running there)")
 
 print("Sleeping...")
 time.sleep(30)
 
-print("Advertising Flow 3...")
-# Advertise flow 3
+print("Event 3 (sec 70)...")
 # Curl terminal command for latency measurements
 curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow3.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
@@ -59,13 +54,49 @@ curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanc
                          '/components/empower.apps.managers.flowmanager.flowmanager']
 call(curl_terminal_command)
 print("Done!")
-print("Now start the flow from the RPI 3 - mgen input flow3.mgn! (click must be running there)")
 
 print("Sleeping...")
 time.sleep(30)
 
-print("Advertising and running Flow 4...")
-# Advertise flow 3
+print("Event 4 (sec 100)...")
+# Curl terminal command for latency measurements
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow2_stop.json',
+                         'http://' + str(options.user) + ':' + str(options.password) + '@' +
+                         str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
+                         '/components/empower.apps.managers.flowmanager.flowmanager']
+call(curl_terminal_command)
+print("Done!")
+
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow3_stop.json',
+                         'http://' + str(options.user) + ':' + str(options.password) + '@' +
+                         str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
+                         '/components/empower.apps.managers.flowmanager.flowmanager']
+call(curl_terminal_command)
+print("Done!")
+
+print("Sleeping...")
+time.sleep(30)
+
+print("Event 5 (sec 130)...")
+# Curl terminal command for latency measurements
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow2_mod.json',
+                         'http://' + str(options.user) + ':' + str(options.password) + '@' +
+                         str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
+                         '/components/empower.apps.managers.flowmanager.flowmanager']
+call(curl_terminal_command)
+print("Done!")
+
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow3_mod.json',
+                         'http://' + str(options.user) + ':' + str(options.password) + '@' +
+                         str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
+                         '/components/empower.apps.managers.flowmanager.flowmanager']
+call(curl_terminal_command)
+print("Done!")
+
+print("Sleeping...")
+time.sleep(30)
+
+print("Event 6 (sec 160)...")
 # Curl terminal command for latency measurements
 curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow4.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
@@ -77,8 +108,7 @@ print("Done!")
 print("Sleeping...")
 time.sleep(30)
 
-print("Advertising Flow 5...")
-# Advertise flow 3
+print("Event 7 (sec 190)...")
 # Curl terminal command for latency measurements
 curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow5.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
@@ -90,8 +120,7 @@ print("Done!")
 print("Sleeping...")
 time.sleep(30)
 
-print("Advertising Flow 6...")
-# Advertise flow 3
+print("Event 8 (sec 210)...")
 # Curl terminal command for latency measurements
 curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/flow6.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
