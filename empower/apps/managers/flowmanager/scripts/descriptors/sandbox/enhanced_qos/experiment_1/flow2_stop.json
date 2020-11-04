@@ -6,7 +6,7 @@
       "flow_dscp": "0x02",
       "flow_protocol": "UDP",
       "flow_distribution": "POISSON",
-      "flow_frame_size":  1024,
+      "flow_frame_size": 1024,
       "flow_bw_mbps": 8.0,
       "flow_bw_req_mbps": null,
       "flow_delay_req_ms": null,
