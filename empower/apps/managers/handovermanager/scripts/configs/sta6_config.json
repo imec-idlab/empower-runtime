@@ -1,0 +1,8 @@
+{"version":
+	"1.0",
+	"params": {
+		"lvap_addr": "DC:A6:32:01:C3:0D",
+		"wtp_addr": "00:0D:B9:53:E0:4C",
+		"config_handover": true
+	}
+}
