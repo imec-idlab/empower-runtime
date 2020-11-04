@@ -21,6 +21,23 @@ parser.add_option("", "--user", type="string", default="root")  # e.g., root, us
 parser.add_option("", "--password", type="string", default="root")  # e.g., root, password
 (options, args) = parser.parse_args()
 
+print("Trying to activate Gomez approach..")
+# Curl terminal command for latency measurements
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/activate.json',
+                         'http://' + str(options.user) + ':' + str(options.password) + '@' +
+                         str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
+                         '/components/empower.apps.managers.gomezhandovermanager.gomezhandovermanager']
+call(curl_terminal_command)
+print("Done!")
+
+print("Trying to activate our user association algorithm (MCDA)...")
+# Curl terminal command for latency measurements
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/activate.json',
+                         'http://' + str(options.user) + ':' + str(options.password) + '@' +
+                         str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
+                         '/components/empower.apps.managers.mcdahandovermanager.fullmcdahandovermanager']
+call(curl_terminal_command)
+print("Done!")
 
 print("Event 1 (sec 10)...")
 # Curl terminal command for latency measurements
