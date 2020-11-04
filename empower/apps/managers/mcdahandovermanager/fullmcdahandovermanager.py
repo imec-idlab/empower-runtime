@@ -52,7 +52,7 @@ class FullMCDAHandoverManager(EmpowerApp):
         self.__ucqm_stats_handler = None
         self.__lvap_stats_handler = None
         self.__flow_handler = None
-        self.__active = True
+        self.__active = False
         self.__mcda_handover_manager['active'] = self.__active
 
         # MCDA file handlers
