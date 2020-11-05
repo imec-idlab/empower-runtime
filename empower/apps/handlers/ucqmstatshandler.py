@@ -22,6 +22,7 @@ from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
 from empower.datatypes.etheraddress import EtherAddress
 import statistics
+import time
 
 
 class UCQMStatsHandler(EmpowerApp):
@@ -111,6 +112,7 @@ class UCQMStatsHandler(EmpowerApp):
                                 'mov_rssi']['values'])
 
             if self.__db_monitor is not None:
+                crr_timestamp_in_ms = int(round(time.time()))
                 for sta in ucqm:
                     fields = ['WTP_ADDR', 'STA_ADDR',
                               'HIST_PACKETS', 'LAST_PACKETS',
@@ -122,7 +124,10 @@ class UCQMStatsHandler(EmpowerApp):
                               "WTP: " + str(crr_wtp_addr) + " - STA: " + str(sta)]
 
                     # Saving into db
-                    self.monitor.insert_into_db(table='ucqm_stats', fields=fields, values=values)
+                    self.monitor.insert_into_db(table='ucqm_stats',
+                                                fields=fields,
+                                                values=values,
+                                                crr_timestamp_in_ms=crr_timestamp_in_ms)
 
     @property
     def ucqm_stats_handler(self):

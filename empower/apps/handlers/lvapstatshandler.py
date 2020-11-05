@@ -19,7 +19,7 @@
 
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_MONITORING_PERIOD
-from empower.core.app import DEFAULT_PERIOD
+import time
 
 
 class LVAPStatsHandler(EmpowerApp):
@@ -45,6 +45,7 @@ class LVAPStatsHandler(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
+        crr_timestamp_in_ms = int(round(time.time()))
         for lvap in self.lvaps():
             self.lvap_stats(lvap=lvap.addr,
                             every=self.__polling,
@@ -63,7 +64,10 @@ class LVAPStatsHandler(EmpowerApp):
                     values = [crr_lvap_addr, crr_wtp_addr, flag_value]
 
                     # Saving into db
-                    self.monitor.insert_into_db(table='lvap_association_stats', fields=fields, values=values)
+                    self.monitor.insert_into_db(table='lvap_association_stats',
+                                                fields=fields,
+                                                values=values,
+                                                crr_timestamp_in_ms=crr_timestamp_in_ms)
 
         if self.__db_monitor is not None:
             self.monitor.keep_last_measurements_only(table='lvap_association_stats')

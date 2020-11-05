@@ -20,6 +20,7 @@
 from empower.core.app import EmpowerApp
 from empower.core.app import DEFAULT_MONITORING_PERIOD
 from empower.core.app import DEFAULT_PERIOD
+import time
 
 
 class NCQMStatsHandler(EmpowerApp):
@@ -57,6 +58,7 @@ class NCQMStatsHandler(EmpowerApp):
         if crr_wtp_addr is not None:
             if self.__db_monitor is not None:
                 ncqm = ncqm_stats.block.ncqm
+                crr_timestamp_in_ms = int(round(time.time()))
                 for unknown_ap in ncqm:
                     fields = ['WTP_ADDR', 'HIST_PACKETS', 'LAST_PACKETS',
                               'LAST_RSSI_AVG', 'LAST_RSSI_STD', 'MOV_RSSI',
@@ -66,7 +68,10 @@ class NCQMStatsHandler(EmpowerApp):
                               ncqm[unknown_ap]['mov_rssi'], str(unknown_ap)]
 
                     # Saving into db
-                    self.monitor.insert_into_db(table='ncqm_stats', fields=fields, values=values)
+                    self.monitor.insert_into_db(table='ncqm_stats',
+                                                fields=fields,
+                                                values=values,
+                                                crr_timestamp_in_ms=crr_timestamp_in_ms)
 
     @property
     def ncqm_stats_handler(self):
