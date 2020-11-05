@@ -184,7 +184,8 @@ class FullMCDAHandoverManager(EmpowerApp):
                         old_wtp_addr = None
                         for block in self.blocks():
                             crr_wtp_addr = str(block.addr)
-                            if lvap.blocks[0] is not None:
+                            # if there is an WTP and active flows...
+                            if lvap.blocks[0] is not None and crr_lvap_addr in self.__flow_handler['lvap_flow_map']:
                                 if crr_wtp_addr == best_alternative_wtp_addr:
                                     # Do handover to this block only if the station is not connected to it
                                     sta_crr_wtp_addr = str(lvap.blocks[0].addr)
