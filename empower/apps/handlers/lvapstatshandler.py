@@ -45,7 +45,7 @@ class LVAPStatsHandler(EmpowerApp):
 
     def loop(self):
         """Periodic job."""
-        crr_timestamp_in_ms = int(round(time.time()))
+        crr_time_in_ms = int(round(time.time()))
         for lvap in self.lvaps():
             self.lvap_stats(lvap=lvap.addr,
                             every=self.__polling,
@@ -67,7 +67,7 @@ class LVAPStatsHandler(EmpowerApp):
                     self.monitor.insert_into_db(table='lvap_association_stats',
                                                 fields=fields,
                                                 values=values,
-                                                crr_timestamp_in_ms=crr_timestamp_in_ms)
+                                                crr_time_in_ms=crr_time_in_ms)
 
         if self.__db_monitor is not None:
             self.monitor.keep_last_measurements_only(table='lvap_association_stats')

@@ -112,7 +112,7 @@ class UCQMStatsHandler(EmpowerApp):
                                 'mov_rssi']['values'])
 
             if self.__db_monitor is not None:
-                crr_timestamp_in_ms = int(round(time.time()))
+                crr_time_in_ms = int(round(time.time()))
                 for sta in ucqm:
                     fields = ['WTP_ADDR', 'STA_ADDR',
                               'HIST_PACKETS', 'LAST_PACKETS',
@@ -127,7 +127,7 @@ class UCQMStatsHandler(EmpowerApp):
                     self.monitor.insert_into_db(table='ucqm_stats',
                                                 fields=fields,
                                                 values=values,
-                                                crr_timestamp_in_ms=crr_timestamp_in_ms)
+                                                crr_time_in_ms=crr_time_in_ms)
 
     @property
     def ucqm_stats_handler(self):
