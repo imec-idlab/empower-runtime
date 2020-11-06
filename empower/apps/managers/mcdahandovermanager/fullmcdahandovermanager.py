@@ -124,7 +124,8 @@ class FullMCDAHandoverManager(EmpowerApp):
 
                     # Step 6: for each lvap in the network, get a decision using the TOPSIS method
                     # Random list to avoid first LVAPs to suffer more handovers.
-                    for lvap in random.shuffle(self.lvaps()):
+                    for lvap in random.sample(list(self.lvaps()),
+                                              len(list(self.lvaps()))):
                         crr_lvap_addr = str(lvap.addr)
 
                         # Create MCDA structure
