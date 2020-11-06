@@ -26,6 +26,7 @@ from skcriteria.madm import closeness, simple
 import math
 import time
 import json
+import random
 
 
 class FullMCDAHandoverManager(EmpowerApp):
@@ -122,7 +123,8 @@ class FullMCDAHandoverManager(EmpowerApp):
                         self.compute_wtp_load_expected_mbps()
 
                     # Step 6: for each lvap in the network, get a decision using the TOPSIS method
-                    for lvap in self.lvaps():
+                    # Random list to avoid first LVAPs to suffer more handovers.
+                    for lvap in random.shuffle(self.lvaps()):
                         crr_lvap_addr = str(lvap.addr)
 
                         # Create MCDA structure
