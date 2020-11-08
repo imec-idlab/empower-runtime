@@ -123,6 +123,8 @@ class FullMCDAHandoverManager(EmpowerApp):
                         self.compute_wtp_load_expected_mbps()
 
                     # Step 6: for each lvap in the network, get a decision using the TOPSIS method
+                    # Avoiding multiple handovers on the same wtp
+                    wtps_involved = []
                     # Random list to avoid first LVAPs to suffer more handovers.
                     for lvap in random.sample(list(self.lvaps()),
                                               len(list(self.lvaps()))):
@@ -193,10 +195,14 @@ class FullMCDAHandoverManager(EmpowerApp):
                                     # Do handover to this block only if the station is not connected to it
                                     sta_crr_wtp_addr = str(lvap.blocks[0].addr)
                                     if sta_crr_wtp_addr != best_alternative_wtp_addr:
-                                        self.log.info("Handover triggered!")
-                                        old_wtp_addr = sta_crr_wtp_addr
-                                        # Handover now..
-                                        lvap.blocks = block
+                                        # Avoiding handovers between the same WTPs in this round
+                                        if sta_crr_wtp_addr not in wtps_involved and best_alternative_wtp_addr not in wtps_involved:
+                                            wtps_involved.append(sta_crr_wtp_addr)
+                                            wtps_involved.append(best_alternative_wtp_addr)
+                                            self.log.info("Handover triggered!")
+                                            old_wtp_addr = sta_crr_wtp_addr
+                                            # Handover now..
+                                            lvap.blocks = block
                                     # and update metrics
                                     if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
                                         self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
