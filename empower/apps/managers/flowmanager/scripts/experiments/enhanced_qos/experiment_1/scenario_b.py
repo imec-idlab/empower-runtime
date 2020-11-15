@@ -24,26 +24,26 @@ parser.add_option("", "--password", type="string", default="root")  # e.g., root
 print("Advertising Flow 1 (uplink BE)...")
 # Advertise flow 1
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/scenario_a/flow1.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/scenario_b/flow1.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
 call(curl_terminal_command)
 print("Done!")
-print("Now start the flow from the RPI 1 - mgen input flow1.mgn! (click must be running there)")
+print("Now start the flow from the RPI 1 - mgen input flow1.mgn!")
 
 time.sleep(10)
 
-print("Advertising Flow 2 (uplink QoS)...")
+print("Advertising Flow 2 (downlink QoS)...")
 # Advertise flow 2
 # Curl terminal command for latency measurements
-curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_2/scenario_a/flow2.json',
+curl_terminal_command = ['curl', '-X', 'PUT', '-d', '@descriptors/sandbox/enhanced_qos/experiment_1/scenario_b/flow2.json',
                          'http://' + str(options.user) + ':' + str(options.password) + '@' +
                          str(options.controller_ip) + ':8888/api/v1/tenants/' + str(options.tenant_id) +
                          '/components/empower.apps.managers.flowmanager.flowmanager']
 call(curl_terminal_command)
 print("Done!")
-print("Now start the flow from the RPI 2 - mgen input flow2.mgn!")
+print("Now the downlink flow will start automatically!")
 
 time.sleep(2)
 print("Wait 5 min and save the graphs on Grafana!")
