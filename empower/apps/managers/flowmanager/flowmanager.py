@@ -255,7 +255,7 @@ class FlowManager(EmpowerApp):
     def start_flow(self, value):
         """Set start_flow."""
 
-        if value is not None:
+        if value:
             if self.create_and_run_mgen_script():
                 self.log.debug("Starting flow using MGEN!")
             else:

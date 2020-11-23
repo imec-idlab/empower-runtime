@@ -16,6 +16,6 @@
       "flow_dst_mac_addr": "94:C6:91:A6:12:35",
       "flow_dst_port": "4003",
       "flow_duration": 1000,
-      "start_flow": true
+      "start_flow": null
   }
 }
