@@ -134,90 +134,94 @@ class FullMCDAHandoverManager(EmpowerApp):
                         mtx = []
                         wtp_addresses = []
                         for crr_wtp_addr in self.__mcda_handover_manager['wtps']:
-                            wtp_addresses.append(crr_wtp_addr)
-                            if crr_lvap_addr in self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps']:
-                                mtx.append(
-                                    self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                        'values'])
-
-                        # if any of the (active) flows in this LVAP is QoS, use QoS weights
-                        # otherwise, stick with the BE weights
-                        mcda_weights = self.__mcda_descriptor['weights_be']
-                        if crr_lvap_addr in self.__flow_handler['lvap_flow_map']:
-                            if any(i in self.__flow_handler['lvap_flow_map'][crr_lvap_addr] for i in self.__flow_handler['qos_flows']):
-                                mcda_weights = self.__mcda_descriptor['weights_qos']
-
-
-                        # Lists must have the same length
-                        data = Data(mtx,
-                                    self.__mcda_targets,
-                                    weights=mcda_weights,
-                                    anames=wtp_addresses,
-                                    cnames=self.__mcda_descriptor['criteria'])
-
-                        dm = closeness.TOPSIS()
-                        dec = dm.decide(data)
-                        best_alternative_wtp_addr = data.anames[dec.best_alternative_]
-
-                        if self.__db_monitor:
-                            for i in range(0, len(mtx)):
-                                closeness_list = dec.e_.closeness.tolist()
-                                ranks = dec.rank_.tolist()
-                                closeness_res = closeness_list[i]
-                                if math.isnan(closeness_res):
-                                    closeness_res = None
-
-                                fields = ['LVAP_ADDR', 'WTP_ADDR'] + \
-                                         self.__mcda_descriptor['criteria'] + \
-                                         ['RANK', 'CLOSENESS']
-
-                                values = [crr_lvap_addr, wtp_addresses[i]] + mtx[i] + [ranks[i], closeness_res]
-                                # Saving into db
-                                self.monitor.insert_into_db(table='mcda_results', fields=fields, values=values)
-
-                            # # TODO: Improve writing info...
-                            # f = open(self.__mcda_results_filename, 'w+')
-                            # f.write('Decision for LVAP: ' + crr_lvap_addr + '\n' + str(
-                            #     dec) + '\nMove to WTP: ' + best_alternative_wtp_addr + '\n')
-                            # f.close()
-
-                        # Step 7: is handover needed? Do it and set the flag to 0 for all other blocks
-                        # (this could be improved, but get block with given address should be implemented)
-                        # Compute WTP expected load if present in the criteria
-                        if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
-                            sta_association_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
-                        old_wtp_addr = None
-                        for block in self.blocks():
-                            crr_wtp_addr = str(block.addr)
-                            # if there is an WTP and active flows...
-                            if lvap.blocks[0] is not None and crr_lvap_addr in self.__flow_handler['lvap_flow_map']:
-                                if crr_wtp_addr == best_alternative_wtp_addr:
-                                    # Do handover to this block only if the station is not connected to it
-                                    sta_crr_wtp_addr = str(lvap.blocks[0].addr)
-                                    if sta_crr_wtp_addr != best_alternative_wtp_addr:
-                                        # Avoiding handovers between the same WTPs in this round
-                                        if sta_crr_wtp_addr not in wtps_involved and best_alternative_wtp_addr not in wtps_involved:
-                                            wtps_involved.append(sta_crr_wtp_addr)
-                                            wtps_involved.append(best_alternative_wtp_addr)
-                                            self.log.info("Handover triggered!")
-                                            old_wtp_addr = sta_crr_wtp_addr
-                                            # Handover now..
-                                            lvap.blocks = block
-                                    # and update metrics
-                                    if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                            # Checking if all values are valid for the alternative WTP
+                            if all(v is not None for v in self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics']['values']):
+                                wtp_addresses.append(crr_wtp_addr)
+                                if crr_lvap_addr in self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps']:
+                                    mtx.append(
                                         self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                            'values'][sta_association_index] = 1
-                                elif 'sta_association_flag' in self.__mcda_descriptor['criteria']:
-                                    self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
-                                        'values'][sta_association_index] = 0
+                                            'values'])
 
-                        # Recalculate WTP expected load on handover, if any...
-                        # OBS: not possible to access lvap.blocks[0] while performing handover
-                        if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
-                            if old_wtp_addr is not None:
-                                self.recalculate_wtp_load_expected_mbps(old_wtp_addr=old_wtp_addr,
-                                                                        best_alternative_wtp_addr=best_alternative_wtp_addr,
-                                                                        moving_lvap_addr=crr_lvap_addr)
+                        # if there are alternative WTPs
+                        if mtx:
+                            # if any of the (active) flows in this LVAP is QoS, use QoS weights
+                            # otherwise, stick with the BE weights
+                            mcda_weights = self.__mcda_descriptor['weights_be']
+                            if crr_lvap_addr in self.__flow_handler['lvap_flow_map']:
+                                if any(i in self.__flow_handler['lvap_flow_map'][crr_lvap_addr] for i in self.__flow_handler['qos_flows']):
+                                    mcda_weights = self.__mcda_descriptor['weights_qos']
+
+
+                            # Lists must have the same length
+                            data = Data(mtx,
+                                        self.__mcda_targets,
+                                        weights=mcda_weights,
+                                        anames=wtp_addresses,
+                                        cnames=self.__mcda_descriptor['criteria'])
+
+                            dm = closeness.TOPSIS()
+                            dec = dm.decide(data)
+                            best_alternative_wtp_addr = data.anames[dec.best_alternative_]
+
+                            if self.__db_monitor:
+                                for i in range(0, len(mtx)):
+                                    closeness_list = dec.e_.closeness.tolist()
+                                    ranks = dec.rank_.tolist()
+                                    closeness_res = closeness_list[i]
+                                    if math.isnan(closeness_res):
+                                        closeness_res = None
+
+                                    fields = ['LVAP_ADDR', 'WTP_ADDR'] + \
+                                             self.__mcda_descriptor['criteria'] + \
+                                             ['RANK', 'CLOSENESS']
+
+                                    values = [crr_lvap_addr, wtp_addresses[i]] + mtx[i] + [ranks[i], closeness_res]
+                                    # Saving into db
+                                    self.monitor.insert_into_db(table='mcda_results', fields=fields, values=values)
+
+                                # # TODO: Improve writing info...
+                                # f = open(self.__mcda_results_filename, 'w+')
+                                # f.write('Decision for LVAP: ' + crr_lvap_addr + '\n' + str(
+                                #     dec) + '\nMove to WTP: ' + best_alternative_wtp_addr + '\n')
+                                # f.close()
+
+                            # Step 7: is handover needed? Do it and set the flag to 0 for all other blocks
+                            # (this could be improved, but get block with given address should be implemented)
+                            # Compute WTP expected load if present in the criteria
+                            if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                                sta_association_index = self.__mcda_descriptor['criteria'].index('sta_association_flag')
+                            old_wtp_addr = None
+                            for block in self.blocks():
+                                crr_wtp_addr = str(block.addr)
+                                # if there is an WTP and active flows...
+                                if lvap.blocks[0] is not None and crr_lvap_addr in self.__flow_handler['lvap_flow_map']:
+                                    if crr_wtp_addr == best_alternative_wtp_addr:
+                                        # Do handover to this block only if the station is not connected to it
+                                        sta_crr_wtp_addr = str(lvap.blocks[0].addr)
+                                        if sta_crr_wtp_addr != best_alternative_wtp_addr:
+                                            # Avoiding handovers between the same WTPs in this round
+                                            if sta_crr_wtp_addr not in wtps_involved and best_alternative_wtp_addr not in wtps_involved:
+                                                wtps_involved.append(sta_crr_wtp_addr)
+                                                wtps_involved.append(best_alternative_wtp_addr)
+                                                self.log.info("Handover triggered!")
+                                                old_wtp_addr = sta_crr_wtp_addr
+                                                # Handover now..
+                                                lvap.blocks = block
+                                        # and update metrics
+                                        if 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                                            self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                                'values'][sta_association_index] = 1
+                                    elif 'sta_association_flag' in self.__mcda_descriptor['criteria']:
+                                        self.__mcda_handover_manager['wtps'][crr_wtp_addr]['lvaps'][crr_lvap_addr]['metrics'][
+                                            'values'][sta_association_index] = 0
+
+                            # Recalculate WTP expected load on handover, if any...
+                            # OBS: not possible to access lvap.blocks[0] while performing handover
+                            if 'wtp_load_expected_mbps' in self.__mcda_descriptor['criteria']:
+                                if old_wtp_addr is not None:
+                                    self.recalculate_wtp_load_expected_mbps(old_wtp_addr=old_wtp_addr,
+                                                                            best_alternative_wtp_addr=best_alternative_wtp_addr,
+                                                                            moving_lvap_addr=crr_lvap_addr)
 
             # Start considering association and expected load from now on...
             if self.__initial_association:
